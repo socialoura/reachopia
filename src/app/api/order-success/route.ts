@@ -5,10 +5,9 @@ import { sendDiscordNotification } from "@/lib/discord";
 import { createOrder } from "@/lib/db";
 import type { OrderPayload } from "@/lib/types";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: NextRequest) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await req.json();
 
     const { orderId, email, username, platform, service, quantity, price } =

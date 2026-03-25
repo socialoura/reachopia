@@ -1,6 +1,17 @@
 import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL!);
+// Lazy-init: avoid crashing at build time when DATABASE_URL is not set
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sql: any;
+function getSql() {
+  if (!_sql) _sql = neon(process.env.DATABASE_URL!);
+  return _sql;
+}
+const sql = new Proxy(function () {} as any, {
+  apply(_t, _this, args) {
+    return (getSql() as any)(...args);
+  },
+}) as any;
 
 // ─── Schema Initialization ───────────────────────────────
 
