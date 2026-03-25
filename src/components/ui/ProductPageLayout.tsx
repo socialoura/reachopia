@@ -1,0 +1,349 @@
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { PricingTier } from "./PricingCard";
+import CheckoutModal from "./CheckoutModal";
+import type { CheckoutTier } from "./CheckoutModal";
+import {
+  Shield,
+  Clock,
+  Users,
+  Zap,
+  Award,
+  HeartHandshake,
+  Check,
+  Lock,
+  ChevronDown,
+  Star,
+} from "lucide-react";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" as const },
+  }),
+};
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Testimonial {
+  name: string;
+  role: string;
+  text: string;
+  rating: number;
+}
+
+interface ContentBlock {
+  title: string;
+  paragraphs: string[];
+}
+
+interface ProductImages {
+  content1: string;
+  content2: string;
+  content3: string;
+}
+
+interface ProductPageLayoutProps {
+  platform: "instagram" | "tiktok";
+  title: string;
+  subtitle: string;
+  pricingTiers: PricingTier[];
+  whyShouldBuy: ContentBlock;
+  howToBuy: ContentBlock;
+  whyBuyMore: ContentBlock;
+  faqs: FAQItem[];
+  testimonials: Testimonial[];
+  images: ProductImages;
+}
+
+const trustFeatures = [
+  { icon: Shield, label: "100% Compliant" },
+  { icon: Clock, label: "Rapid Deployment" },
+  { icon: Users, label: "Active Users Only" },
+  { icon: Zap, label: "24/7 Support" },
+  { icon: Award, label: "Results Guaranteed" },
+  { icon: HeartHandshake, label: "Best Value" },
+];
+
+function FAQAccordionItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-slate-200 last:border-0">
+      <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full py-5 text-left gap-4">
+        <span className="text-sm sm:text-base font-semibold text-slate-900">{question}</span>
+        <ChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <motion.div initial={false} animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+        <p className="pb-5 text-sm text-slate-500 leading-relaxed">{answer}</p>
+      </motion.div>
+    </div>
+  );
+}
+
+export default function ProductPageLayout({
+  platform,
+  title,
+  subtitle,
+  pricingTiers,
+  whyShouldBuy,
+  howToBuy,
+  whyBuyMore,
+  faqs,
+  testimonials,
+}: ProductPageLayoutProps) {
+  const [selectedTier, setSelectedTier] = useState(2);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutTier, setCheckoutTier] = useState<CheckoutTier | null>(null);
+
+  const handleBuyNow = (tier: PricingTier) => {
+    setCheckoutTier({
+      label: tier.followers,
+      volume: tier.followers,
+      price: parseFloat(tier.price),
+      originalPrice: tier.originalPrice ? parseFloat(tier.originalPrice) : parseFloat(tier.price),
+    });
+    setCheckoutOpen(true);
+  };
+
+  return (
+    <>
+      {/* Hero */}
+      <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-indigo-100/30 blur-3xl" />
+        </div>
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-4"
+          >
+            {platform === "instagram" ? "Instagram" : "TikTok"} Growth
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.1]"
+          >
+            {title}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-5 text-base sm:text-lg text-slate-500 leading-relaxed"
+          >
+            {subtitle}
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-12 md:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-10"
+          >
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center mb-1">
+              Select Your Growth Tier
+            </h2>
+            <p className="text-sm text-slate-500 text-center mb-8">
+              Choose the campaign size that matches your visibility goals
+            </p>
+
+            {/* Horizontal scroll on mobile */}
+            <div className="flex md:grid md:grid-cols-5 gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-2 md:mx-0 md:px-0 md:overflow-visible scrollbar-hide">
+              {pricingTiers.map((tier, i) => (
+                <div
+                  key={i}
+                  onClick={() => setSelectedTier(i)}
+                  className={`cursor-pointer flex-shrink-0 w-[40vw] sm:w-[160px] md:w-auto snap-center rounded-2xl p-4 md:p-5 text-center transition-all duration-300 border-2 ${
+                    selectedTier === i
+                      ? "border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-600/15 scale-[1.03]"
+                      : "border-slate-200 bg-white hover:shadow-md hover:border-slate-300"
+                  }`}
+                >
+                  <p className={`text-2xl md:text-3xl font-extrabold ${selectedTier === i ? "text-white" : "text-slate-900"}`}>
+                    {tier.followers}
+                  </p>
+                  <p className={`text-xs mt-1 ${selectedTier === i ? "text-white/70" : "text-slate-500"}`}>
+                    Audience Reach
+                  </p>
+                  <div className="mt-3">
+                    {tier.originalPrice && (
+                      <span className={`text-xs line-through mr-1 ${selectedTier === i ? "text-white/50" : "text-slate-400"}`}>
+                        ${tier.originalPrice}
+                      </span>
+                    )}
+                    <span className={`text-2xl font-extrabold ${selectedTier === i ? "text-white" : "text-slate-900"}`}>
+                      ${tier.price}
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleBuyNow(tier);
+                    }}
+                    className={`mt-4 w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      selectedTier === i
+                        ? "bg-white text-indigo-600 hover:bg-indigo-50"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
+                  >
+                    Activate
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Micro-trust under pricing */}
+            <div className="mt-6 flex items-center justify-center gap-4 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> No password required</span>
+              <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> 100% Safe & Secure</span>
+              <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Instant Deployment</span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Trust Features Row */}
+      <section className="py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {trustFeatures.map((f, i) => (
+              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className="text-center group">
+                <div className="w-11 h-11 mx-auto rounded-xl bg-indigo-50 flex items-center justify-center mb-2 group-hover:bg-indigo-100 transition-colors">
+                  <f.icon className="w-5 h-5 text-indigo-600" />
+                </div>
+                <p className="text-xs font-medium text-slate-700">{f.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Launch */}
+      <section className="py-16 md:py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">
+              {whyShouldBuy.title}
+            </motion.h2>
+            {whyShouldBuy.paragraphs.map((p, i) => (
+              <motion.p key={i} variants={fadeUp} custom={i + 1} className="text-sm sm:text-base text-slate-500 leading-relaxed mb-4 max-w-3xl">
+                {p}
+              </motion.p>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 md:py-24 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-8">
+              {howToBuy.title}
+            </motion.h2>
+            <div className="space-y-4">
+              {howToBuy.paragraphs.map((p, i) => (
+                <motion.div key={i} variants={fadeUp} custom={i + 1} className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-white">{i + 1}</span>
+                  </div>
+                  <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{p}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Why Scale */}
+      <section className="py-16 md:py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">
+              {whyBuyMore.title}
+            </motion.h2>
+            {whyBuyMore.paragraphs.map((p, i) => (
+              <motion.p key={i} variants={fadeUp} custom={i + 1} className="text-sm sm:text-base text-slate-500 leading-relaxed mb-4 max-w-3xl">
+                {p}
+              </motion.p>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 md:py-24 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-12">
+            <motion.p variants={fadeUp} custom={0} className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-3">Testimonials</motion.p>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">What Our Clients Say</motion.h2>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t, i) => (
+              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
+                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
+              >
+                <div className="flex items-center gap-0.5 mb-4">
+                  {[...Array(t.rating)].map((_, si) => (
+                    <Star key={si} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{t.name}</p>
+                  <p className="text-xs text-slate-500">{t.role}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16 md:py-24">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-12">
+            <motion.p variants={fadeUp} custom={0} className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-3">FAQ</motion.p>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Frequently Asked Questions</motion.h2>
+          </motion.div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-200 px-6">
+            {faqs.map((faq, i) => (
+              <FAQAccordionItem key={i} question={faq.question} answer={faq.answer} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Checkout Modal */}
+      {checkoutTier && (
+        <CheckoutModal
+          isOpen={checkoutOpen}
+          onClose={() => setCheckoutOpen(false)}
+          platform={platform}
+          tier={checkoutTier}
+          accentColor={platform === "instagram" ? "#dd2a7b" : "#ee1d52"}
+          accentGradient={
+            platform === "instagram"
+              ? "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)"
+              : "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)"
+          }
+        />
+      )}
+    </>
+  );
+}
