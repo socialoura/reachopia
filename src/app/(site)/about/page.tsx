@@ -61,8 +61,8 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 
 /* ─── FAQ Accordion ─── */
 const faqs = [
-  { q: "Is Views4You safe and compliant?", a: "Yes. Our growth methodology is 100% platform-compliant. We never request passwords or access tokens. All campaigns operate through organic audience targeting via our proprietary network — your account is never at risk." },
-  { q: "How long has Views4You been operating?", a: "Views4You has been engineering social media growth solutions for over 5 years, serving thousands of creators, brands, and agencies worldwide with AI-driven campaign technology." },
+  { q: "Is Reachopia safe and compliant?", a: "Yes. Our growth methodology is 100% platform-compliant. We never request passwords or access tokens. All campaigns operate through organic audience targeting via our proprietary network — your account is never at risk." },
+  { q: "How long has Reachopia been operating?", a: "Reachopia has been engineering social media growth solutions for over 5 years, serving thousands of creators, brands, and agencies worldwide with AI-driven campaign technology." },
   { q: "What is your guarantee policy?", a: "Every campaign includes a performance guarantee. If we fail to deliver the agreed-upon reach metrics, you receive a full refund. We also offer a 30-day retention commitment on all growth tiers." },
   { q: "Which platforms does your AI support?", a: "Our algorithm currently supports Instagram and TikTok growth campaigns. We are actively expanding our audience network to additional platforms." },
 ];
@@ -95,7 +95,7 @@ export default function AboutPage() {
         </div>
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-5">
-            About Views4You
+            About Reachopia
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}

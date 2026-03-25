@@ -276,7 +276,7 @@ export default function TikTokPage() {
               viewport={{ once: true }}
             >
               <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
-                Why Views4You for TikTok
+                Why Reachopia for TikTok
               </motion.p>
               <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
                 Engineered for the

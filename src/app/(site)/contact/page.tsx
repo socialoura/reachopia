@@ -146,8 +146,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-[13px] font-medium text-white">Email Support</p>
-                    <a href="mailto:support@views4you.com" className="text-[14px] text-indigo-400 hover:text-indigo-300 transition-colors">
-                      support@views4you.com
+                    <a href="mailto:support@reachopia.com" className="text-[14px] text-indigo-400 hover:text-indigo-300 transition-colors">
+                      support@reachopia.com
                     </a>
                   </div>
                 </div>

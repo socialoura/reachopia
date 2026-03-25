@@ -37,15 +37,12 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
             <Image
-              src="/images/common/logo-white.png"
-              alt="Views4You"
+              src="/logo.png"
+              alt="Reachopia"
               width={28}
               height={28}
               className="rounded-lg"
             />
-            <span className="text-[17px] font-semibold text-white tracking-tight">
-              Views4You
-            </span>
           </Link>
 
           {/* Desktop nav */}

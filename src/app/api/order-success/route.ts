@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     // 2. Run email + Discord in parallel — neither should block the other
     const [emailResult] = await Promise.allSettled([
       resend.emails.send({
-        from: "Views4You <orders@views4you.com>",
+        from: "Reachopia <orders@reachopia.com>",
         to: [email],
         subject: `Order Confirmed — ${quantity} ${platformLabel} ${service} 🎉`,
         react: OrderConfirmationEmail({ order }),

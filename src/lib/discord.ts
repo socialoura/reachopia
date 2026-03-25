@@ -76,14 +76,14 @@ export async function sendDiscordNotification(
       },
     ],
     footer: {
-      text: "Views4You — Système de commandes",
+      text: "Reachopia — Système de commandes",
     },
     timestamp: new Date().toISOString(),
   };
 
   const payload: DiscordWebhookPayload = {
-    username: "Views4You Orders",
-    avatar_url: "https://views4you.com/images/common/logo.png",
+    username: "Reachopia Orders",
+    avatar_url: "https://reachopia.com/logo.png",
     embeds: [embed],
   };
 

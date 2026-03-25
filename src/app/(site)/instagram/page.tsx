@@ -284,7 +284,7 @@ export default function InstagramPage() {
 
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }}>
               <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#dd2a7b] mb-4">
-                Why Views4You for Instagram
+                Why Reachopia for Instagram
               </motion.p>
               <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
                 Engineered for the

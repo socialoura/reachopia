@@ -71,7 +71,7 @@ export default function AdminShell({
             <LayoutDashboard className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-white font-bold text-lg">Views4You</h2>
+            <h2 className="text-white font-bold text-lg">Reachopia</h2>
             <p className="text-gray-500 text-xs">Admin Panel</p>
           </div>
         </div>

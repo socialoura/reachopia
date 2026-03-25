@@ -52,10 +52,10 @@ export default function OrderConfirmationEmail({
           {/* Header with gradient */}
           <Section style={header}>
             <Img
-              src="https://views4you.com/images/common/logo-white.png"
+              src="https://reachopia.com/logo.png"
               width="180"
               height="48"
-              alt="Views4You"
+              alt="Reachopia"
               style={{ margin: "0 auto" }}
             />
           </Section>
@@ -166,7 +166,7 @@ export default function OrderConfirmationEmail({
             <Text style={ctaText}>
               Need help? Our support team is available 24/7.
             </Text>
-            <Link href="mailto:support@views4you.com" style={ctaButton}>
+            <Link href="mailto:support@reachopia.com" style={ctaButton}>
               Contact Support
             </Link>
           </Section>
@@ -174,7 +174,7 @@ export default function OrderConfirmationEmail({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              © {new Date().getFullYear()} Views4You. All rights reserved.
+              © {new Date().getFullYear()} Reachopia. All rights reserved.
             </Text>
             <Text style={footerSmall}>
               This email was sent to confirm your order. If you did not make this

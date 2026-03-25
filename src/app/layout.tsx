@@ -8,9 +8,9 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Views4You — AI-Powered Organic Growth for Instagram & TikTok",
+  title: "Reachopia — AI-Powered Organic Growth for Instagram & TikTok",
   description:
-    "Accelerate your social media presence with Views4You's proprietary AI audience-targeting engine. Real reach, algorithmic amplification, and measurable momentum for Instagram & TikTok creators and brands.",
+    "Accelerate your social media presence with Reachopia's proprietary AI audience-targeting engine. Real reach, algorithmic amplification, and measurable momentum for Instagram & TikTok creators and brands.",
 };
 
 export default function RootLayout({

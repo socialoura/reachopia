@@ -26,14 +26,14 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5">
               <Image
-                src="/images/common/logo-white.png"
-                alt="Views4You"
+                src="/logo.png"
+                alt="Reachopia"
                 width={24}
                 height={24}
                 className="rounded-md"
               />
               <span className="text-[15px] font-semibold text-white tracking-tight">
-                Views4You
+                Reachopia
               </span>
             </Link>
             <p className="text-[13px] text-zinc-500 leading-relaxed max-w-[260px]">
@@ -99,7 +99,7 @@ export default function Footer() {
 
         <div className="mt-16 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[11px] text-zinc-600">
-            &copy; {new Date().getFullYear()} Views4You. All rights reserved.
+            &copy; {new Date().getFullYear()} Reachopia. All rights reserved.
           </p>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-glow" />

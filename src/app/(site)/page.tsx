@@ -52,7 +52,7 @@ const faqs = [
     a: "Most campaigns begin delivering measurable profile momentum within minutes of activation. Full network amplification completes within 24-72 hours depending on your selected growth tier.",
   },
   {
-    q: "Is my account safe with Views4You?",
+    q: "Is my account safe with Reachopia?",
     a: "Absolutely. We never request your password or login credentials. Our system only requires your public username. All growth methods are 100% compliant with platform guidelines.",
   },
   {
@@ -230,7 +230,7 @@ export default function Home() {
             >
               <Image
                 src="/hero-section.png"
-                alt="Views4You AI Dashboard"
+                alt="Reachopia AI Dashboard"
                 width={1200}
                 height={680}
                 className="w-full h-auto rounded-2xl drop-shadow-[0_20px_50px_rgba(124,58,237,0.15)]"
@@ -550,7 +550,7 @@ export default function Home() {
               custom={1}
               className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed"
             >
-              Join 50,000+ creators and brands using Views4You&apos;s AI engine
+              Join 50,000+ creators and brands using Reachopia&apos;s AI engine
               to build unstoppable social momentum.
             </motion.p>
             <motion.div variants={fadeUp} custom={2} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

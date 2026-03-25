@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: "Views4You Support",
-        avatar_url: "https://views4you.com/images/common/logo.png",
+        username: "Reachopia Support",
+        avatar_url: "https://reachopia.com/logo.png",
         embeds: [
           {
             title: "📩 Nouvelle demande de support client",
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
               },
             ],
             footer: {
-              text: "Views4You — Support Widget",
+              text: "Reachopia — Support Widget",
             },
             timestamp: new Date().toISOString(),
           },
