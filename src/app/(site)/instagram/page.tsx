@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import CheckoutModal from "@/components/ui/CheckoutModal";
 import type { CheckoutTier } from "@/components/ui/CheckoutModal";
+import { toCheckoutTiers } from "@/lib/pricing-utils";
 
 /* ─── Custom Instagram Icon ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -43,20 +44,9 @@ const fadeUp = {
   }),
 };
 
-/* ─── 8 Pricing Tiers ─── */
+/* ─── Styling Constants ─── */
 const IG_ACCENT = "#dd2a7b";
 const IG_GRADIENT = "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)";
-
-const igTiers: CheckoutTier[] = [
-  { label: "500",  volume: "500",     price: 3.99,   originalPrice: 5.99   },
-  { label: "1K",   volume: "1,000",   price: 6.99,   originalPrice: 9.99   },
-  { label: "2.5K", volume: "2,500",   price: 14.99,  originalPrice: 21.99  },
-  { label: "5K",   volume: "5,000",   price: 24.99,  originalPrice: 36.99  },
-  { label: "10K",  volume: "10,000",  price: 44.99,  originalPrice: 64.99  },
-  { label: "20K",  volume: "20,000",  price: 79.99,  originalPrice: 114.99 },
-  { label: "50K",  volume: "50,000",  price: 169.99, originalPrice: 249.99 },
-  { label: "100K", volume: "100,000", price: 299.99, originalPrice: 449.99 },
-];
 
 /* ─── FAQ Data ─── */
 const faqs = [
@@ -115,7 +105,21 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    ═══════════════════════════════════════════════════════════════ */
 export default function InstagramPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<CheckoutTier>(igTiers[3]);
+  const [igTiers, setIgTiers] = useState<CheckoutTier[]>([]);
+  const [selectedTier, setSelectedTier] = useState<CheckoutTier | null>(null);
+
+  useEffect(() => {
+    fetch("/api/pricing")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.instagram) {
+          const tiers = toCheckoutTiers(data.instagram);
+          setIgTiers(tiers);
+          setSelectedTier(tiers[Math.min(3, tiers.length - 1)] || tiers[0]);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handlePackClick = (tier: CheckoutTier) => {
     setSelectedTier(tier);
@@ -380,14 +384,16 @@ export default function InstagramPage() {
       </section>
 
       {/* ── Checkout Modal ── */}
-      <CheckoutModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        platform="instagram"
-        tier={selectedTier}
-        accentColor={IG_ACCENT}
-        accentGradient={IG_GRADIENT}
-      />
+      {selectedTier && (
+        <CheckoutModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          platform="instagram"
+          tier={selectedTier}
+          accentColor={IG_ACCENT}
+          accentGradient={IG_GRADIENT}
+        />
+      )}
     </>
   );
 }
