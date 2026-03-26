@@ -10,10 +10,27 @@ interface Tier {
   price: string;
 }
 
+interface DownsellConfig {
+  reachAmount: number;
+  price: number;
+  currency: string;
+  ctaLabel: string;
+  enabled: boolean;
+}
+
 interface PricingData {
   instagram: Tier[];
   tiktok: Tier[];
+  downsell?: DownsellConfig;
 }
+
+const DEFAULT_DOWNSELL: DownsellConfig = {
+  reachAmount: 100,
+  price: 1.90,
+  currency: "$",
+  ctaLabel: "Claim My Trial Pack",
+  enabled: true,
+};
 
 export default function AdminPricingPage() {
   const [pricing, setPricing] = useState<PricingData | null>(null);
@@ -97,6 +114,78 @@ export default function AdminPricingPage() {
     const updated = { ...pricing };
     updated[platform] = updated[platform].filter((_, i) => i !== index);
     setPricing(updated);
+  };
+
+  const updateDownsell = (field: keyof DownsellConfig, value: string | number | boolean) => {
+    if (!pricing) return;
+    setPricing({
+      ...pricing,
+      downsell: { ...(pricing.downsell ?? DEFAULT_DOWNSELL), [field]: value },
+    });
+  };
+
+  const renderDownsellSection = () => {
+    const ds = pricing?.downsell ?? DEFAULT_DOWNSELL;
+    return (
+      <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-6 lg:col-span-2">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⚡</span>
+            <h3 className="text-lg font-semibold text-white">Exit-Intent Downsell</h3>
+          </div>
+          <button
+            onClick={() => updateDownsell("enabled", !ds.enabled)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${ds.enabled ? "bg-indigo-500" : "bg-white/10"}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${ds.enabled ? "translate-x-5" : ""}`} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Reach Amount</label>
+            <input
+              type="number"
+              value={ds.reachAmount}
+              onChange={(e) => updateDownsell("reachAmount", parseInt(e.target.value) || 0)}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Price</label>
+            <input
+              type="number"
+              step="0.01"
+              value={ds.price}
+              onChange={(e) => updateDownsell("price", parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Currency</label>
+            <input
+              type="text"
+              value={ds.currency}
+              onChange={(e) => updateDownsell("currency", e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">CTA Label</label>
+            <input
+              type="text"
+              value={ds.ctaLabel}
+              onChange={(e) => updateDownsell("ctaLabel", e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <p className="mt-4 text-xs text-gray-600">
+          Shown when a user tries to close the pricing modal. The trial offer is a last-chance conversion tool.
+        </p>
+      </div>
+    );
   };
 
   const renderPlatformSection = (
@@ -233,6 +322,7 @@ export default function AdminPricingPage() {
               Music,
               "text-cyan-400"
             )}
+            {renderDownsellSection()}
           </div>
         ) : (
           <p className="text-gray-400 text-center py-24">

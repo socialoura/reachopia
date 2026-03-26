@@ -209,7 +209,6 @@ export default function ProductPageLayout({
 
             {/* Micro-trust under pricing */}
             <div className="mt-6 flex items-center justify-center gap-4 text-[10px] text-slate-400">
-              <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> No password required</span>
               <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> 100% Safe & Secure</span>
               <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> Instant Deployment</span>
             </div>

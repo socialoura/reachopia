@@ -193,10 +193,27 @@ export interface PricingTier {
   price: string;
 }
 
+export interface DownsellConfig {
+  reachAmount: number;
+  price: number;
+  currency: string;
+  ctaLabel: string;
+  enabled: boolean;
+}
+
 export interface PricingData {
   instagram: PricingTier[];
   tiktok: PricingTier[];
+  downsell?: DownsellConfig;
 }
+
+const DEFAULT_DOWNSELL: DownsellConfig = {
+  reachAmount: 100,
+  price: 1.90,
+  currency: "$",
+  ctaLabel: "Claim My Trial Pack",
+  enabled: true,
+};
 
 const DEFAULT_PRICING: PricingData = {
   instagram: [
@@ -219,7 +236,12 @@ const DEFAULT_PRICING: PricingData = {
     { followers: "10000", price: "99.90" },
     { followers: "25000", price: "175.00" },
   ],
+  downsell: DEFAULT_DOWNSELL,
 };
+
+export function getDefaultDownsell(): DownsellConfig {
+  return DEFAULT_DOWNSELL;
+}
 
 export function getDefaultPricing(): PricingData {
   return DEFAULT_PRICING;

@@ -361,7 +361,7 @@ export default function AboutPage() {
               </Link>
             </motion.div>
             <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
-              No password required · Stripe secured · Results guaranteed
+              Stripe secured · Results guaranteed
             </motion.p>
           </motion.div>
         </div>

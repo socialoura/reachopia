@@ -28,7 +28,7 @@ import { toCheckoutTiers } from "@/lib/pricing-utils";
 function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.46v-7.15a8.16 8.16 0 005.58 2.18v-3.45a4.81 4.81 0 01-3.77-1.82V6.69z" />
+      <path d="M16.6 5.82A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z" />
     </svg>
   );
 }
@@ -156,7 +156,7 @@ export default function TikTokPage() {
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }} className="mt-4 text-center text-[14px] sm:text-[16px] text-zinc-400 leading-relaxed max-w-lg mx-auto">
             Tap a volume to instantly configure your viral campaign.
-            No password needed. Results guaranteed.
+            Results guaranteed.
           </motion.p>
 
           {/* ── 8-Pack Grid ── */}
@@ -181,7 +181,6 @@ export default function TikTokPage() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.6 }} className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-600">
-            <span className="flex items-center gap-1.5"><Lock className="w-3 h-3" /> No password needed</span>
             <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> Stripe secured</span>
             <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant activation</span>
           </motion.div>
@@ -401,7 +400,7 @@ export default function TikTokPage() {
               </Link>
             </motion.div>
             <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
-              No password required · Stripe secured · Results guaranteed
+              Stripe secured · Results guaranteed
             </motion.p>
           </motion.div>
         </div>

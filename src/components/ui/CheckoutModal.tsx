@@ -29,6 +29,7 @@ export interface CheckoutModalProps {
   tier: CheckoutTier;
   accentColor: string;
   accentGradient: string;
+  username?: string;
 }
 
 const stripePromise = loadStripe(
@@ -165,7 +166,7 @@ function PaymentForm({
 
 /* ═══════════════════════════════════════════════════════════════
    CHECKOUT MODAL — 3-step in-modal payment
-   Step 1: Username + Email
+   Step 1: Email (username pre-filled from tunnel)
    Step 2: Stripe PaymentElement (card/Apple Pay/Google Pay)
    Step 3: Success
    ═══════════════════════════════════════════════════════════════ */
@@ -176,9 +177,10 @@ export default function CheckoutModal({
   tier,
   accentColor,
   accentGradient,
+  username: prefillUsername = "",
 }: CheckoutModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [username, setUsername] = useState("");
+  const [username] = useState(prefillUsername);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -200,7 +202,6 @@ export default function CheckoutModal({
 
   const resetAndClose = useCallback(() => {
     setStep(1);
-    setUsername("");
     setEmail("");
     setError(null);
     setLoading(false);
@@ -211,7 +212,7 @@ export default function CheckoutModal({
   // Step 1 → Step 2: create PaymentIntent, get clientSecret
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !email.trim()) return;
+    if (!email.trim()) return;
 
     setLoading(true);
     setError(null);
@@ -370,20 +371,13 @@ export default function CheckoutModal({
               {/* ── Step 1: Username + Email ── */}
               {step === 1 && (
                 <form onSubmit={handleInfoSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                      @Username or Profile URL
-                    </label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder={`@your${platform}handle`}
-                      required
-                      className="w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[14px] text-white placeholder:text-zinc-600 focus:border-white/[0.2] focus:ring-2 focus:outline-none transition-all"
-                      style={{ ["--tw-ring-color" as string]: `${accentColor}30` } as React.CSSProperties}
-                    />
-                  </div>
+                  {/* Username from tunnel (read-only display) */}
+                  {username && (
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                      <span className="text-[12px] font-medium text-zinc-500">Account</span>
+                      <span className="text-[14px] font-semibold text-white">@{username}</span>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-[12px] font-medium text-zinc-400 mb-2">
@@ -406,7 +400,7 @@ export default function CheckoutModal({
 
                   <button
                     type="submit"
-                    disabled={loading || !username.trim() || !email.trim()}
+                    disabled={loading || !email.trim()}
                     className="shine relative w-full py-4 rounded-2xl text-[14px] font-semibold text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2"
                     style={{ background: accentGradient }}
                   >

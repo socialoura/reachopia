@@ -49,10 +49,6 @@ export default function StickyBottomCTA() {
             </Link>
             <div className="flex items-center justify-center gap-5 mt-2.5">
               <span className="flex items-center gap-1 text-[10px] text-zinc-500">
-                <Lock className="w-3 h-3" />
-                No password required
-              </span>
-              <span className="flex items-center gap-1 text-[10px] text-zinc-500">
                 <Shield className="w-3 h-3" />
                 Stripe Secured
               </span>

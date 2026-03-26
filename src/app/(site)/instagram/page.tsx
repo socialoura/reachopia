@@ -172,7 +172,7 @@ export default function InstagramPage() {
             className="mt-4 text-center text-[14px] sm:text-[16px] text-zinc-400 leading-relaxed max-w-lg mx-auto"
           >
             Tap a volume to instantly configure your growth campaign.
-            No password needed. Results guaranteed.
+            Results guaranteed.
           </motion.p>
 
           {/* ── 8-Pack Grid ── */}
@@ -216,9 +216,6 @@ export default function InstagramPage() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-600"
           >
-            <span className="flex items-center gap-1.5">
-              <Lock className="w-3 h-3" /> No password needed
-            </span>
             <span className="flex items-center gap-1.5">
               <Shield className="w-3 h-3" /> Stripe secured
             </span>
@@ -377,7 +374,7 @@ export default function InstagramPage() {
               </Link>
             </motion.div>
             <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
-              No password required · Stripe secured · Results guaranteed
+              Stripe secured · Results guaranteed
             </motion.p>
           </motion.div>
         </div>
