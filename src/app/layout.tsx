@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import TopAnnouncementBar from "@/components/ui/TopAnnouncementBar";
+import Navbar from "@/components/layout/Navbar";
+import { CurrencyProvider } from "@/context/CurrencyContext";
+import { PostHogProvider } from "@/components/PostHogProvider";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -24,7 +29,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-black text-white">
-        {children}
+        <GoogleAnalytics />
+        <PostHogProvider>
+          <CurrencyProvider>
+            <TopAnnouncementBar />
+            <Navbar />
+            {children}
+          </CurrencyProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

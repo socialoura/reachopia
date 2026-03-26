@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const navLinks = [
   { label: "Instagram", href: "/instagram" },
@@ -26,7 +27,7 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`sticky top-0 left-0 right-0 z-40 transition-all duration-500 ${
         scrolled
           ? "bg-black/60 backdrop-blur-2xl border-b border-white/[0.06]"
           : "bg-transparent"
@@ -60,6 +61,7 @@ export default function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
+            <CurrencySelector />
             <Link
               href="/instagram"
               className="shine inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-[13px] font-semibold hover:bg-zinc-100 transition-colors"
@@ -101,7 +103,11 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-4 mt-2 border-t border-white/[0.06]">
+              <div className="pt-4 mt-2 border-t border-white/[0.06] space-y-3">
+                <div className="flex items-center justify-between px-4">
+                  <span className="text-[13px] text-zinc-500">Currency</span>
+                  <CurrencySelector />
+                </div>
                 <Link
                   href="/instagram"
                   onClick={() => setMobileOpen(false)}

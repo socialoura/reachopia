@@ -23,6 +23,8 @@ import {
 import CheckoutModal from "@/components/ui/CheckoutModal";
 import type { CheckoutTier } from "@/components/ui/CheckoutModal";
 import { toCheckoutTiers } from "@/lib/pricing-utils";
+import { useCurrency } from "@/context/CurrencyContext";
+import { usePostHog } from "posthog-js/react";
 
 /* ─── TikTok Icon ─── */
 function TikTokIcon({ className }: { className?: string }) {
@@ -103,6 +105,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    TIKTOK PRODUCT PAGE
    ═══════════════════════════════════════════════════════════════ */
 export default function TikTokPage() {
+  const posthog = usePostHog();
+  const { currency, symbol: currencySymbol } = useCurrency();
   const [modalOpen, setModalOpen] = useState(false);
   const [ttTiers, setTtTiers] = useState<CheckoutTier[]>([]);
   const [selectedTier, setSelectedTier] = useState<CheckoutTier | null>(null);
@@ -112,15 +116,16 @@ export default function TikTokPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.tiktok) {
-          const tiers = toCheckoutTiers(data.tiktok);
+          const tiers = toCheckoutTiers(data.tiktok, currency);
           setTtTiers(tiers);
           setSelectedTier(tiers[Math.min(3, tiers.length - 1)] || tiers[0]);
         }
       })
       .catch(console.error);
-  }, []);
+  }, [currency]);
 
   const handlePackClick = (tier: CheckoutTier) => {
+    posthog?.capture("package_selected", { volume: tier.volume, price: tier.price, network: "tiktok" });
     setSelectedTier(tier);
     setModalOpen(true);
   };
@@ -174,8 +179,8 @@ export default function TikTokPage() {
                 )}
                 <span className="block text-[20px] sm:text-[22px] font-semibold text-white tracking-tight group-hover:text-white/90 transition-colors">{tier.label}</span>
                 <span className="block mt-0.5 text-[10px] font-medium text-[#69C9D0]/70 group-hover:text-[#69C9D0] transition-colors">AI Reach</span>
-                <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">${tier.price.toFixed(2)}</span>
-                <span className="block text-[11px] text-zinc-600 line-through">${tier.originalPrice.toFixed(2)}</span>
+                <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">{currencySymbol}{tier.price.toFixed(2)}</span>
+                <span className="block text-[11px] text-zinc-600 line-through">{currencySymbol}{tier.originalPrice.toFixed(2)}</span>
               </button>
             ))}
           </motion.div>
@@ -415,6 +420,7 @@ export default function TikTokPage() {
           tier={selectedTier}
           accentColor={TT_ACCENT}
           accentGradient={TT_GRADIENT}
+          currencySymbol={currencySymbol}
         />
       )}
     </>

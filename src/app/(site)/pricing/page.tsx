@@ -21,6 +21,8 @@ import { toCheckoutTiers } from "@/lib/pricing-utils";
 import UserProfileBadge from "@/components/UserProfileBadge";
 import { useSocialProfile } from "@/hooks/useSocialProfile";
 import { downsellConfig as defaultDownsellConfig, SOCIAL_PROOF_NAMES } from "@/config/pricing";
+import { useCurrency } from "@/context/CurrencyContext";
+import { usePostHog } from "posthog-js/react";
 
 /* ─── Custom Icons ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -123,20 +125,12 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-/* ─── PostHog helper (no-op if not installed) ─── */
-function track(event: string, props?: Record<string, unknown>) {
-  try {
-    const w = window as unknown as { posthog?: { capture: (e: string, p?: Record<string, unknown>) => void } };
-    w.posthog?.capture(event, props);
-  } catch {
-    /* posthog not loaded — silently ignore */
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════════
    ENGAGEMENT TUNNEL PAGE
    ═══════════════════════════════════════════════════════════════ */
 export default function GrowthAnalyzerPage() {
+  const posthog = usePostHog();
+  const { currency, symbol: currencySymbol } = useCurrency();
   /* ── Tunnel state: "input" → "scanning" → "results" ── */
   const [step, setStep] = useState<"input" | "scanning" | "results">("input");
   const [platform, setPlatform] = useState<Platform>("instagram");
@@ -178,7 +172,8 @@ export default function GrowthAnalyzerPage() {
     setStep("scanning");
     setScanMsg(SCAN_MESSAGES[0]);
 
-    track("username_submitted", { username: clean, platform });
+    posthog?.capture("analyze_profile_started", { username: clean, network: platform });
+    posthog?.people?.set({ username: clean });
 
     /* Fetch tiers + downsell + social profile in parallel with the scanning animation */
     const fetchTiers = fetch("/api/pricing")
@@ -189,7 +184,7 @@ export default function GrowthAnalyzerPage() {
           setDownsellData(data.downsell);
         }
         const raw = platform === "instagram" ? data.instagram : data.tiktok;
-        return raw ? toCheckoutTiers(raw) : [];
+        return raw ? toCheckoutTiers(raw, currency) : [];
       })
       .catch(() => [] as CheckoutTier[]);
 
@@ -202,9 +197,9 @@ export default function GrowthAnalyzerPage() {
     Promise.all([fetchTiers, timerPromise]).then(([fetched]) => {
       setTiers(fetched as CheckoutTier[]);
       setStep("results");
-      track("results_modal_viewed", { username: clean, platform });
+      posthog?.capture("pricing_displayed", { network: platform });
     });
-  }, [username, platform]);
+  }, [username, platform, currency]);
 
   /* ── Handle Enter key ── */
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -219,6 +214,7 @@ export default function GrowthAnalyzerPage() {
   };
 
   const handleSelectTier = (tier: CheckoutTier) => {
+    posthog?.capture("package_selected", { volume: tier.volume, price: tier.price, network: platform });
     setSelectedTier(tier);
     setCheckoutOpen(true);
   };
@@ -377,6 +373,7 @@ export default function GrowthAnalyzerPage() {
           onSelectTier={handleSelectTier}
           onClose={closeResults}
           downsell={downsellData}
+          currencySymbol={currencySymbol}
         />
       )}
 
@@ -448,6 +445,7 @@ export default function GrowthAnalyzerPage() {
           accentColor={accent.primary}
           accentGradient={accent.gradient}
           username={username}
+          currencySymbol={currencySymbol}
         />
       )}
     </>
@@ -526,6 +524,7 @@ function ResultsModal({
   onSelectTier,
   onClose,
   downsell,
+  currencySymbol,
 }: {
   username: string;
   platform: Platform;
@@ -534,7 +533,9 @@ function ResultsModal({
   onSelectTier: (t: CheckoutTier) => void;
   onClose: () => void;
   downsell: import("@/config/pricing").DownsellConfig;
+  currencySymbol: string;
 }) {
+  const posthog = usePostHog();
   const [showDownsell, setShowDownsell] = useState(false);
   const { profile } = useSocialProfile(username, platform);
   const followersCount = profile?.followersCount ?? null;
@@ -542,8 +543,10 @@ function ResultsModal({
   /* ── Exit-intent: first close attempt → downsell (only if enabled) ── */
   const handleClose = () => {
     if (downsell.enabled && !showDownsell) {
+      posthog?.capture("exit_intent_triggered", { network: platform, username });
       setShowDownsell(true);
     } else {
+      posthog?.capture("exit_intent_dismissed", { network: platform, username });
       setShowDownsell(false);
       onClose();
     }
@@ -555,6 +558,12 @@ function ResultsModal({
 
   /* ── Downsell: activate trial pack ── */
   const handleDownsellAccept = () => {
+    posthog?.capture("exit_intent_accepted", {
+      network: platform,
+      username,
+      downsell_price: downsell.price,
+      downsell_reach: downsell.reachAmount,
+    });
     const trialTier: CheckoutTier = {
       label: `+${downsell.reachAmount}`,
       volume: downsell.reachAmount.toLocaleString("en-US"),
@@ -577,11 +586,11 @@ function ResultsModal({
         initial={{ opacity: 0, scale: 0.9, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
-        className="relative w-full max-w-3xl max-h-[85dvh] overflow-y-auto rounded-3xl bg-zinc-950 border border-white/[0.08] p-4 sm:p-8"
+        className="relative w-full max-w-3xl max-h-[85dvh] flex flex-col rounded-3xl bg-zinc-950 border border-white/[0.08] overflow-hidden"
       >
-        {/* Close button */}
-        <button onClick={handleClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/[0.06] transition-colors text-zinc-500 hover:text-white z-10">
-          <X className="w-5 h-5" />
+        {/* Close button - sticky */}
+        <button onClick={handleClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/[0.06] transition-colors text-zinc-500 hover:text-white z-20">
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         <AnimatePresence mode="wait">
@@ -606,7 +615,7 @@ function ResultsModal({
               <p className="mt-4 text-[15px] text-zinc-400 leading-relaxed max-w-sm mx-auto">
                 Test our AI power with a <span className="font-semibold text-white">Trial Pack</span>.{" "}
                 <span className="font-semibold text-white">+{downsell.reachAmount} Reach</span> for only{" "}
-                <span className="font-bold text-white">{downsell.currency}{downsell.price.toFixed(2)}</span>.
+                <span className="font-bold text-white">{currencySymbol}{downsell.price.toFixed(2)}</span>.
               </p>
 
               {followersCount != null && (
@@ -623,7 +632,7 @@ function ResultsModal({
                 className="shine mt-8 w-full max-w-xs py-4 rounded-2xl text-[15px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
                 style={{ background: accent.gradient }}
               >
-                {downsell.ctaLabel || `Claim Trial — ${downsell.currency}${downsell.price.toFixed(2)}`}
+                {downsell.ctaLabel || `Claim Trial — ${currencySymbol}${downsell.price.toFixed(2)}`}
               </button>
               <button
                 onClick={() => { setShowDownsell(false); onClose(); }}
@@ -640,37 +649,39 @@ function ResultsModal({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.35 }}
+              className="flex flex-col h-full overflow-hidden"
             >
-              {/* Personalized header */}
-              <div className="flex flex-col items-center mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[12px] font-medium text-emerald-400">Analysis Complete</span>
+              {/* Personalized header - sticky */}
+              <div className="flex-shrink-0 flex flex-col items-center px-4 pt-4 pb-3 sm:px-8 sm:pt-6 sm:pb-4 bg-zinc-950">
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3 sm:mb-4">
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] sm:text-[12px] font-medium text-emerald-400">Analysis Complete</span>
                 </div>
 
                 {/* Live profile badge */}
-                <div className="mb-5">
-                  <UserProfileBadge username={username} platform={platform} showFollowers size="lg" />
+                <div className="mb-3 sm:mb-4">
+                  <UserProfileBadge username={username} platform={platform} showFollowers size="md" />
                 </div>
 
-                <h2 className="text-[clamp(1.3rem,4vw,2rem)] font-semibold text-white tracking-tight text-center">
+                <h2 className="text-[1.1rem] sm:text-[1.5rem] lg:text-[2rem] font-semibold text-white tracking-tight text-center px-2">
                   Great news for{" "}
                   <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
                     @{username}
                   </span>
                   !
                 </h2>
-                <p className="mt-3 text-[14px] sm:text-[15px] text-zinc-400 max-w-md mx-auto text-center">
+                <p className="mt-2 sm:mt-3 text-[12px] sm:text-[14px] lg:text-[15px] text-zinc-400 max-w-md mx-auto text-center px-2">
                   Our AI is ready to amplify your {platform === "instagram" ? "Instagram" : "TikTok"} followers. Choose your campaign budget below.
                 </p>
               </div>
 
 
-              {/* Tier cards */}
-              {tiers.length === 0 ? (
-                <p className="text-center text-zinc-500 py-10">Campaign data unavailable. Please try again later.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {/* Tier cards - scrollable area */}
+              <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-8 sm:py-4">
+                {tiers.length === 0 ? (
+                  <p className="text-center text-zinc-500 py-10">Campaign data unavailable. Please try again later.</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                   {tiers.map((tier, i) => {
                     const isPopular = i === Math.min(3, tiers.length - 1);
                     const packAmount = parseVolume(tier.volume);
@@ -682,7 +693,7 @@ function ResultsModal({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05, duration: 0.4 }}
                         onClick={() => onSelectTier(tier)}
-                        className={`group relative rounded-2xl p-3 sm:p-4 text-center border transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] ${
+                        className={`group relative rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 text-center border transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] ${
                           isPopular
                             ? "border-white/[0.15] bg-white/[0.05]"
                             : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05]"
@@ -690,39 +701,42 @@ function ResultsModal({
                         style={isPopular ? { borderColor: `${accent.primary}50`, boxShadow: `0 12px 40px -8px ${accent.primary}20` } : undefined}
                       >
                         {isPopular && (
-                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider text-white whitespace-nowrap" style={{ background: accent.gradient }}>
+                          <span className="absolute -top-2 sm:-top-2.5 left-1/2 -translate-x-1/2 px-2 sm:px-3 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-white whitespace-nowrap" style={{ background: accent.gradient }}>
                             Popular
                           </span>
                         )}
-                        <span className="block text-[18px] sm:text-[22px] font-semibold text-white tracking-tight">{tier.label}</span>
-                        <span className="block mt-0.5 text-[9px] font-medium" style={{ color: `${accent.primary}99` }}>AI Reach</span>
-                        <span className="block mt-1.5 text-[16px] font-semibold text-zinc-200 group-hover:text-white transition-colors">${tier.price.toFixed(2)}</span>
-                        <span className="block text-[10px] text-zinc-600 line-through">${tier.originalPrice.toFixed(2)}</span>
+                        <span className="block text-[16px] sm:text-[20px] lg:text-[24px] font-semibold text-white tracking-tight">{tier.label}</span>
+                        <span className="block mt-0.5 text-[8px] sm:text-[9px] font-medium" style={{ color: `${accent.primary}99` }}>AI Reach</span>
+                        <span className="block mt-1 sm:mt-1.5 text-[15px] sm:text-[17px] font-semibold text-zinc-200 group-hover:text-white transition-colors">{currencySymbol}{tier.price.toFixed(2)}</span>
+                        <span className="block text-[9px] sm:text-[10px] text-zinc-600 line-through">{currencySymbol}{tier.originalPrice.toFixed(2)}</span>
 
                         {/* Projection: You'll reach X followers */}
                         {projectedTotal != null && (
-                          <div className="mt-2 px-1.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                            <div className="text-[8px] text-zinc-600 mb-0.5">You'll reach</div>
+                          <div className="mt-1.5 sm:mt-2 px-1 sm:px-1.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                            <div className="text-[7px] sm:text-[8px] text-zinc-600 mb-0.5">You'll reach</div>
                             <div className="flex items-center justify-center gap-0.5">
-                              <TrendingUp className="w-2.5 h-2.5" style={{ color: accent.primary }} />
-                              <span className="text-[12px] font-bold text-white">{formatProjection(projectedTotal)} followers</span>
+                              <TrendingUp className="w-2 h-2 sm:w-2.5 sm:h-2.5" style={{ color: accent.primary }} />
+                              <span className="text-[10px] sm:text-[12px] font-bold text-white truncate">{formatProjection(projectedTotal)} followers</span>
                             </div>
                           </div>
                         )}
 
-                        <span className="mt-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium" style={{ color: accent.primary }}>
-                          Select <ArrowRight className="w-2.5 h-2.5" />
+                        <span className="mt-1 sm:mt-1.5 inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-medium" style={{ color: accent.primary }}>
+                          Select <ArrowRight className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                         </span>
                       </motion.button>
                     );
                   })}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
 
-              {/* Trust bar */}
-              <div className="mt-6 flex items-center justify-center gap-3 flex-wrap text-[10px] text-zinc-600">
-                <span className="flex items-center gap-0.5"><Shield className="w-2.5 h-2.5" /> Stripe secured</span>
-                <Image src="/badges_paiement.png" alt="Accepted payment methods" width={200} height={24} className="h-5 w-auto object-contain opacity-60" />
+              {/* Trust bar - sticky bottom */}
+              <div className="flex-shrink-0 px-4 py-3 sm:px-8 sm:py-4 bg-zinc-950 border-t border-white/[0.06]">
+                <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-[9px] sm:text-[10px] text-zinc-600">
+                  <span className="flex items-center gap-0.5"><Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> Stripe secured</span>
+                  <Image src="/badges_paiement.png" alt="Accepted payment methods" width={160} height={20} className="h-4 sm:h-5 w-auto object-contain opacity-60" />
+                </div>
               </div>
             </motion.div>
           )}

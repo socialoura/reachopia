@@ -1,0 +1,76 @@
+/* ═══════════════════════════════════════════════════════════════
+   CurrencyContext — Global currency state from geo-detected cookie.
+   Reads `user_currency` cookie set by middleware.ts.
+   Exposes currency code, symbol, and a manual override function.
+   SSR-safe: renders with default currency until hydrated.
+   ═══════════════════════════════════════════════════════════════ */
+
+"use client";
+
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import {
+  CURRENCY_MAP,
+  DEFAULT_CURRENCY,
+  SUPPORTED_CURRENCIES,
+  type CurrencyCode,
+  type CurrencyInfo,
+} from "@/config/pricing";
+
+interface CurrencyContextValue {
+  currency: CurrencyCode;
+  symbol: string;
+  info: CurrencyInfo;
+  setCurrency: (code: CurrencyCode) => void;
+}
+
+const CurrencyContext = createContext<CurrencyContextValue>({
+  currency: DEFAULT_CURRENCY,
+  symbol: CURRENCY_MAP[DEFAULT_CURRENCY].symbol,
+  info: CURRENCY_MAP[DEFAULT_CURRENCY],
+  setCurrency: () => {},
+});
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name: string, value: string, days: number) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function isValidCurrency(code: string | null): code is CurrencyCode {
+  return code !== null && (SUPPORTED_CURRENCIES as readonly string[]).includes(code);
+}
+
+export function CurrencyProvider({ children }: { children: ReactNode }) {
+  const [currency, setCurrencyState] = useState<CurrencyCode>(DEFAULT_CURRENCY);
+
+  // Read cookie on mount (client-only)
+  useEffect(() => {
+    const saved = getCookie("user_currency");
+    if (isValidCurrency(saved)) {
+      setCurrencyState(saved);
+    }
+  }, []);
+
+  // Manual override: update state + persist to cookie
+  const setCurrency = useCallback((code: CurrencyCode) => {
+    setCurrencyState(code);
+    setCookie("user_currency", code, 30);
+  }, []);
+
+  const info = CURRENCY_MAP[currency];
+
+  return (
+    <CurrencyContext.Provider value={{ currency, symbol: info.symbol, info, setCurrency }}>
+      {children}
+    </CurrencyContext.Provider>
+  );
+}
+
+export function useCurrency() {
+  return useContext(CurrencyContext);
+}

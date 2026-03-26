@@ -22,6 +22,8 @@ import {
 import CheckoutModal from "@/components/ui/CheckoutModal";
 import type { CheckoutTier } from "@/components/ui/CheckoutModal";
 import { toCheckoutTiers } from "@/lib/pricing-utils";
+import { useCurrency } from "@/context/CurrencyContext";
+import { usePostHog } from "posthog-js/react";
 
 /* ─── Custom Instagram Icon ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -104,6 +106,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    INSTAGRAM PRODUCT PAGE
    ═══════════════════════════════════════════════════════════════ */
 export default function InstagramPage() {
+  const posthog = usePostHog();
+  const { currency, symbol: currencySymbol } = useCurrency();
   const [modalOpen, setModalOpen] = useState(false);
   const [igTiers, setIgTiers] = useState<CheckoutTier[]>([]);
   const [selectedTier, setSelectedTier] = useState<CheckoutTier | null>(null);
@@ -113,15 +117,16 @@ export default function InstagramPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.instagram) {
-          const tiers = toCheckoutTiers(data.instagram);
+          const tiers = toCheckoutTiers(data.instagram, currency);
           setIgTiers(tiers);
           setSelectedTier(tiers[Math.min(3, tiers.length - 1)] || tiers[0]);
         }
       })
       .catch(console.error);
-  }, []);
+  }, [currency]);
 
   const handlePackClick = (tier: CheckoutTier) => {
+    posthog?.capture("package_selected", { volume: tier.volume, price: tier.price, network: "instagram" });
     setSelectedTier(tier);
     setModalOpen(true);
   };
@@ -200,10 +205,10 @@ export default function InstagramPage() {
                   AI Reach
                 </span>
                 <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">
-                  ${tier.price.toFixed(2)}
+                  {currencySymbol}{tier.price.toFixed(2)}
                 </span>
                 <span className="block text-[11px] text-zinc-600 line-through">
-                  ${tier.originalPrice.toFixed(2)}
+                  {currencySymbol}{tier.originalPrice.toFixed(2)}
                 </span>
               </button>
             ))}
@@ -389,6 +394,7 @@ export default function InstagramPage() {
           tier={selectedTier}
           accentColor={IG_ACCENT}
           accentGradient={IG_GRADIENT}
+          currencySymbol={currencySymbol}
         />
       )}
     </>

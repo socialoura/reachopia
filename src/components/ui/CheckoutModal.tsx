@@ -11,6 +11,8 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { X, Lock, Shield, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { trackGoogleAdsPurchase } from "@/lib/track-google-ads";
 
 /* ═══════════════════════════════════════════════════════════════
    TYPES
@@ -30,6 +32,7 @@ export interface CheckoutModalProps {
   accentColor: string;
   accentGradient: string;
   username?: string;
+  currencySymbol?: string;
 }
 
 const stripePromise = loadStripe(
@@ -45,12 +48,14 @@ function PaymentForm({
   accentGradient,
   accentColor,
   price,
+  currencySymbol,
 }: {
   onSuccess: () => void;
   onBack: () => void;
   accentGradient: string;
   accentColor: string;
   price: number;
+  currencySymbol: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -153,7 +158,7 @@ function PaymentForm({
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                Pay ${price.toFixed(2)}
+                Pay {currencySymbol}{price.toFixed(2)}
                 <Lock className="w-3.5 h-3.5" />
               </>
             )}
@@ -178,6 +183,7 @@ export default function CheckoutModal({
   accentColor,
   accentGradient,
   username: prefillUsername = "",
+  currencySymbol = "$",
 }: CheckoutModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [username] = useState(prefillUsername);
@@ -186,6 +192,7 @@ export default function CheckoutModal({
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+  const posthog = usePostHog();
   const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
 
   // Lock body scroll when modal is open
@@ -217,6 +224,14 @@ export default function CheckoutModal({
     setLoading(true);
     setError(null);
 
+    posthog?.capture("checkout_submitted", {
+      volume: tier.volume,
+      price: tier.price,
+      email: email.trim(),
+      network: platform,
+    });
+    posthog?.identify(email.trim());
+
     try {
       const res = await fetch("/api/create-payment-intent", {
         method: "POST",
@@ -247,10 +262,25 @@ export default function CheckoutModal({
 
   // Step 2 → Step 3: payment succeeded
   const handlePaymentSuccess = async () => {
+    const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
+
+    posthog?.capture("payment_success", {
+      volume: tier.volume,
+      price: tier.price,
+      network: platform,
+      email: email.trim(),
+      username: username.trim(),
+    });
+
+    trackGoogleAdsPurchase({
+      value: tier.price,
+      currency: currencySymbol === "€" ? "EUR" : currencySymbol === "£" ? "GBP" : currencySymbol === "CA$" ? "CAD" : currencySymbol === "AU$" ? "AUD" : "USD",
+      transactionId: orderId,
+    });
+
     setStep(3);
 
     // Fire order notifications (email, Discord, DB) in background
-    const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
     try {
       await fetch("/api/order-success", {
         method: "POST",
@@ -311,10 +341,10 @@ export default function CheckoutModal({
               </p>
               <div className="mt-3 flex items-baseline gap-3">
                 <span className="text-[28px] font-semibold text-white tracking-tight">
-                  ${tier.price.toFixed(2)}
+                  {currencySymbol}{tier.price.toFixed(2)}
                 </span>
                 <span className="text-[13px] text-zinc-600 line-through">
-                  ${tier.originalPrice.toFixed(2)}
+                  {currencySymbol}{tier.originalPrice.toFixed(2)}
                 </span>
               </div>
               <div className="mt-1.5 flex items-center gap-2">
@@ -466,6 +496,7 @@ export default function CheckoutModal({
                     accentGradient={accentGradient}
                     accentColor={accentColor}
                     price={tier.price}
+                    currencySymbol={currencySymbol}
                   />
                 </Elements>
               )}

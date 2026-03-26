@@ -8,7 +8,16 @@ import { InstagramIcon } from "@/components/ui/SocialIcons";
 interface Tier {
   followers: string;
   price: string;
+  prices?: Record<string, string>;
 }
+
+const CURRENCIES = [
+  { code: "USD", symbol: "$",   label: "USD" },
+  { code: "EUR", symbol: "€",   label: "EUR" },
+  { code: "GBP", symbol: "£",   label: "GBP" },
+  { code: "CAD", symbol: "CA$", label: "CAD" },
+  { code: "AUD", symbol: "AU$", label: "AUD" },
+] as const;
 
 interface DownsellConfig {
   reachAmount: number;
@@ -37,6 +46,7 @@ export default function AdminPricingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   const getToken = () => localStorage.getItem("adminToken");
 
@@ -99,12 +109,29 @@ export default function AdminPricingPage() {
     setPricing(updated);
   };
 
+  const updateTierCurrencyPrice = (
+    platform: "instagram" | "tiktok",
+    index: number,
+    currencyCode: string,
+    value: string
+  ) => {
+    if (!pricing) return;
+    const updated = { ...pricing };
+    updated[platform] = [...updated[platform]];
+    const tier = { ...updated[platform][index] };
+    tier.prices = { ...(tier.prices || {}), [currencyCode]: value };
+    // Keep the base price field in sync with USD
+    if (currencyCode === "USD") tier.price = value;
+    updated[platform][index] = tier;
+    setPricing(updated);
+  };
+
   const addTier = (platform: "instagram" | "tiktok") => {
     if (!pricing) return;
     const updated = { ...pricing };
     updated[platform] = [
       ...updated[platform],
-      { followers: "", price: "" },
+      { followers: "", price: "", prices: { USD: "", EUR: "", GBP: "", CAD: "", AUD: "" } },
     ];
     setPricing(updated);
   };
@@ -195,9 +222,10 @@ export default function AdminPricingPage() {
     colorClass: string
   ) => {
     const tiers = pricing?.[platform] || [];
+    const activeCur = CURRENCIES.find((c) => c.code === selectedCurrency) || CURRENCIES[0];
     return (
       <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Icon className={`w-6 h-6 ${colorClass}`} />
             <h3 className="text-lg font-semibold text-white">{label}</h3>
@@ -211,6 +239,23 @@ export default function AdminPricingPage() {
           </button>
         </div>
 
+        {/* Currency tabs */}
+        <div className="flex items-center gap-1 mb-4 p-1 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+          {CURRENCIES.map((cur) => (
+            <button
+              key={cur.code}
+              onClick={() => setSelectedCurrency(cur.code)}
+              className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-semibold transition-colors ${
+                selectedCurrency === cur.code
+                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                  : "text-zinc-500 hover:text-zinc-300 border border-transparent"
+              }`}
+            >
+              {cur.symbol} {cur.code}
+            </button>
+          ))}
+        </div>
+
         <div className="space-y-3">
           {/* Header */}
           <div className="grid grid-cols-[1fr_1fr_40px] gap-3 px-1">
@@ -218,42 +263,45 @@ export default function AdminPricingPage() {
               Followers
             </span>
             <span className="text-xs font-semibold text-gray-500 uppercase">
-              Price (USD)
+              Price ({activeCur.symbol} {activeCur.code})
             </span>
             <span />
           </div>
 
-          {tiers.map((tier, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-[1fr_1fr_40px] gap-3 items-center"
-            >
-              <input
-                type="text"
-                value={tier.followers}
-                onChange={(e) =>
-                  updateTier(platform, i, "followers", e.target.value)
-                }
-                placeholder="1000"
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
-              />
-              <input
-                type="text"
-                value={tier.price}
-                onChange={(e) =>
-                  updateTier(platform, i, "price", e.target.value)
-                }
-                placeholder="9.90"
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
-              />
-              <button
-                onClick={() => removeTier(platform, i)}
-                className="p-2 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors"
+          {tiers.map((tier, i) => {
+            const curPrice = tier.prices?.[selectedCurrency] ?? (selectedCurrency === "USD" ? tier.price : "");
+            return (
+              <div
+                key={i}
+                className="grid grid-cols-[1fr_1fr_40px] gap-3 items-center"
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+                <input
+                  type="text"
+                  value={tier.followers}
+                  onChange={(e) =>
+                    updateTier(platform, i, "followers", e.target.value)
+                  }
+                  placeholder="1000"
+                  className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  value={curPrice}
+                  onChange={(e) =>
+                    updateTierCurrencyPrice(platform, i, selectedCurrency, e.target.value)
+                  }
+                  placeholder="9.90"
+                  className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+                />
+                <button
+                  onClick={() => removeTier(platform, i)}
+                  className="p-2 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
 
           {tiers.length === 0 && (
             <p className="text-gray-600 text-sm text-center py-6">

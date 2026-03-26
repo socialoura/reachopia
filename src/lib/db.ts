@@ -191,6 +191,8 @@ export async function updateOrderCost(orderId: number, cost: number) {
 export interface PricingTier {
   followers: string;
   price: string;
+  /** Multi-currency prices — keyed by CurrencyCode (USD, EUR, GBP, CAD, AUD) */
+  prices?: Record<string, string>;
 }
 
 export interface DownsellConfig {
@@ -217,24 +219,24 @@ const DEFAULT_DOWNSELL: DownsellConfig = {
 
 const DEFAULT_PRICING: PricingData = {
   instagram: [
-    { followers: "100", price: "1.90" },
-    { followers: "250", price: "3.90" },
-    { followers: "500", price: "5.90" },
-    { followers: "1000", price: "9.90" },
-    { followers: "2500", price: "19.90" },
-    { followers: "5000", price: "34.90" },
-    { followers: "10000", price: "59.90" },
-    { followers: "25000", price: "80.00" },
+    { followers: "100",   price: "1.90",  prices: { USD: "1.90",  EUR: "1.90",  GBP: "1.50",  CAD: "2.50",  AUD: "2.90"  } },
+    { followers: "250",   price: "3.90",  prices: { USD: "3.90",  EUR: "3.50",  GBP: "2.90",  CAD: "4.90",  AUD: "5.50"  } },
+    { followers: "500",   price: "5.90",  prices: { USD: "5.90",  EUR: "5.50",  GBP: "4.90",  CAD: "7.90",  AUD: "8.90"  } },
+    { followers: "1000",  price: "9.90",  prices: { USD: "9.90",  EUR: "8.90",  GBP: "7.90",  CAD: "12.90", AUD: "14.90" } },
+    { followers: "2500",  price: "19.90", prices: { USD: "19.90", EUR: "17.90", GBP: "15.90", CAD: "24.90", AUD: "27.90" } },
+    { followers: "5000",  price: "34.90", prices: { USD: "34.90", EUR: "29.90", GBP: "27.90", CAD: "44.90", AUD: "49.90" } },
+    { followers: "10000", price: "59.90", prices: { USD: "59.90", EUR: "54.90", GBP: "47.90", CAD: "74.90", AUD: "84.90" } },
+    { followers: "25000", price: "80.00", prices: { USD: "80.00", EUR: "74.90", GBP: "64.90", CAD: "99.90", AUD: "109.90" } },
   ],
   tiktok: [
-    { followers: "100", price: "2.90" },
-    { followers: "250", price: "5.90" },
-    { followers: "500", price: "9.90" },
-    { followers: "1000", price: "16.90" },
-    { followers: "2500", price: "34.90" },
-    { followers: "5000", price: "64.90" },
-    { followers: "10000", price: "99.90" },
-    { followers: "25000", price: "175.00" },
+    { followers: "100",   price: "2.90",   prices: { USD: "2.90",   EUR: "2.90",   GBP: "2.50",   CAD: "3.90",   AUD: "4.50"   } },
+    { followers: "250",   price: "5.90",   prices: { USD: "5.90",   EUR: "5.50",   GBP: "4.90",   CAD: "7.90",   AUD: "8.90"   } },
+    { followers: "500",   price: "9.90",   prices: { USD: "9.90",   EUR: "8.90",   GBP: "7.90",   CAD: "12.90",  AUD: "14.90"  } },
+    { followers: "1000",  price: "16.90",  prices: { USD: "16.90",  EUR: "14.90",  GBP: "12.90",  CAD: "21.90",  AUD: "24.90"  } },
+    { followers: "2500",  price: "34.90",  prices: { USD: "34.90",  EUR: "29.90",  GBP: "27.90",  CAD: "44.90",  AUD: "49.90"  } },
+    { followers: "5000",  price: "64.90",  prices: { USD: "64.90",  EUR: "59.90",  GBP: "49.90",  CAD: "79.90",  AUD: "89.90"  } },
+    { followers: "10000", price: "99.90",  prices: { USD: "99.90",  EUR: "89.90",  GBP: "79.90",  CAD: "124.90", AUD: "139.90" } },
+    { followers: "25000", price: "175.00", prices: { USD: "175.00", EUR: "159.90", GBP: "139.90", CAD: "219.90", AUD: "249.90" } },
   ],
   downsell: DEFAULT_DOWNSELL,
 };

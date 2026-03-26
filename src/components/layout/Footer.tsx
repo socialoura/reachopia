@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const footerLinks = {
   product: [
@@ -101,9 +102,12 @@ export default function Footer() {
           <p className="text-[11px] text-zinc-600">
             &copy; {new Date().getFullYear()} Reachopia. All rights reserved.
           </p>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-glow" />
-            <span className="text-[11px] text-zinc-600">All systems operational</span>
+          <div className="flex items-center gap-4">
+            <CurrencySelector />
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-glow" />
+              <span className="text-[11px] text-zinc-600">All systems operational</span>
+            </div>
           </div>
         </div>
       </div>
