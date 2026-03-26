@@ -25,6 +25,7 @@ interface DownsellConfig {
   currency: string;
   ctaLabel: string;
   enabled: boolean;
+  prices?: Record<string, number>;
 }
 
 interface PricingData {
@@ -39,6 +40,7 @@ const DEFAULT_DOWNSELL: DownsellConfig = {
   currency: "$",
   ctaLabel: "Claim My Trial Pack",
   enabled: true,
+  prices: { USD: 1.90, EUR: 1.90, GBP: 1.50, CAD: 2.50, AUD: 2.90 },
 };
 
 export default function AdminPricingPage() {
@@ -151,6 +153,21 @@ export default function AdminPricingPage() {
     });
   };
 
+  const updateDownsellPrice = (currencyCode: string, value: number) => {
+    if (!pricing) return;
+    const ds = pricing.downsell ?? DEFAULT_DOWNSELL;
+    const updatedPrices = { ...(ds.prices || {}), [currencyCode]: value };
+    setPricing({
+      ...pricing,
+      downsell: {
+        ...ds,
+        prices: updatedPrices,
+        // Keep base price in sync with USD
+        ...(currencyCode === "USD" ? { price: value } : {}),
+      },
+    });
+  };
+
   const renderDownsellSection = () => {
     const ds = pricing?.downsell ?? DEFAULT_DOWNSELL;
     return (
@@ -168,32 +185,13 @@ export default function AdminPricingPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Reach Amount</label>
             <input
               type="number"
               value={ds.reachAmount}
               onChange={(e) => updateDownsell("reachAmount", parseInt(e.target.value) || 0)}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Price</label>
-            <input
-              type="number"
-              step="0.01"
-              value={ds.price}
-              onChange={(e) => updateDownsell("price", parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Currency</label>
-            <input
-              type="text"
-              value={ds.currency}
-              onChange={(e) => updateDownsell("currency", e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
             />
           </div>
@@ -205,6 +203,28 @@ export default function AdminPricingPage() {
               onChange={(e) => updateDownsell("ctaLabel", e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
             />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase mb-3">Price per Currency</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {CURRENCIES.map((cur) => {
+              const curPrice = ds.prices?.[cur.code] ?? (cur.code === "USD" ? ds.price : 0);
+              return (
+                <div key={cur.code} className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-semibold">{cur.symbol}</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={curPrice}
+                    onChange={(e) => updateDownsellPrice(cur.code, parseFloat(e.target.value) || 0)}
+                    className="w-full pl-10 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+                  />
+                  <span className="block mt-1 text-[10px] text-zinc-600 text-center font-medium">{cur.code}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 

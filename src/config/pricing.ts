@@ -29,6 +29,7 @@ export interface DownsellConfig {
   currency: string;
   ctaLabel: string;
   enabled: boolean;
+  prices?: Record<string, number>;
 }
 
 export const downsellConfig: DownsellConfig = {
@@ -37,6 +38,7 @@ export const downsellConfig: DownsellConfig = {
   currency: "$",
   ctaLabel: "Claim My Trial Pack",
   enabled: true,
+  prices: { USD: 1.90, EUR: 1.90, GBP: 1.50, CAD: 2.50, AUD: 2.90 },
 };
 
 /* ─── Social proof names for rotating notifications ─── */

@@ -374,6 +374,7 @@ export default function GrowthAnalyzerPage() {
           onClose={closeResults}
           downsell={downsellData}
           currencySymbol={currencySymbol}
+          currency={currency}
         />
       )}
 
@@ -525,6 +526,7 @@ function ResultsModal({
   onClose,
   downsell,
   currencySymbol,
+  currency,
 }: {
   username: string;
   platform: Platform;
@@ -534,9 +536,11 @@ function ResultsModal({
   onClose: () => void;
   downsell: import("@/config/pricing").DownsellConfig;
   currencySymbol: string;
+  currency: string;
 }) {
   const posthog = usePostHog();
   const [showDownsell, setShowDownsell] = useState(false);
+  const downsellPrice = downsell.prices?.[currency] ?? downsell.price;
   const { profile } = useSocialProfile(username, platform);
   const followersCount = profile?.followersCount ?? null;
 
@@ -561,14 +565,14 @@ function ResultsModal({
     posthog?.capture("exit_intent_accepted", {
       network: platform,
       username,
-      downsell_price: downsell.price,
+      downsell_price: downsellPrice,
       downsell_reach: downsell.reachAmount,
     });
     const trialTier: CheckoutTier = {
       label: `+${downsell.reachAmount}`,
       volume: downsell.reachAmount.toLocaleString("en-US"),
-      price: downsell.price,
-      originalPrice: Math.round(downsell.price * 2 * 100) / 100,
+      price: downsellPrice,
+      originalPrice: Math.round(downsellPrice * 2 * 100) / 100,
     };
     setShowDownsell(false);
     onSelectTier(trialTier);
@@ -615,7 +619,7 @@ function ResultsModal({
               <p className="mt-4 text-[15px] text-zinc-400 leading-relaxed max-w-sm mx-auto">
                 Test our AI power with a <span className="font-semibold text-white">Trial Pack</span>.{" "}
                 <span className="font-semibold text-white">+{downsell.reachAmount} Reach</span> for only{" "}
-                <span className="font-bold text-white">{currencySymbol}{downsell.price.toFixed(2)}</span>.
+                <span className="font-bold text-white">{currencySymbol}{downsellPrice.toFixed(2)}</span>.
               </p>
 
               {followersCount != null && (
@@ -632,7 +636,7 @@ function ResultsModal({
                 className="shine mt-8 w-full max-w-xs py-4 rounded-2xl text-[15px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
                 style={{ background: accent.gradient }}
               >
-                {downsell.ctaLabel || `Claim Trial — ${currencySymbol}${downsell.price.toFixed(2)}`}
+                {downsell.ctaLabel || `Claim Trial — ${currencySymbol}${downsellPrice.toFixed(2)}`}
               </button>
               <button
                 onClick={() => { setShowDownsell(false); onClose(); }}
