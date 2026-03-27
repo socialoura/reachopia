@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 interface AnimateOnScrollProps {
   children: ReactNode;
@@ -16,6 +17,13 @@ export default function AnimateOnScroll({
   delay = 0,
   direction = "up",
 }: AnimateOnScrollProps) {
+  const isMobile = useIsMobile();
+
+  // On mobile: render instantly without Framer Motion overhead
+  if (isMobile) {
+    return <div className={className}>{children}</div>;
+  }
+
   const directionMap = {
     up: { y: 40, x: 0 },
     down: { y: -40, x: 0 },

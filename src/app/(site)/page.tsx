@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import CountUp from "react-countup";
 import {
   ArrowRight,
@@ -39,6 +40,11 @@ const fadeUp = {
     y: 0,
     transition: { delay: i * 0.12, duration: 0.7, ease: [0.25, 0.4, 0.25, 1] as const },
   }),
+};
+
+const noAnim = {
+  hidden: { opacity: 1, y: 0 },
+  visible: () => ({ opacity: 1, y: 0, transition: { duration: 0 } }),
 };
 
 /* ─── Data ─── */
@@ -113,6 +119,9 @@ function TikTokIcon({ className }: { className?: string }) {
    PAGE
    ═══════════════════════════════════════════════════════════════ */
 export default function Home() {
+  const isMobile = useIsMobile();
+  const v = isMobile ? noAnim : fadeUp;
+
   return (
     <>
       {/* ───────────── HERO — iPhone-launch style ───────────── */}
@@ -129,9 +138,9 @@ export default function Home() {
             <div>
               {/* Badge */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={isMobile ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+                transition={isMobile ? { duration: 0 } : { duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm mb-8"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow" />
@@ -142,9 +151,9 @@ export default function Home() {
 
               {/* H1 */}
               <motion.h1
-                initial={{ opacity: 0, y: 30 }}
+                initial={isMobile ? false : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.4, 0.25, 1] }}
+                transition={isMobile ? { duration: 0 } : { duration: 0.8, delay: 0.1, ease: [0.25, 0.4, 0.25, 1] }}
                 className="text-[clamp(2rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.05]"
               >
                 AI-Powered Growth
@@ -154,9 +163,9 @@ export default function Home() {
 
               {/* Subtitle */}
               <motion.p
-                initial={{ opacity: 0, y: 20 }}
+                initial={isMobile ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.25 }}
+                transition={isMobile ? { duration: 0 } : { duration: 0.7, delay: 0.25 }}
                 className="mt-6 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-lg"
               >
                 Our proprietary algorithm connects your profile to a network of active,
@@ -165,9 +174,9 @@ export default function Home() {
 
               {/* CTAs */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={isMobile ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
+                transition={isMobile ? { duration: 0 } : { duration: 0.7, delay: 0.4 }}
                 className="mt-10 flex flex-col sm:flex-row gap-4"
               >
                 <Link
@@ -188,9 +197,9 @@ export default function Home() {
 
               {/* Micro trust */}
               <motion.div
-                initial={{ opacity: 0 }}
+                initial={isMobile ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
+                transition={isMobile ? { duration: 0 } : { duration: 0.5, delay: 0.6 }}
                 className="mt-8 flex flex-wrap gap-5 text-[11px] text-zinc-600"
               >
                 <span className="flex items-center gap-1.5">
@@ -204,14 +213,14 @@ export default function Home() {
 
             {/* Right — Hero image (floating) */}
             <motion.div
-              initial={{ opacity: 0, x: 40, scale: 0.97 }}
-              animate={{
+              initial={isMobile ? false : { opacity: 0, x: 40, scale: 0.97 }}
+              animate={isMobile ? { opacity: 1 } : {
                 opacity: 1,
                 x: 0,
                 scale: 1,
                 y: [0, -12, 0],
               }}
-              transition={{
+              transition={isMobile ? { duration: 0 } : {
                 opacity: { duration: 1, delay: 0.4 },
                 x: { duration: 1, delay: 0.4, ease: [0.25, 0.4, 0.25, 1] },
                 scale: { duration: 1, delay: 0.4 },
@@ -265,10 +274,10 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               Choose Your Platform
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Where do you want to grow?
             </motion.h2>
           </motion.div>
@@ -279,7 +288,7 @@ export default function Home() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              variants={fadeUp}
+              variants={v}
               custom={0}
             >
               <Link href="/instagram" className="group block">
@@ -320,7 +329,7 @@ export default function Home() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              variants={fadeUp}
+              variants={v}
               custom={1}
             >
               <Link href="/tiktok" className="group block">
@@ -368,10 +377,10 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               3-step process
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               How It Works
             </motion.h2>
           </motion.div>
@@ -402,7 +411,7 @@ export default function Home() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                variants={fadeUp}
+                variants={v}
                 custom={i}
                 className="relative rounded-2xl p-7 sm:p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
               >
@@ -429,10 +438,10 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               Our Technology
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Built for Results
             </motion.h2>
           </motion.div>
@@ -451,7 +460,7 @@ export default function Home() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                variants={fadeUp}
+                variants={v}
                 custom={i}
                 className="rounded-2xl p-6 sm:p-7 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 hover:-translate-y-0.5 group"
               >
@@ -476,7 +485,7 @@ export default function Home() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                variants={fadeUp}
+                variants={v}
                 custom={i}
                 className="text-center"
               >
@@ -506,10 +515,10 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-14"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               FAQ
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Frequently Asked Questions
             </motion.h2>
           </motion.div>
@@ -534,7 +543,7 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
           >
             <motion.h2
-              variants={fadeUp}
+              variants={v}
               custom={0}
               className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight"
             >
@@ -543,14 +552,14 @@ export default function Home() {
               Your Growth?
             </motion.h2>
             <motion.p
-              variants={fadeUp}
+              variants={v}
               custom={1}
               className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed"
             >
               Join 50,000+ creators and brands using Reachopia&apos;s AI engine
               to build unstoppable social momentum.
             </motion.p>
-            <motion.div variants={fadeUp} custom={2} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.div variants={v} custom={2} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/instagram"
                 className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-white text-black text-[14px] font-semibold hover:bg-zinc-100 transition-colors"
@@ -559,7 +568,7 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
-            <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
+            <motion.p variants={v} custom={3} className="mt-5 text-[11px] text-zinc-600">
               Stripe secured · Results guaranteed
             </motion.p>
           </motion.div>

@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Star,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -25,6 +26,11 @@ const fadeUp = {
     y: 0,
     transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" as const },
   }),
+};
+
+const noAnimation = {
+  hidden: { opacity: 1, y: 0 },
+  visible: () => ({ opacity: 1, y: 0, transition: { duration: 0 } }),
 };
 
 interface FAQItem {
@@ -98,6 +104,8 @@ export default function ProductPageLayout({
   faqs,
   testimonials,
 }: ProductPageLayoutProps) {
+  const isMobile = useIsMobile();
+  const v = isMobile ? noAnimation : fadeUp; // animation variants
   const [selectedTier, setSelectedTier] = useState(2);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutTier, setCheckoutTier] = useState<CheckoutTier | null>(null);
@@ -121,24 +129,25 @@ export default function ProductPageLayout({
         </div>
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={isMobile ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={isMobile ? { duration: 0 } : undefined}
             className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-4"
           >
             {platform === "instagram" ? "Instagram" : "TikTok"} Growth
           </motion.p>
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={isMobile ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={isMobile ? { duration: 0 } : { delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.1]"
           >
             {title}
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={isMobile ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={isMobile ? { duration: 0 } : { delay: 0.2 }}
             className="mt-5 text-base sm:text-lg text-slate-500 leading-relaxed"
           >
             {subtitle}
@@ -150,9 +159,10 @@ export default function ProductPageLayout({
       <section className="py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={isMobile ? false : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={isMobile ? { duration: 0 } : undefined}
             className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-10"
           >
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center mb-1">
@@ -221,7 +231,7 @@ export default function ProductPageLayout({
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
             {trustFeatures.map((f, i) => (
-              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className="text-center group">
+              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={v} custom={i} className="text-center group">
                 <div className="w-11 h-11 mx-auto rounded-xl bg-indigo-50 flex items-center justify-center mb-2 group-hover:bg-indigo-100 transition-colors">
                   <f.icon className="w-5 h-5 text-indigo-600" />
                 </div>
@@ -236,11 +246,11 @@ export default function ProductPageLayout({
       <section className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
-            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">
+            <motion.h2 variants={v} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">
               {whyShouldBuy.title}
             </motion.h2>
             {whyShouldBuy.paragraphs.map((p, i) => (
-              <motion.p key={i} variants={fadeUp} custom={i + 1} className="text-sm sm:text-base text-slate-500 leading-relaxed mb-4 max-w-3xl">
+              <motion.p key={i} variants={v} custom={i + 1} className="text-sm sm:text-base text-slate-500 leading-relaxed mb-4 max-w-3xl">
                 {p}
               </motion.p>
             ))}
@@ -252,12 +262,12 @@ export default function ProductPageLayout({
       <section className="py-16 md:py-24 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
-            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-8">
+            <motion.h2 variants={v} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-8">
               {howToBuy.title}
             </motion.h2>
             <div className="space-y-4">
               {howToBuy.paragraphs.map((p, i) => (
-                <motion.div key={i} variants={fadeUp} custom={i + 1} className="flex items-start gap-3">
+                <motion.div key={i} variants={v} custom={i + 1} className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs font-bold text-white">{i + 1}</span>
                   </div>
@@ -273,11 +283,11 @@ export default function ProductPageLayout({
       <section className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
-            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">
+            <motion.h2 variants={v} custom={0} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">
               {whyBuyMore.title}
             </motion.h2>
             {whyBuyMore.paragraphs.map((p, i) => (
-              <motion.p key={i} variants={fadeUp} custom={i + 1} className="text-sm sm:text-base text-slate-500 leading-relaxed mb-4 max-w-3xl">
+              <motion.p key={i} variants={v} custom={i + 1} className="text-sm sm:text-base text-slate-500 leading-relaxed mb-4 max-w-3xl">
                 {p}
               </motion.p>
             ))}
@@ -289,12 +299,12 @@ export default function ProductPageLayout({
       <section className="py-16 md:py-24 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-12">
-            <motion.p variants={fadeUp} custom={0} className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-3">Testimonials</motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">What Our Clients Say</motion.h2>
+            <motion.p variants={v} custom={0} className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-3">Testimonials</motion.p>
+            <motion.h2 variants={v} custom={1} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">What Our Clients Say</motion.h2>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
-              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
+              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={v} custom={i}
                 className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
               >
                 <div className="flex items-center gap-0.5 mb-4">
@@ -317,8 +327,8 @@ export default function ProductPageLayout({
       <section className="py-16 md:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-12">
-            <motion.p variants={fadeUp} custom={0} className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-3">FAQ</motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Frequently Asked Questions</motion.h2>
+            <motion.p variants={v} custom={0} className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-3">FAQ</motion.p>
+            <motion.h2 variants={v} custom={1} className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Frequently Asked Questions</motion.h2>
           </motion.div>
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-200 px-6">
             {faqs.map((faq, i) => (

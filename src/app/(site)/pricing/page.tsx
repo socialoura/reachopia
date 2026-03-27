@@ -24,6 +24,7 @@ import { downsellConfig as defaultDownsellConfig, SOCIAL_PROOF_NAMES } from "@/c
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePostHog } from "posthog-js/react";
 import { formatCurrency } from "@/lib/currency";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 /* ─── Custom Icons ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -52,6 +53,11 @@ const fadeUp = {
     y: 0,
     transition: { delay: i * 0.12, duration: 0.7, ease: [0.25, 0.4, 0.25, 1] as const },
   }),
+};
+
+const noAnim = {
+  hidden: { opacity: 1, y: 0 },
+  visible: () => ({ opacity: 1, y: 0, transition: { duration: 0 } }),
 };
 
 /* ─── Platform type ─── */
@@ -131,6 +137,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    ═══════════════════════════════════════════════════════════════ */
 export default function GrowthAnalyzerPage() {
   const posthog = usePostHog();
+  const isMobile = useIsMobile();
+  const v = isMobile ? noAnim : fadeUp;
   const { currency, symbol: currencySymbol } = useCurrency();
   /* ── Tunnel state: "input" → "scanning" → "results" ── */
   const [step, setStep] = useState<"input" | "scanning" | "results">("input");
@@ -246,7 +254,7 @@ export default function GrowthAnalyzerPage() {
             {step === "input" && (
               <motion.div
                 key="input"
-                initial={{ opacity: 0, y: 20 }}
+                initial={isMobile ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
@@ -327,7 +335,7 @@ export default function GrowthAnalyzerPage() {
             {step === "scanning" && (
               <motion.div
                 key="scanning"
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={isMobile ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.4 }}
@@ -394,10 +402,10 @@ export default function GrowthAnalyzerPage() {
       <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               How It Works
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               3 Simple Steps to Real Growth
             </motion.h2>
           </motion.div>
@@ -413,7 +421,7 @@ export default function GrowthAnalyzerPage() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                variants={fadeUp}
+                variants={v}
                 custom={i}
                 className="relative rounded-2xl p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
               >
@@ -433,10 +441,10 @@ export default function GrowthAnalyzerPage() {
       <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               FAQ
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Common Questions
             </motion.h2>
           </motion.div>

@@ -25,6 +25,7 @@ import type { CheckoutTier } from "@/components/ui/CheckoutModal";
 import { toCheckoutTiers } from "@/lib/pricing-utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePostHog } from "posthog-js/react";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 /* ─── TikTok Icon ─── */
 function TikTokIcon({ className }: { className?: string }) {
@@ -43,6 +44,11 @@ const fadeUp = {
     y: 0,
     transition: { delay: i * 0.12, duration: 0.7, ease: [0.25, 0.4, 0.25, 1] as const },
   }),
+};
+
+const noAnim = {
+  hidden: { opacity: 1, y: 0 },
+  visible: () => ({ opacity: 1, y: 0, transition: { duration: 0 } }),
 };
 
 /* ─── Styling Constants ─── */
@@ -106,6 +112,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    ═══════════════════════════════════════════════════════════════ */
 export default function TikTokPage() {
   const posthog = usePostHog();
+  const isMobile = useIsMobile();
+  const v = isMobile ? noAnim : fadeUp;
   const { currency, symbol: currencySymbol } = useCurrency();
   const [modalOpen, setModalOpen] = useState(false);
   const [ttTiers, setTtTiers] = useState<CheckoutTier[]>([]);
@@ -203,10 +211,10 @@ export default function TikTokPage() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
               Viral Amplification
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               How Our TikTok AI Works
             </motion.h2>
           </motion.div>
@@ -237,7 +245,7 @@ export default function TikTokPage() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                variants={fadeUp}
+                variants={v}
                 custom={i}
                 className="relative rounded-2xl p-7 sm:p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
               >
@@ -264,7 +272,7 @@ export default function TikTokPage() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              variants={fadeUp}
+              variants={v}
               custom={0}
             >
               <div className="relative rounded-3xl overflow-hidden border border-white/[0.06] shadow-2xl">
@@ -285,10 +293,10 @@ export default function TikTokPage() {
               whileInView="visible"
               viewport={{ once: true }}
             >
-              <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
+              <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
                 Why Reachopia for TikTok
               </motion.p>
-              <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
+              <motion.h2 variants={v} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
                 Engineered for the
                 <br />
                 For You Page
@@ -303,7 +311,7 @@ export default function TikTokPage() {
                 ].map((item, i) => (
                   <motion.div
                     key={i}
-                    variants={fadeUp}
+                    variants={v}
                     custom={i + 2}
                     className="flex gap-4 p-4 rounded-xl hover:bg-white/[0.02] transition-colors"
                   >
@@ -331,10 +339,10 @@ export default function TikTokPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.4rem,3vw,2.2rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={0} className="text-[clamp(1.4rem,3vw,2.2rem)] font-semibold text-white tracking-tight">
               Trusted by Thousands of Creators
             </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="mt-3 text-[14px] text-zinc-500 max-w-md mx-auto">
+            <motion.p variants={v} custom={1} className="mt-3 text-[14px] text-zinc-500 max-w-md mx-auto">
               Real results from real accounts using our AI-powered TikTok growth platform.
             </motion.p>
           </motion.div>
@@ -368,10 +376,10 @@ export default function TikTokPage() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-14"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               FAQ
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Frequently Asked Questions
             </motion.h2>
           </motion.div>
@@ -392,13 +400,13 @@ export default function TikTokPage() {
         </div>
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
-            <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Ready to Go Viral on <span className="text-gradient-tt">TikTok?</span>
             </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
+            <motion.p variants={v} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
               Scroll up and pick your volume — activation takes 60 seconds.
             </motion.p>
-            <motion.div variants={fadeUp} custom={2} className="mt-10">
+            <motion.div variants={v} custom={2} className="mt-10">
               <Link href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 className="shine inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-[#ee1d52] text-white text-[14px] font-semibold hover:bg-[#d91845] transition-colors"
               >
@@ -406,7 +414,7 @@ export default function TikTokPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
-            <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
+            <motion.p variants={v} custom={3} className="mt-5 text-[11px] text-zinc-600">
               Stripe secured · Results guaranteed
             </motion.p>
           </motion.div>

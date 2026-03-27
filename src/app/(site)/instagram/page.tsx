@@ -24,6 +24,7 @@ import type { CheckoutTier } from "@/components/ui/CheckoutModal";
 import { toCheckoutTiers } from "@/lib/pricing-utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePostHog } from "posthog-js/react";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 /* ─── Custom Instagram Icon ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -44,6 +45,11 @@ const fadeUp = {
     y: 0,
     transition: { delay: i * 0.12, duration: 0.7, ease: [0.25, 0.4, 0.25, 1] as const },
   }),
+};
+
+const noAnim = {
+  hidden: { opacity: 1, y: 0 },
+  visible: () => ({ opacity: 1, y: 0, transition: { duration: 0 } }),
 };
 
 /* ─── Styling Constants ─── */
@@ -107,6 +113,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    ═══════════════════════════════════════════════════════════════ */
 export default function InstagramPage() {
   const posthog = usePostHog();
+  const isMobile = useIsMobile();
+  const v = isMobile ? noAnim : fadeUp;
   const { currency, symbol: currencySymbol } = useCurrency();
   const [modalOpen, setModalOpen] = useState(false);
   const [igTiers, setIgTiers] = useState<CheckoutTier[]>([]);
@@ -241,10 +249,10 @@ export default function InstagramPage() {
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#dd2a7b] mb-4">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#dd2a7b] mb-4">
               Algorithm Targeting
             </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               How Our Instagram AI Works
             </motion.h2>
           </motion.div>
@@ -260,7 +268,7 @@ export default function InstagramPage() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                variants={fadeUp}
+                variants={v}
                 custom={i}
                 className="relative rounded-2xl p-7 sm:p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
               >
@@ -282,7 +290,7 @@ export default function InstagramPage() {
       <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={v} custom={0}>
               <div className="relative rounded-3xl overflow-hidden border border-white/[0.06] shadow-2xl">
                 <Image src="/product-instagram/2.png" alt="Instagram Analytics" width={600} height={450} className="w-full h-auto" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -290,10 +298,10 @@ export default function InstagramPage() {
             </motion.div>
 
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#dd2a7b] mb-4">
+              <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#dd2a7b] mb-4">
                 Why Reachopia for Instagram
               </motion.p>
-              <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
+              <motion.h2 variants={v} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
                 Engineered for the
                 <br />
                 Instagram Algorithm
@@ -305,7 +313,7 @@ export default function InstagramPage() {
                   { icon: Eye, title: "Explore Page Optimization", desc: "Increased profile visits and engagement signals boost your visibility in Instagram's Explore and Reels algorithms." },
                   { icon: BarChart3, title: "Real-Time Analytics", desc: "Track your campaign performance with transparent metrics and watch your momentum build in real-time." },
                 ].map((item, i) => (
-                  <motion.div key={i} variants={fadeUp} custom={i + 2} className="flex gap-4 p-4 rounded-xl hover:bg-white/[0.02] transition-colors">
+                  <motion.div key={i} variants={v} custom={i + 2} className="flex gap-4 p-4 rounded-xl hover:bg-white/[0.02] transition-colors">
                     <div className="w-10 h-10 rounded-lg bg-[#dd2a7b]/10 flex items-center justify-center flex-shrink-0">
                       <item.icon className="w-5 h-5 text-[#dd2a7b]" />
                     </div>
@@ -325,10 +333,10 @@ export default function InstagramPage() {
       <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-12">
-            <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.4rem,3vw,2.2rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={0} className="text-[clamp(1.4rem,3vw,2.2rem)] font-semibold text-white tracking-tight">
               Trusted by Thousands of Creators
             </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="mt-3 text-[14px] text-zinc-500 max-w-md mx-auto">
+            <motion.p variants={v} custom={1} className="mt-3 text-[14px] text-zinc-500 max-w-md mx-auto">
               Real results from real accounts using our AI-powered Instagram growth platform.
             </motion.p>
           </motion.div>
@@ -345,8 +353,8 @@ export default function InstagramPage() {
       <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">FAQ</motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">FAQ</motion.p>
+            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Frequently Asked Questions
             </motion.h2>
           </motion.div>
@@ -365,13 +373,13 @@ export default function InstagramPage() {
         </div>
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
-            <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={v} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Ready to Grow Your <span className="text-gradient-ig">Instagram?</span>
             </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
+            <motion.p variants={v} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
               Scroll up and pick your volume — activation takes 60 seconds.
             </motion.p>
-            <motion.div variants={fadeUp} custom={2} className="mt-10">
+            <motion.div variants={v} custom={2} className="mt-10">
               <Link href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 className="shine inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white text-[14px] font-semibold hover:opacity-90 transition-opacity"
               >
@@ -379,7 +387,7 @@ export default function InstagramPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
-            <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
+            <motion.p variants={v} custom={3} className="mt-5 text-[11px] text-zinc-600">
               Stripe secured · Results guaranteed
             </motion.p>
           </motion.div>
