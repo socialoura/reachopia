@@ -9,8 +9,16 @@ import {
   Clock,
   Loader2,
   Music,
+  Globe,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
+
+interface CountryStat {
+  country_code: string;
+  country_name: string;
+  orders: number;
+  revenue: number;
+}
 
 interface Stats {
   totalOrders: number;
@@ -19,6 +27,16 @@ interface Stats {
   last24h: number;
   monthly: Array<{ month: string; orders: number; revenue: number }>;
   byPlatform: Array<{ platform: string; count: number; revenue: number }>;
+  byCountry: CountryStat[];
+}
+
+function countryFlag(code: string): string {
+  if (!code || code === "XX") return "\uD83C\uDF10";
+  return code
+    .toUpperCase()
+    .split("")
+    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+    .join("");
 }
 
 export default function AdminAnalyticsPage() {
@@ -156,6 +174,51 @@ export default function AdminAnalyticsPage() {
                 </div>
               ))}
             </div>
+
+            {/* Top Countries by Revenue */}
+            {stats.byCountry && stats.byCountry.length > 0 && (
+              <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Globe className="w-5 h-5 text-emerald-400" />
+                  <h3 className="text-lg font-semibold text-white">
+                    Top Countries by Revenue
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  {stats.byCountry.map((c, i) => {
+                    const maxRevenue = stats.byCountry[0]?.revenue || 1;
+                    const pct = Math.max((c.revenue / maxRevenue) * 100, 2);
+                    return (
+                      <div key={c.country_code} className="group">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-lg leading-none">{countryFlag(c.country_code)}</span>
+                            <span className="text-sm font-medium text-white">{c.country_name}</span>
+                            {i === 0 && (
+                              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                                Top
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="text-gray-400">{c.orders} orders</span>
+                            <span className="font-semibold text-white min-w-[80px] text-right">
+                              {formatCurrency(c.revenue)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Monthly chart (bar chart with CSS) */}
             {stats.monthly.length > 0 && (

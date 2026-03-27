@@ -543,16 +543,11 @@ export default function CheckoutModal({
                   <Shield className="w-3 h-3" />
                   <span>Encrypted &amp; Secure</span>
                   <span className="mx-1.5 text-zinc-800">·</span>
-                  <div className="flex items-center gap-1.5">
-                    {["Apple Pay", "Google Pay", "Visa", "MC"].map((m) => (
-                      <span
-                        key={m}
-                        className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.06] font-medium text-[9px]"
-                      >
-                        {m}
-                      </span>
-                    ))}
-                  </div>
+                  <img
+                    src="/badges_paiement.png"
+                    alt="Payment methods: Visa, Mastercard, Apple Pay, Google Pay"
+                    className="h-4 w-auto opacity-60"
+                  />
                 </div>
               </div>
             )}

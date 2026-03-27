@@ -132,13 +132,15 @@ export default function TikTokPage() {
 
   return (
     <>
+      {/* ───────────── GLOBAL AMBIENT GLOW ───────────── */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute top-[15vh] left-1/4 w-[600px] h-[500px] rounded-full bg-[#69C9D0]/10 blur-[120px]" />
+        <div className="absolute top-[60vh] right-1/4 w-[500px] h-[400px] rounded-full bg-[#ee1d52]/10 blur-[100px]" />
+        <div className="absolute top-0 right-0 w-[400px] h-[300px] rounded-full bg-[#69C9D0]/5 blur-[100px]" />
+      </div>
+
       {/* ───────────── HERO + PACK GRID (Above the Fold) ───────────── */}
-      <section className="relative min-h-[100dvh] flex items-center overflow-hidden bg-black">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[500px] rounded-full bg-[#69C9D0]/10 blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[400px] rounded-full bg-[#ee1d52]/10 blur-[100px]" />
-          <div className="absolute top-0 right-0 w-[400px] h-[300px] rounded-full bg-[#69C9D0]/5 blur-[100px]" />
-        </div>
+      <section className="relative z-10 min-h-[100dvh] flex items-center overflow-hidden">
 
         <div className="relative max-w-4xl mx-auto px-5 sm:px-8 w-full pt-28 pb-16 md:pt-36 md:pb-24">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex justify-center mb-6">
@@ -193,7 +195,7 @@ export default function TikTokPage() {
       </section>
 
       {/* ───────────── HOW IT WORKS ───────────── */}
-      <section id="how-it-works" className="py-24 md:py-32 bg-zinc-950">
+      <section id="how-it-works" className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -254,7 +256,7 @@ export default function TikTokPage() {
       </section>
 
       {/* ───────────── FEATURES — TT Specific ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Image */}
@@ -321,7 +323,7 @@ export default function TikTokPage() {
       </section>
 
       {/* ───────────── SOCIAL PROOF ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -358,7 +360,7 @@ export default function TikTokPage() {
       </section>
 
       {/* ───────────── FAQ ───────────── */}
-      <section className="py-24 md:py-32 bg-zinc-950">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -383,7 +385,7 @@ export default function TikTokPage() {
       </section>
 
       {/* ───────────── FINAL CTA ───────────── */}
-      <section className="relative py-28 md:py-36 bg-zinc-950 overflow-hidden">
+      <section className="relative z-10 py-28 md:py-36 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[500px] h-[400px] rounded-full bg-[#69C9D0]/8 blur-[120px]" />
           <div className="absolute top-1/2 right-1/3 -translate-y-1/2 w-[500px] h-[400px] rounded-full bg-[#ee1d52]/6 blur-[120px]" />

@@ -80,6 +80,20 @@ body {
   background-clip: text;
 }
 
+/* ── Marquee infinite scroll ── */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
 /* ── Safe area for mobile sticky ── */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);

@@ -12,7 +12,7 @@ import { fetchSocialProfile, type SocialProfile } from "@/lib/social/providers/r
 
 /* ─── Simple rate limiter (per IP, in-memory) ─── */
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 
 function isRateLimited(ip: string): boolean {
@@ -74,9 +74,11 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       
-      // Graceful fallback for API subscription issues
+      // Silently fallback for known transient/subscription errors
       if (errMsg.includes("API_NOT_SUBSCRIBED")) {
-        console.warn(`[social-profile] RapidAPI not subscribed for ${platform}, using fallback avatar`);
+        console.warn(`[social-profile] RapidAPI not subscribed for ${platform}, using fallback`);
+      } else if (errMsg.includes("503") || errMsg.includes("502") || errMsg.includes("504") || errMsg.includes("Service Unavailable")) {
+        console.warn(`[social-profile] Upstream temporarily unavailable for ${platform}/${username}, using fallback`);
       } else {
         console.error(`[social-profile] Upstream error for ${platform}/${username}:`, err);
       }

@@ -1,8 +1,10 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
 import { sendDiscordNotification } from "@/lib/discord";
 import { createOrder } from "@/lib/db";
+import { getCountryName } from "@/lib/country-names";
 import type { OrderPayload } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -42,6 +44,11 @@ export async function POST(req: NextRequest) {
 
     const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
 
+    // Extract country from Vercel geo header
+    const headersList = await headers();
+    const countryCode = headersList.get("x-vercel-ip-country") || undefined;
+    const countryName = countryCode ? getCountryName(countryCode) : undefined;
+
     // 1. Save order to database (critical — don't swallow errors)
     let dbOrderId: number | undefined;
     try {
@@ -53,6 +60,8 @@ export async function POST(req: NextRequest) {
         service,
         followers: parseInt(quantity, 10) || 0,
         price,
+        countryCode,
+        countryName,
       });
       dbOrderId = dbResult.id;
     } catch (dbErr) {
@@ -63,7 +72,7 @@ export async function POST(req: NextRequest) {
     // 2. Run email + Discord in parallel — neither should block the other
     const [emailResult] = await Promise.allSettled([
       resend.emails.send({
-        from: "Reachopia <orders@reachopia.com>",
+        from: process.env.RESEND_FROM || "Reachopia <orders@reachopia.com>",
         to: [email],
         subject: `Order Confirmed — ${quantity} ${platformLabel} ${service} 🎉`,
         react: OrderConfirmationEmail({ order }),

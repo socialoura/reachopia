@@ -133,7 +133,7 @@ export default function GrowthAnalyzerPage() {
   const { currency, symbol: currencySymbol } = useCurrency();
   /* ── Tunnel state: "input" → "scanning" → "results" ── */
   const [step, setStep] = useState<"input" | "scanning" | "results">("input");
-  const [platform, setPlatform] = useState<Platform>("instagram");
+  const [platform, setPlatform] = useState<Platform>("tiktok");
   const [username, setUsername] = useState("");
   const [scanMsg, setScanMsg] = useState(SCAN_MESSAGES[0]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -221,12 +221,13 @@ export default function GrowthAnalyzerPage() {
 
   return (
     <>
+      {/* ───────────── GLOBAL AMBIENT GLOW ───────────── */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute top-[20vh] left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full blur-[180px] opacity-20 transition-colors duration-700" style={{ backgroundColor: accent.primary }} />
+      </div>
+
       {/* ───────────── HERO: INPUT FORM ───────────── */}
-      <section className="relative min-h-[100dvh] flex items-center justify-center bg-black overflow-hidden">
-        {/* Ambient glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full blur-[160px] opacity-30 transition-colors duration-700" style={{ backgroundColor: accent.primary }} />
-        </div>
+      <section className="relative z-10 min-h-[100dvh] flex items-center justify-center overflow-hidden">
 
         <div className="relative max-w-2xl mx-auto px-5 sm:px-8 w-full text-center">
           <AnimatePresence mode="wait">
@@ -378,23 +379,23 @@ export default function GrowthAnalyzerPage() {
         />
       )}
 
-      {/* ───────────── GUARANTEES ───────────── */}
-      <section className="py-24 md:py-32 bg-zinc-950">
+      {/* ───────────── HOW IT WORKS ───────────── */}
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              Every Campaign Includes
+              How It Works
             </motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Peace of Mind, Built In
+              3 Simple Steps to Real Growth
             </motion.h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {[
-              { icon: Shield, title: "Results Guarantee", desc: "Full refund if we don't deliver. No questions asked." },
-              { icon: Zap, title: "Instant Activation", desc: "Campaigns begin within minutes. No waiting." },
-              { icon: Star, title: "Premium Support", desc: "24/7 support via email and live chat at every tier." },
+              { step: "01", icon: Search, title: "Enter Your Username", desc: "Our AI scans your profile, audience, and niche to build an optimal growth strategy tailored to you." },
+              { step: "02", icon: Zap, title: "Choose Your Plan", desc: "Select a reach volume that fits your goals. Every plan includes AI-powered audience targeting and instant activation." },
+              { step: "03", icon: TrendingUp, title: "Watch Your Growth", desc: "Sit back while our algorithm drives real, organic reach to your profile. Results start within minutes." },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -403,12 +404,13 @@ export default function GrowthAnalyzerPage() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i}
-                className="rounded-2xl p-7 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500"
+                className="relative rounded-2xl p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
               >
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: `${accent.primary}15` }}>
-                  <item.icon className="w-5 h-5" style={{ color: accent.primary }} />
+                <span className="absolute top-6 right-6 text-[48px] font-black leading-none text-white/[0.03] group-hover:text-white/[0.06] transition-colors">{item.step}</span>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6" style={{ backgroundColor: `${accent.primary}12` }}>
+                  <item.icon className="w-5.5 h-5.5" style={{ color: accent.primary }} />
                 </div>
-                <h3 className="text-[15px] font-semibold text-white mb-1.5 tracking-tight">{item.title}</h3>
+                <h3 className="text-[16px] font-semibold text-white mb-2 tracking-tight">{item.title}</h3>
                 <p className="text-[13px] text-zinc-500 leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
@@ -417,7 +419,7 @@ export default function GrowthAnalyzerPage() {
       </section>
 
       {/* ───────────── FAQ ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">

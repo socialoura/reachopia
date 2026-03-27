@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderStats, verifyAdminToken, extractToken } from "@/lib/db";
+import { getOrderStats, getCountryStats, verifyAdminToken, extractToken } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   try {
@@ -7,8 +7,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const stats = await getOrderStats();
-    return NextResponse.json(stats);
+    const [stats, countryStats] = await Promise.all([
+      getOrderStats(),
+      getCountryStats(),
+    ]);
+    return NextResponse.json({ ...stats, byCountry: countryStats });
   } catch (error) {
     console.error("[Admin Stats]", error);
     return NextResponse.json(

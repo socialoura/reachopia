@@ -33,10 +33,16 @@ export async function initDatabase() {
         payment_intent_id VARCHAR(255),
         order_status VARCHAR(50) DEFAULT 'pending',
         notes TEXT DEFAULT '',
+        country_code VARCHAR(10),
+        country_name VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // Add country columns to existing tables (safe to run multiple times)
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS country_code VARCHAR(10)`;
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS country_name VARCHAR(255)`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS pricing (
@@ -93,6 +99,8 @@ export interface DBOrder {
   payment_intent_id: string | null;
   order_status: string;
   notes: string;
+  country_code: string | null;
+  country_name: string | null;
   created_at: string;
   updated_at: string;
   customer_total_orders?: number;
@@ -108,10 +116,12 @@ export async function createOrder(data: {
   followers: number;
   price: number;
   paymentIntentId?: string;
+  countryCode?: string;
+  countryName?: string;
 }): Promise<{ id: number; order_id: string }> {
   const result = await sql`
-    INSERT INTO orders (order_id, username, email, platform, service, followers, price, amount, payment_intent_id)
-    VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.price}, ${data.price}, ${data.paymentIntentId || null})
+    INSERT INTO orders (order_id, username, email, platform, service, followers, price, amount, payment_intent_id, country_code, country_name)
+    VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.price}, ${data.price}, ${data.paymentIntentId || null}, ${data.countryCode || null}, ${data.countryName || null})
     RETURNING id, order_id
   `;
   return result[0] as { id: number; order_id: string };
@@ -163,6 +173,21 @@ export async function getOrderStats() {
     monthly: monthlyResult as unknown as Array<{ month: string; orders: number; revenue: number }>,
     byPlatform: platformResult as unknown as Array<{ platform: string; count: number; revenue: number }>,
   };
+}
+
+export async function getCountryStats(): Promise<Array<{ country_code: string; country_name: string; orders: number; revenue: number }>> {
+  const result = await sql`
+    SELECT
+      COALESCE(country_code, 'XX') AS country_code,
+      COALESCE(country_name, 'Unknown') AS country_name,
+      COUNT(*)::int AS orders,
+      COALESCE(SUM(amount), 0)::float AS revenue
+    FROM orders
+    WHERE order_status = 'completed'
+    GROUP BY country_code, country_name
+    ORDER BY revenue DESC
+  `;
+  return result as unknown as Array<{ country_code: string; country_name: string; orders: number; revenue: number }>;
 }
 
 export async function updateOrderStatus(orderId: number, status: string) {

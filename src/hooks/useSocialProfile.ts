@@ -18,6 +18,10 @@ interface UseSocialProfileResult {
   error: string | null;
 }
 
+/** In-memory client-side cache so multiple components calling useSocialProfile
+ *  for the same username+platform don't trigger duplicate network requests. */
+const clientCache = new Map<string, SocialProfileData>();
+
 export function useSocialProfile(
   username: string | null | undefined,
   platform: "instagram" | "tiktok",
@@ -35,6 +39,14 @@ export function useSocialProfile(
       return;
     }
 
+    const cacheKey = `${platform}:${clean.toLowerCase()}`;
+    const cached = clientCache.get(cacheKey);
+    if (cached) {
+      setProfile(cached);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -45,6 +57,7 @@ export function useSocialProfile(
         return res.json();
       })
       .then((data: SocialProfileData) => {
+        clientCache.set(cacheKey, data);
         if (!cancelled) {
           setProfile(data);
           setLoading(false);
@@ -54,12 +67,14 @@ export function useSocialProfile(
         if (!cancelled) {
           console.error("[useSocialProfile]", err);
           setError(err.message ?? "Failed to load profile");
-          setProfile({
+          const fallback: SocialProfileData = {
             username: clean,
             platform,
             photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(clean)}&background=18181b&color=fff&size=256&bold=true`,
             followersCount: null,
-          });
+          };
+          clientCache.set(cacheKey, fallback);
+          setProfile(fallback);
           setLoading(false);
         }
       });

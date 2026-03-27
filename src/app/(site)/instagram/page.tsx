@@ -133,14 +133,15 @@ export default function InstagramPage() {
 
   return (
     <>
+      {/* ───────────── GLOBAL AMBIENT GLOW ───────────── */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute top-[15vh] left-1/3 w-[700px] h-[500px] rounded-full bg-[#dd2a7b]/10 blur-[120px]" />
+        <div className="absolute top-[60vh] right-1/4 w-[500px] h-[400px] rounded-full bg-[#8134af]/10 blur-[100px]" />
+        <div className="absolute top-0 right-0 w-[400px] h-[300px] rounded-full bg-[#f58529]/8 blur-[100px]" />
+      </div>
+
       {/* ───────────── HERO + PACK GRID (Above the Fold) ───────────── */}
-      <section className="relative min-h-[100dvh] flex items-center overflow-hidden bg-black">
-        {/* IG-tinted ambient glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/3 w-[700px] h-[500px] rounded-full bg-[#dd2a7b]/10 blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[400px] rounded-full bg-[#8134af]/10 blur-[100px]" />
-          <div className="absolute top-0 right-0 w-[400px] h-[300px] rounded-full bg-[#f58529]/8 blur-[100px]" />
-        </div>
+      <section className="relative z-10 min-h-[100dvh] flex items-center overflow-hidden">
 
         <div className="relative max-w-4xl mx-auto px-5 sm:px-8 w-full pt-28 pb-16 md:pt-36 md:pb-24">
           {/* Badge */}
@@ -232,7 +233,7 @@ export default function InstagramPage() {
       </section>
 
       {/* ───────────── HOW IT WORKS ───────────── */}
-      <section id="how-it-works" className="py-24 md:py-32 bg-zinc-950">
+      <section id="how-it-works" className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -278,7 +279,7 @@ export default function InstagramPage() {
       </section>
 
       {/* ───────────── FEATURES ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
@@ -321,7 +322,7 @@ export default function InstagramPage() {
       </section>
 
       {/* ───────────── SOCIAL PROOF ───────────── */}
-      <section className="py-24 md:py-32 bg-zinc-950">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-12">
             <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.4rem,3vw,2.2rem)] font-semibold text-white tracking-tight">
@@ -341,7 +342,7 @@ export default function InstagramPage() {
       </section>
 
       {/* ───────────── FAQ ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
+      <section className="relative z-10 py-24 md:py-32">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">FAQ</motion.p>
@@ -358,7 +359,7 @@ export default function InstagramPage() {
       </section>
 
       {/* ───────────── FINAL CTA ───────────── */}
-      <section className="relative py-28 md:py-36 bg-zinc-950 overflow-hidden">
+      <section className="relative z-10 py-28 md:py-36 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-[#dd2a7b]/8 blur-[120px]" />
         </div>
