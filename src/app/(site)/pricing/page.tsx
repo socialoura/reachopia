@@ -23,6 +23,7 @@ import { useSocialProfile } from "@/hooks/useSocialProfile";
 import { downsellConfig as defaultDownsellConfig, SOCIAL_PROOF_NAMES } from "@/config/pricing";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePostHog } from "posthog-js/react";
+import { formatCurrency } from "@/lib/currency";
 
 /* ─── Custom Icons ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -458,6 +459,7 @@ export default function GrowthAnalyzerPage() {
           accentColor={accent.primary}
           accentGradient={accent.gradient}
           username={username}
+          currency={currency}
           currencySymbol={currencySymbol}
         />
       )}
@@ -631,7 +633,7 @@ function ResultsModal({
               <p className="mt-4 text-[15px] text-zinc-400 leading-relaxed max-w-sm mx-auto">
                 Test our AI power with a <span className="font-semibold text-white">Trial Pack</span>.{" "}
                 <span className="font-semibold text-white">+{downsell.reachAmount} Reach</span> for only{" "}
-                <span className="font-bold text-white">{currencySymbol}{downsellPrice.toFixed(2)}</span>.
+                <span className="font-bold text-white">{formatCurrency(downsellPrice, currency)}</span>.
               </p>
 
               {followersCount != null && (
@@ -648,7 +650,7 @@ function ResultsModal({
                 className="shine mt-8 w-full max-w-xs py-4 rounded-2xl text-[15px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
                 style={{ background: accent.gradient }}
               >
-                {downsell.ctaLabel || `Claim Trial — ${currencySymbol}${downsellPrice.toFixed(2)}`}
+                {downsell.ctaLabel || `Claim Trial — ${formatCurrency(downsellPrice, currency)}`}
               </button>
               <button
                 onClick={() => { setShowDownsell(false); onClose(); }}
@@ -723,8 +725,8 @@ function ResultsModal({
                         )}
                         <span className="block text-[16px] sm:text-[20px] lg:text-[24px] font-semibold text-white tracking-tight">{tier.label}</span>
                         <span className="block mt-0.5 text-[8px] sm:text-[9px] font-medium" style={{ color: `${accent.primary}99` }}>AI Reach</span>
-                        <span className="block mt-1 sm:mt-1.5 text-[15px] sm:text-[17px] font-semibold text-zinc-200 group-hover:text-white transition-colors">{currencySymbol}{tier.price.toFixed(2)}</span>
-                        <span className="block text-[9px] sm:text-[10px] text-zinc-600 line-through">{currencySymbol}{tier.originalPrice.toFixed(2)}</span>
+                        <span className="block mt-1 sm:mt-1.5 text-[15px] sm:text-[17px] font-semibold text-zinc-200 group-hover:text-white transition-colors">{formatCurrency(tier.price, currency)}</span>
+                        <span className="block text-[9px] sm:text-[10px] text-zinc-600 line-through">{formatCurrency(tier.originalPrice, currency)}</span>
 
                         {/* Projection: You'll reach X followers */}
                         {projectedTotal != null && (

@@ -3,16 +3,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
-import {
-  Elements,
-  PaymentElement,
-  ExpressCheckoutElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import { Elements, PaymentElement, ExpressCheckoutElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { X, Lock, Shield, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { trackGoogleAdsPurchase } from "@/lib/track-google-ads";
+import { formatCurrency } from "@/lib/currency";
 
 /* ═══════════════════════════════════════════════════════════════
    TYPES
@@ -32,6 +27,7 @@ export interface CheckoutModalProps {
   accentColor: string;
   accentGradient: string;
   username?: string;
+  currency?: string;
   currencySymbol?: string;
 }
 
@@ -48,6 +44,7 @@ function PaymentForm({
   accentGradient,
   accentColor,
   price,
+  currency,
   currencySymbol,
 }: {
   onSuccess: () => void;
@@ -55,7 +52,8 @@ function PaymentForm({
   accentGradient: string;
   accentColor: string;
   price: number;
-  currencySymbol: string;
+  currency?: string;
+  currencySymbol?: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -158,7 +156,7 @@ function PaymentForm({
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                Pay {currencySymbol}{price.toFixed(2)}
+                Pay {formatCurrency(price, currency || 'USD')}
                 <Lock className="w-3.5 h-3.5" />
               </>
             )}
@@ -183,6 +181,7 @@ export default function CheckoutModal({
   accentColor,
   accentGradient,
   username: prefillUsername = "",
+  currency = "USD",
   currencySymbol = "$",
 }: CheckoutModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -242,6 +241,7 @@ export default function CheckoutModal({
           package: `${tier.volume} AI Reach`,
           username: username.trim(),
           email: email.trim(),
+          currency, // Pass the currency to Stripe
         }),
       });
 
@@ -274,7 +274,7 @@ export default function CheckoutModal({
 
     trackGoogleAdsPurchase({
       value: tier.price,
-      currency: currencySymbol === "€" ? "EUR" : currencySymbol === "£" ? "GBP" : currencySymbol === "CA$" ? "CAD" : currencySymbol === "AU$" ? "AUD" : "USD",
+      currency: currency || "USD",
       transactionId: orderId,
     });
 
@@ -341,10 +341,10 @@ export default function CheckoutModal({
               </p>
               <div className="mt-3 flex items-baseline gap-3">
                 <span className="text-[28px] font-semibold text-white tracking-tight">
-                  {currencySymbol}{tier.price.toFixed(2)}
+                  {formatCurrency(tier.price, currency || 'USD')}
                 </span>
                 <span className="text-[13px] text-zinc-600 line-through">
-                  {currencySymbol}{tier.originalPrice.toFixed(2)}
+                  {formatCurrency(tier.originalPrice, currency || 'USD')}
                 </span>
               </div>
               <div className="mt-1.5 flex items-center gap-2">
@@ -496,6 +496,7 @@ export default function CheckoutModal({
                     accentGradient={accentGradient}
                     accentColor={accentColor}
                     price={tier.price}
+                    currency={currency}
                     currencySymbol={currencySymbol}
                   />
                 </Elements>

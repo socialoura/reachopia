@@ -1,4 +1,5 @@
 import type { OrderPayload } from "./types";
+import { formatCurrency } from "./currency";
 
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
@@ -37,7 +38,7 @@ export async function sendDiscordNotification(
   const platformLabel =
     order.platform === "instagram" ? "Instagram" : "TikTok";
   const platformEmoji = order.platform === "instagram" ? "📸" : "🎵";
-  const formattedPrice = `$${order.price.toFixed(2)} ${order.currency ?? "USD"}`;
+  const formattedPrice = formatCurrency(order.price, order.currency ?? "USD");
 
   const embed: DiscordEmbed = {
     title: "🎉 Nouvelle Commande Validée !",

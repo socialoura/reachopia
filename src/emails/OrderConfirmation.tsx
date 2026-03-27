@@ -34,7 +34,10 @@ export default function OrderConfirmationEmail({
 
   const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
   const platformColor = platform === "instagram" ? "#c13584" : "#010101";
-  const formattedPrice = `$${price.toFixed(2)} ${currency}`;
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'USD',
+  }).format(price);
   const date = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",

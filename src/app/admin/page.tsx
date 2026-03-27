@@ -12,6 +12,7 @@ import {
   Globe,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
+import { formatCurrency } from "@/lib/currency";
 
 interface CountryStat {
   country_code: string;
@@ -65,12 +66,7 @@ export default function AdminAnalyticsPage() {
     fetchStats();
   }, []);
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-
+  
   const formatMonth = (m: string) => {
     const [year, month] = m.split("-");
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -110,7 +106,7 @@ export default function AdminAnalyticsPage() {
                   <div>
                     <p className="text-gray-400 text-sm">Total Revenue</p>
                     <p className="text-3xl font-bold text-white mt-1">
-                      {formatCurrency(stats.totalRevenue)}
+                      {formatCurrency(stats.totalRevenue, 'USD')}
                     </p>
                   </div>
                   <DollarSign className="w-10 h-10 text-green-400" />
@@ -167,7 +163,7 @@ export default function AdminAnalyticsPage() {
                     <div>
                       <p className="text-gray-400 text-sm">Revenue</p>
                       <p className="text-2xl font-bold text-white">
-                        {formatCurrency(p.revenue)}
+                        {formatCurrency(p.revenue, 'USD')}
                       </p>
                     </div>
                   </div>
@@ -203,7 +199,7 @@ export default function AdminAnalyticsPage() {
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-gray-400">{c.orders} orders</span>
                             <span className="font-semibold text-white min-w-[80px] text-right">
-                              {formatCurrency(c.revenue)}
+                              {formatCurrency(c.revenue, 'USD')}
                             </span>
                           </div>
                         </div>
@@ -238,7 +234,7 @@ export default function AdminAnalyticsPage() {
                         className="flex flex-col items-center flex-shrink-0 min-w-[60px]"
                       >
                         <span className="text-xs text-gray-400 mb-1">
-                          {formatCurrency(m.revenue)}
+                          {formatCurrency(m.revenue, 'USD')}
                         </span>
                         <div
                           className="w-10 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t-lg transition-all"
