@@ -51,7 +51,7 @@ export default function LiveActivityToast() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-20 md:bottom-6 left-4 z-30 max-w-[280px]"
+          className="fixed bottom-20 md:bottom-6 left-4 z-30 max-w-[280px] hidden md:block"
         >
           <div className="bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-white/[0.08] shadow-2xl px-4 py-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0">
