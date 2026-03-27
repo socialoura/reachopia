@@ -1,12 +1,13 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
+import { amountToCents } from "@/lib/currency";
 
 export async function POST(req: NextRequest) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: "2026-02-25.clover",
     });
-    const { amount, platform, package: pkg, username, email } = await req.json();
+    const { amount, platform, package: pkg, username, email, currency = "USD" } = await req.json();
 
     if (!amount || !platform || !pkg || !username || !email) {
       return NextResponse.json(
@@ -16,8 +17,8 @@ export async function POST(req: NextRequest) {
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency: "usd",
+      amount: amountToCents(amount, currency), // Proper conversion to cents/stripe units
+      currency: currency.toLowerCase(), // Stripe expects lowercase currency codes
       automatic_payment_methods: {
         enabled: true,
       },
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
         package: pkg,
         username,
         email,
+        currency, // Store currency in metadata for tracking
       },
       receipt_email: email,
     });
