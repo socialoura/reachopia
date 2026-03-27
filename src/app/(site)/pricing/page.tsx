@@ -172,6 +172,16 @@ export default function GrowthAnalyzerPage() {
     setStep("scanning");
     setScanMsg(SCAN_MESSAGES[0]);
 
+    // On mobile, scroll to center the scanning animation
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setTimeout(() => {
+        const heroSection = document.getElementById("hero-section");
+        if (heroSection) {
+          heroSection.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    }
+
     posthog?.capture("analyze_profile_started", { username: clean, network: platform });
     posthog?.people?.set({ username: clean });
 
@@ -227,7 +237,7 @@ export default function GrowthAnalyzerPage() {
       </div>
 
       {/* ───────────── HERO: INPUT FORM ───────────── */}
-      <section className="relative z-10 min-h-[100dvh] flex items-center justify-center overflow-hidden">
+      <section id="hero-section" className="relative z-10 min-h-[100dvh] flex items-center justify-center overflow-hidden">
 
         <div className="relative max-w-2xl mx-auto px-5 sm:px-8 w-full text-center">
           <AnimatePresence mode="wait">
