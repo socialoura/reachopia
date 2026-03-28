@@ -3,15 +3,34 @@ import { neon } from "@neondatabase/serverless";
 // Lazy-init: avoid crashing at build time when DATABASE_URL is not set
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _sql: any;
+let _dbInitialized = false;
+
 function getSql() {
-  if (!_sql) _sql = neon(process.env.DATABASE_URL!);
+  if (!_sql) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("[DB] DATABASE_URL environment variable is not set");
+    }
+    _sql = neon(process.env.DATABASE_URL);
+  }
   return _sql;
 }
+
 const sql = new Proxy(function () {} as any, {
   apply(_t, _this, args) {
     return (getSql() as any)(...args);
   },
 }) as any;
+
+/** Ensure tables exist. Safe to call multiple times — uses IF NOT EXISTS. */
+export async function ensureDbReady() {
+  if (_dbInitialized) return;
+  try {
+    await initDatabase();
+    _dbInitialized = true;
+  } catch (err) {
+    console.error("[DB] Auto-init failed:", err);
+  }
+}
 
 // ─── Schema Initialization ───────────────────────────────
 
@@ -119,6 +138,7 @@ export async function createOrder(data: {
   countryCode?: string;
   countryName?: string;
 }): Promise<{ id: number; order_id: string }> {
+  await ensureDbReady();
   const result = await sql`
     INSERT INTO orders (order_id, username, email, platform, service, followers, price, amount, payment_intent_id, country_code, country_name)
     VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.price}, ${data.price}, ${data.paymentIntentId || null}, ${data.countryCode || null}, ${data.countryName || null})
@@ -128,6 +148,7 @@ export async function createOrder(data: {
 }
 
 export async function getAllOrders(): Promise<DBOrder[]> {
+  await ensureDbReady();
   const result = await sql`
     SELECT *,
       COUNT(*) OVER (PARTITION BY LOWER(COALESCE(email, username))) AS customer_total_orders,
@@ -139,6 +160,7 @@ export async function getAllOrders(): Promise<DBOrder[]> {
 }
 
 export async function getOrderStats() {
+  await ensureDbReady();
   const totalResult = await sql`SELECT COUNT(*)::int AS total FROM orders`;
   const revenueResult = await sql`SELECT COALESCE(SUM(amount), 0) AS revenue FROM orders`;
   const todayResult = await sql`
@@ -176,6 +198,7 @@ export async function getOrderStats() {
 }
 
 export async function getCountryStats(): Promise<Array<{ country_code: string; country_name: string; orders: number; revenue: number }>> {
+  await ensureDbReady();
   const result = await sql`
     SELECT
       COALESCE(country_code, 'XX') AS country_code,
@@ -183,7 +206,6 @@ export async function getCountryStats(): Promise<Array<{ country_code: string; c
       COUNT(*)::int AS orders,
       COALESCE(SUM(amount), 0)::float AS revenue
     FROM orders
-    WHERE order_status = 'completed'
     GROUP BY country_code, country_name
     ORDER BY revenue DESC
   `;
@@ -278,6 +300,7 @@ export function getDefaultPricing(): PricingData {
 
 export async function getPricing(): Promise<PricingData> {
   try {
+    await ensureDbReady();
     const result = await sql`
       SELECT data FROM pricing WHERE id = 'pricing-data'
     `;
