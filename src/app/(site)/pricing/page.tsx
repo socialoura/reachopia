@@ -113,10 +113,11 @@ const faqs = [
 
 /* ─── FAQ Accordion ─── */
 function FAQItem({ q, a }: { q: string; a: string }) {
+  const posthog = usePostHog();
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-white/[0.06] last:border-0">
-      <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full py-6 text-left gap-4">
+      <button onClick={() => { if (!open) posthog?.capture("faq_question_clicked", { question: q }); setOpen(!open); }} className="flex items-center justify-between w-full py-6 text-left gap-4">
         <span className="text-[15px] font-medium text-white">{q}</span>
         <ChevronDown className={`w-5 h-5 text-zinc-500 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
@@ -154,6 +155,15 @@ export default function GrowthAnalyzerPage() {
   const [downsellData, setDownsellData] = useState(defaultDownsellConfig);
 
   const accent = getAccent(platform);
+  const hasTrackedRef = useRef(false);
+
+  /* ── Track page view on mount ── */
+  useEffect(() => {
+    if (!hasTrackedRef.current) {
+      posthog?.capture("pricing_page_viewed", { referrer: document.referrer || "direct" });
+      hasTrackedRef.current = true;
+    }
+  }, []);
 
   /* ── Scanning animation: rotate messages every ~800ms ── */
   useEffect(() => {
@@ -178,6 +188,7 @@ export default function GrowthAnalyzerPage() {
       return;
     }
     setUsername(clean);
+    posthog?.capture("analyze_button_clicked", { username: clean, network: platform });
     setStep("scanning");
     setScanMsg(SCAN_MESSAGES[0]);
 
@@ -214,8 +225,17 @@ export default function GrowthAnalyzerPage() {
     const timerPromise = new Promise((r) => setTimeout(r, 2800));
 
     Promise.all([fetchTiers, timerPromise]).then(([fetched]) => {
-      setTiers(fetched as CheckoutTier[]);
+      const tierList = fetched as CheckoutTier[];
+      setTiers(tierList);
       setStep("results");
+      posthog?.capture("scan_completed", {
+        network: platform,
+        username: clean,
+        tiers_count: tierList.length,
+        cheapest_price: tierList.length > 0 ? tierList[0].price : null,
+        most_expensive_price: tierList.length > 0 ? tierList[tierList.length - 1].price : null,
+        currency,
+      });
       posthog?.capture("pricing_displayed", { network: platform });
     });
   }, [username, platform, currency]);
@@ -278,7 +298,7 @@ export default function GrowthAnalyzerPage() {
                 {/* Platform toggle */}
                 <div className="mt-10 inline-flex items-center p-1.5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
                   <button
-                    onClick={() => setPlatform("instagram")}
+                    onClick={() => { setPlatform("instagram"); posthog?.capture("platform_toggled", { from: platform, to: "instagram" }); }}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ${
                       platform === "instagram" ? "bg-white text-black shadow-lg" : "text-zinc-400 hover:text-white"
                     }`}
@@ -287,7 +307,7 @@ export default function GrowthAnalyzerPage() {
                     Instagram
                   </button>
                   <button
-                    onClick={() => setPlatform("tiktok")}
+                    onClick={() => { setPlatform("tiktok"); posthog?.capture("platform_toggled", { from: platform, to: "tiktok" }); }}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ${
                       platform === "tiktok" ? "bg-white text-black shadow-lg" : "text-zinc-400 hover:text-white"
                     }`}
@@ -306,6 +326,7 @@ export default function GrowthAnalyzerPage() {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      onFocus={() => posthog?.capture("username_input_focused", { network: platform })}
                       onKeyDown={handleKeyDown}
                       placeholder="Enter your username"
                       className="w-full pl-9 pr-4 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
@@ -399,7 +420,13 @@ export default function GrowthAnalyzerPage() {
       )}
 
       {/* ───────────── HOW IT WORKS ───────────── */}
-      <section className="relative z-10 py-24 md:py-32">
+      <section className="relative z-10 py-24 md:py-32" ref={(el) => {
+        if (!el) return;
+        const obs = new IntersectionObserver(([entry]) => {
+          if (entry.isIntersecting) { posthog?.capture("how_it_works_viewed"); obs.disconnect(); }
+        }, { threshold: 0.3 });
+        obs.observe(el);
+      }}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
@@ -438,7 +465,13 @@ export default function GrowthAnalyzerPage() {
       </section>
 
       {/* ───────────── FAQ ───────────── */}
-      <section className="relative z-10 py-24 md:py-32">
+      <section className="relative z-10 py-24 md:py-32" ref={(el) => {
+        if (!el) return;
+        const obs = new IntersectionObserver(([entry]) => {
+          if (entry.isIntersecting) { posthog?.capture("faq_section_viewed"); obs.disconnect(); }
+        }, { threshold: 0.3 });
+        obs.observe(el);
+      }}>
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
@@ -565,6 +598,17 @@ function ResultsModal({
   const downsellPrice = downsell.prices?.[currency] ?? downsell.price;
   const { profile } = useSocialProfile(username, platform);
   const followersCount = profile?.followersCount ?? null;
+  const scrollTrackedRef = useRef(false);
+
+  /* Track results modal view */
+  useEffect(() => {
+    posthog?.capture("results_modal_viewed", {
+      network: platform,
+      username,
+      tiers_count: tiers.length,
+      has_followers_data: followersCount != null,
+    });
+  }, []);
 
   /* ── Exit-intent: first close attempt → downsell (only if enabled) ── */
   const handleClose = () => {
@@ -572,9 +616,20 @@ function ResultsModal({
       posthog?.capture("exit_intent_triggered", { network: platform, username });
       setShowDownsell(true);
     } else {
-      posthog?.capture("exit_intent_dismissed", { network: platform, username });
+      posthog?.capture("results_modal_closed", { network: platform, username, had_downsell: showDownsell });
       setShowDownsell(false);
       onClose();
+    }
+  };
+
+  /* Track scroll depth inside results modal */
+  const handleResultsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (scrollTrackedRef.current) return;
+    const el = e.currentTarget;
+    const scrollPercent = (el.scrollTop + el.clientHeight) / el.scrollHeight;
+    if (scrollPercent > 0.8) {
+      posthog?.capture("results_tiers_scrolled", { network: platform, username });
+      scrollTrackedRef.current = true;
     }
   };
 
@@ -703,7 +758,7 @@ function ResultsModal({
 
 
               {/* Tier cards - scrollable area */}
-              <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-8 sm:py-4">
+              <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-8 sm:py-4" onScroll={handleResultsScroll}>
                 {tiers.length === 0 ? (
                   <p className="text-center text-zinc-500 py-10">Campaign data unavailable. Please try again later.</p>
                 ) : (
@@ -719,6 +774,7 @@ function ResultsModal({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05, duration: 0.4 }}
                         onClick={() => onSelectTier(tier)}
+                        onMouseEnter={() => posthog?.capture("tier_card_hovered", { volume: tier.volume, price: tier.price, network: platform })}
                         className={`group relative rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 text-center border transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] ${
                           isPopular
                             ? "border-white/[0.15] bg-white/[0.05]"
