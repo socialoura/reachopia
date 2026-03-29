@@ -14,6 +14,7 @@ import {
   ArrowRight,
   TrendingUp,
   Flame,
+  Check,
 } from "lucide-react";
 import CheckoutModal from "@/components/ui/CheckoutModal";
 import type { CheckoutTier } from "@/components/ui/CheckoutModal";
@@ -285,14 +286,30 @@ export default function GrowthAnalyzerPage() {
                 </div>
 
                 <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold text-white tracking-tight leading-[1.1]">
-                  Calculate Your{" "}
-                  <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
-                    AI Growth Potential
-                  </span>
+                  {platform === "tiktok" ? (
+                    <>
+                      Grow your{" "}
+                      <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
+                        TikTok followers
+                      </span>
+                      {" "}now.
+                    </>
+                  ) : (
+                    <>
+                      Calculate Your{" "}
+                      <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
+                        AI Growth Potential
+                      </span>
+                    </>
+                  )}
                 </h1>
 
                 <p className="mt-5 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-md mx-auto">
-                  Enter your username and our AI will analyze your account to build a personalized growth strategy.
+                  {platform === "tiktok" ? (
+                    "Supercharge your profile with our AI-powered engine. Attract real, targeted users and boost your TikTok followers instantly — all with zero effort on your part."
+                  ) : (
+                    "Enter your username and our AI will analyze your account to build a personalized growth strategy."
+                  )}
                 </p>
 
                 {/* Platform toggle */}
@@ -340,7 +357,7 @@ export default function GrowthAnalyzerPage() {
                     style={{ background: accent.gradient }}
                   >
                     <Search className="w-4 h-4" />
-                    Analyze Account
+                    {platform === "tiktok" ? "Boost Now!" : "Analyze Account"}
                   </button>
                 </div>
 
@@ -745,14 +762,29 @@ function ResultsModal({
                 </div>
 
                 <h2 className="text-[1.1rem] sm:text-[1.5rem] lg:text-[2rem] font-semibold text-white tracking-tight text-center px-2">
-                  Great news for{" "}
-                  <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
-                    @{username}
-                  </span>
-                  !
+                  {platform === "tiktok" ? (
+                    <>
+                      Select your{" "}
+                      <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
+                        TikTok Followers Package
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Great news for{" "}
+                      <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
+                        @{username}
+                      </span>
+                      !
+                    </>
+                  )}
                 </h2>
                 <p className="mt-2 sm:mt-3 text-[12px] sm:text-[14px] lg:text-[15px] text-zinc-400 max-w-md mx-auto text-center px-2">
-                  Our AI is ready to amplify your {platform === "instagram" ? "Instagram" : "TikTok"} followers. Choose your campaign budget below.
+                  {platform === "tiktok" ? (
+                    "Choose your followers package and watch your TikTok grow."
+                  ) : (
+                    `Our AI is ready to amplify your ${platform === "instagram" ? "Instagram" : "TikTok"} followers. Choose your campaign budget below.`
+                  )}
                 </p>
               </div>
 
@@ -788,7 +820,6 @@ function ResultsModal({
                           </span>
                         )}
                         <span className="block text-[16px] sm:text-[20px] lg:text-[24px] font-semibold text-white tracking-tight">{tier.label}</span>
-                        <span className="block mt-0.5 text-[8px] sm:text-[9px] font-medium" style={{ color: `${accent.primary}99` }}>AI Reach</span>
                         <span className="block mt-1 sm:mt-1.5 text-[15px] sm:text-[17px] font-semibold text-zinc-200 group-hover:text-white transition-colors">{formatCurrency(tier.price, currency)}</span>
                         <span className="block text-[9px] sm:text-[10px] text-zinc-600 line-through">{formatCurrency(tier.originalPrice, currency)}</span>
 
@@ -819,6 +850,13 @@ function ResultsModal({
                   <span className="flex items-center gap-0.5"><Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> Stripe secured</span>
                   <Image src="/badges_paiement.png" alt="Accepted payment methods" width={160} height={20} className="h-4 sm:h-5 w-auto object-contain opacity-60" />
                 </div>
+                
+                {/* Compliance text for TikTok */}
+                {platform === "tiktok" && (
+                  <div className="mt-2 text-center text-[8px] sm:text-[9px] text-zinc-500">
+                    Compliant with TikTok's Terms of Service. All followers are real users.
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
