@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     });
     const { amount, platform, package: pkg, username, email, currency = "USD" } = await req.json();
 
-    if (!amount || !platform || !pkg || !username || !email) {
+    if (!amount || !platform || !pkg || !username) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
         platform,
         package: pkg,
         username,
-        email,
+        email: email || "",
         currency, // Store currency in metadata for tracking
       },
-      receipt_email: email,
+      ...(email ? { receipt_email: email } : {}),
     });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });

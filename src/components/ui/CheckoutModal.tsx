@@ -44,22 +44,32 @@ function PaymentForm({
   accentColor,
   price,
   currency,
+  email,
+  onEmailError,
 }: {
   onSuccess: () => void;
   accentGradient: string;
   accentColor: string;
   price: number;
   currency?: string;
+  email: string;
+  onEmailError: () => void;
 }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Card / manual payment form submit
+  // Card / manual payment form submit - requires email
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
+
+    // Validate email for card payments
+    if (!email.trim()) {
+      onEmailError();
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -81,7 +91,7 @@ function PaymentForm({
     }
   };
 
-  // Express Checkout (Apple Pay / Google Pay) confirm
+  // Express Checkout (Apple Pay / Google Pay) confirm - email optional (Apple/Google provides it)
   const handleExpressConfirm = async () => {
     if (!stripe || !elements) return;
 
@@ -421,6 +431,8 @@ export default function CheckoutModal({
                         accentColor={accentColor}
                         price={tier.price}
                         currency={currency}
+                        email={email}
+                        onEmailError={() => setError("Please enter your email address")}
                       />
                     </Elements>
                   ) : (
