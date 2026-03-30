@@ -339,6 +339,57 @@ export async function setPricing(data: PricingData) {
   `;
 }
 
+// ─── Settings ─────────────────────────────────────────────
+
+export interface AnnouncementBarSettings {
+  enabled: boolean;
+  text: string;
+  highlightText: string;
+  ctaText: string;
+  ctaLink: string;
+}
+
+const DEFAULT_ANNOUNCEMENT_BAR: AnnouncementBarSettings = {
+  enabled: true,
+  text: "50% OFF on all AI Growth Packs today!",
+  highlightText: "Flash Sale:",
+  ctaText: "Claim offer →",
+  ctaLink: "/pricing",
+};
+
+export async function getSetting<T>(key: string, defaultValue: T): Promise<T> {
+  try {
+    await ensureDbReady();
+    const result = await sql`
+      SELECT value FROM settings WHERE key = ${key}
+    `;
+    if (result.length > 0) {
+      return JSON.parse(result[0].value) as T;
+    }
+    return defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+export async function setSetting<T>(key: string, value: T): Promise<void> {
+  await ensureDbReady();
+  await sql`
+    INSERT INTO settings (key, value)
+    VALUES (${key}, ${JSON.stringify(value)})
+    ON CONFLICT (key)
+    DO UPDATE SET value = ${JSON.stringify(value)}, updated_at = CURRENT_TIMESTAMP
+  `;
+}
+
+export async function getAnnouncementBarSettings(): Promise<AnnouncementBarSettings> {
+  return getSetting("announcement_bar", DEFAULT_ANNOUNCEMENT_BAR);
+}
+
+export async function setAnnouncementBarSettings(settings: AnnouncementBarSettings): Promise<void> {
+  return setSetting("announcement_bar", settings);
+}
+
 // ─── Admin Auth ──────────────────────────────────────────
 
 export async function getAdminByUsername(username: string) {

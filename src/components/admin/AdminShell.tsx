@@ -11,12 +11,14 @@ import {
   Menu,
   X,
   LayoutDashboard,
+  Settings,
 } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Analytics", icon: BarChart3 },
   { href: "/admin/orders", label: "Orders", icon: Package },
   { href: "/admin/pricing", label: "Pricing", icon: DollarSign },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminShell({

@@ -267,7 +267,7 @@ export default function GrowthAnalyzerPage() {
       </div>
 
       {/* ───────────── HERO: INPUT FORM ───────────── */}
-      <section id="hero-section" className="relative z-10 min-h-[100dvh] flex items-center justify-center overflow-hidden">
+      <section id="hero-section" className="relative z-10 min-h-[100dvh] flex items-center justify-center overflow-hidden pt-0 md:pt-0 -mt-16 md:mt-0">
 
         <div className="relative max-w-2xl mx-auto px-5 sm:px-8 w-full text-center">
           <AnimatePresence mode="wait">

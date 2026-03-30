@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    TopAnnouncementBar — Promotional banner with dismiss functionality
    Displays above navbar, saves state to localStorage
+   Settings loaded from admin panel
    ═══════════════════════════════════════════════════════════════ */
 
 "use client";
@@ -12,20 +13,46 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const STORAGE_KEY = "promo_bar_closed";
 
+interface AnnouncementBarSettings {
+  enabled: boolean;
+  text: string;
+  highlightText: string;
+  ctaText: string;
+  ctaLink: string;
+}
+
 export default function TopAnnouncementBar() {
   const [isVisible, setIsVisible] = useState(false);
+  const [settings, setSettings] = useState<AnnouncementBarSettings | null>(null);
 
   useEffect(() => {
-    const isClosed = localStorage.getItem(STORAGE_KEY);
-    if (!isClosed) {
-      setIsVisible(true);
-    }
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/announcement-bar");
+        if (res.ok) {
+          const data: AnnouncementBarSettings = await res.json();
+          setSettings(data);
+          
+          // Only show if enabled and not previously closed
+          const isClosed = localStorage.getItem(STORAGE_KEY);
+          if (data.enabled && !isClosed) {
+            setIsVisible(true);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch announcement bar settings:", err);
+      }
+    };
+
+    fetchSettings();
   }, []);
 
   const handleClose = () => {
     setIsVisible(false);
     localStorage.setItem(STORAGE_KEY, "true");
   };
+
+  if (!settings) return null;
 
   return (
     <AnimatePresence>
@@ -44,15 +71,15 @@ export default function TopAnnouncementBar() {
               
               {/* Main message */}
               <p className="text-xs sm:text-sm font-medium text-zinc-200 tracking-wide text-center">
-                <span className="font-semibold text-indigo-400">Flash Sale:</span> 50% OFF on all AI Growth Packs today!
+                <span className="font-semibold text-indigo-400">{settings.highlightText}</span> {settings.text}
               </p>
 
               {/* CTA Link */}
               <Link
-                href="/pricing"
+                href={settings.ctaLink}
                 className="text-xs sm:text-sm font-semibold text-indigo-300 underline underline-offset-2 hover:text-indigo-200 transition-colors whitespace-nowrap flex-shrink-0"
               >
-                Claim offer →
+                {settings.ctaText}
               </Link>
 
               {/* Close button */}
