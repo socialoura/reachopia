@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import TopAnnouncementBar from "@/components/ui/TopAnnouncementBar";
@@ -31,11 +32,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-black text-white">
         <GoogleAnalytics />
         <PostHogProvider>
-          <CurrencyProvider>
-            <TopAnnouncementBar />
-            <Navbar />
-            {children}
-          </CurrencyProvider>
+          <Suspense fallback={null}>
+            <CurrencyProvider>
+              <TopAnnouncementBar />
+              <Navbar />
+              {children}
+            </CurrencyProvider>
+          </Suspense>
         </PostHogProvider>
       </body>
     </html>

@@ -54,8 +54,8 @@ export default function UserProfileBadge({
     );
   }
 
-  /* ── If profile not found, error, or only a fallback avatar (no real data), render nothing ── */
-  const isFallback = !profile || error || (profile.followersCount == null && (!profile.photoUrl || profile.photoUrl.includes("ui-avatars.com")));
+  /* ── If profile not found, error, 0 followers (likely fake/non-existent), or only a fallback avatar, render nothing ── */
+  const isFallback = !profile || error || profile.followersCount === 0 || profile.followersCount == null || (!profile.photoUrl || profile.photoUrl.includes("ui-avatars.com"));
   if (isFallback) {
     return null;
   }

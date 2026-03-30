@@ -8,6 +8,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   CURRENCY_MAP,
   DEFAULT_CURRENCY,
@@ -45,16 +46,28 @@ function isValidCurrency(code: string | null): code is CurrencyCode {
   return code !== null && (SUPPORTED_CURRENCIES as readonly string[]).includes(code);
 }
 
-export function CurrencyProvider({ children }: { children: ReactNode }) {
+function CurrencyProviderInner({ children }: { children: ReactNode }) {
   const [currency, setCurrencyState] = useState<CurrencyCode>(DEFAULT_CURRENCY);
+  const searchParams = useSearchParams();
 
-  // Read cookie on mount (client-only)
+  // Priority 1: Read currency from URL parameter (for Google Ads campaigns)
+  // Priority 2: Read from cookie (geo-detected or previously set)
   useEffect(() => {
+    const urlCurrency = searchParams.get("currency")?.toUpperCase();
+    
+    // If URL has valid currency param, use it and persist to cookie
+    if (urlCurrency && isValidCurrency(urlCurrency)) {
+      setCurrencyState(urlCurrency);
+      setCookie("user_currency", urlCurrency, 30);
+      return;
+    }
+    
+    // Otherwise, fall back to cookie
     const saved = getCookie("user_currency");
     if (isValidCurrency(saved)) {
       setCurrencyState(saved);
     }
-  }, []);
+  }, [searchParams]);
 
   // Manual override: update state + persist to cookie
   const setCurrency = useCallback((code: CurrencyCode) => {
@@ -68,6 +81,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     <CurrencyContext.Provider value={{ currency, symbol: info.symbol, info, setCurrency }}>
       {children}
     </CurrencyContext.Provider>
+  );
+}
+
+export function CurrencyProvider({ children }: { children: ReactNode }) {
+  return (
+    <CurrencyProviderInner>{children}</CurrencyProviderInner>
   );
 }
 

@@ -364,7 +364,7 @@ export default function GrowthAnalyzerPage() {
                 {/* Trust badges */}
                 <div className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-600">
                   <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> 100% secure</span>
-                  <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant analysis</span>
+                  <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant delivery</span>
                 </div>
               </motion.div>
             )}

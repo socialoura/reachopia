@@ -114,6 +114,22 @@ export async function fetchTikTokProfile(username: string): Promise<SocialProfil
   
   console.log("[TikTok API] avatarLarger:", user.avatarLarger ?? "MISSING");
   console.log("[TikTok API] followerCount:", stats.followerCount ?? "MISSING");
+  console.log("[TikTok API] uniqueId:", user.uniqueId ?? "MISSING");
+
+  // Double verification: uniqueId must match the requested username (case-insensitive)
+  const returnedUsername = user.uniqueId?.toLowerCase();
+  const requestedUsername = username.toLowerCase();
+  
+  if (!returnedUsername || returnedUsername !== requestedUsername) {
+    console.log(`[TikTok API] Username mismatch: requested "${username}", got "${user.uniqueId}"`);
+    // Return null values to indicate user not found
+    return {
+      username,
+      platform: "tiktok",
+      photoUrl: null,
+      followersCount: null,
+    };
+  }
 
   const photoUrl: string | null =
     user.avatarLarger ?? user.avatarMedium ?? user.avatarThumb ?? null;
