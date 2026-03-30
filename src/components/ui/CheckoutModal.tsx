@@ -39,7 +39,8 @@ const stripePromise = loadStripe(
    INNER PAYMENT FORM (rendered inside <Elements>)
    ═══════════════════════════════════════════════════════════════ */
 function PaymentForm({
-  onSuccess,
+  onCardSuccess,
+  onExpressSuccess,
   accentGradient,
   accentColor,
   price,
@@ -47,7 +48,8 @@ function PaymentForm({
   email,
   onEmailError,
 }: {
-  onSuccess: () => void;
+  onCardSuccess: () => void;
+  onExpressSuccess: () => void;
   accentGradient: string;
   accentColor: string;
   price: number;
@@ -87,7 +89,7 @@ function PaymentForm({
       setLoading(false);
     } else {
       setLoading(false);
-      onSuccess();
+      onCardSuccess();
     }
   };
 
@@ -106,7 +108,7 @@ function PaymentForm({
     if (confirmError) {
       setError(confirmError.message || "Payment failed. Please try again.");
     } else {
-      onSuccess();
+      onExpressSuccess();
     }
   };
 
@@ -240,28 +242,23 @@ export default function CheckoutModal({
     onClose();
   }, [onClose]);
 
-  // Payment succeeded → Step 2
-  const handlePaymentSuccess = async () => {
-    if (!email.trim()) {
-      setError("Please enter your email address");
-      return;
-    }
-
+  // Core payment success logic (shared between card and express checkout)
+  const processPaymentSuccess = async (customerEmail: string) => {
     const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
 
     posthog?.capture("checkout_submitted", {
       volume: tier.volume,
       price: tier.price,
-      email: email.trim(),
+      email: customerEmail,
       network: platform,
     });
-    posthog?.identify(email.trim());
+    posthog?.identify(customerEmail);
 
     posthog?.capture("payment_success", {
       volume: tier.volume,
       price: tier.price,
       network: platform,
-      email: email.trim(),
+      email: customerEmail,
       username: username.trim(),
     });
 
@@ -280,7 +277,7 @@ export default function CheckoutModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId,
-          email: email.trim(),
+          email: customerEmail,
           username: username.trim(),
           platform,
           service: "AI Reach",
@@ -292,6 +289,23 @@ export default function CheckoutModal({
     } catch (err) {
       console.error("Failed to process order notifications:", err);
     }
+  };
+
+  // Card payment success - requires email from form
+  const handleCardPaymentSuccess = async () => {
+    if (!email.trim()) {
+      setError("Please enter your email address");
+      return;
+    }
+    await processPaymentSuccess(email.trim());
+  };
+
+  // Express checkout success (Apple Pay / Google Pay) - email provided by wallet
+  const handleExpressPaymentSuccess = async () => {
+    // For express checkout, use form email if provided, otherwise use placeholder
+    // Apple Pay / Google Pay provide their own receipt email to Stripe
+    const customerEmail = email.trim() || `express-${Date.now()}@wallet.pay`;
+    await processPaymentSuccess(customerEmail);
   };
 
   return (
@@ -426,7 +440,8 @@ export default function CheckoutModal({
                       }}
                     >
                       <PaymentForm
-                        onSuccess={handlePaymentSuccess}
+                        onCardSuccess={handleCardPaymentSuccess}
+                        onExpressSuccess={handleExpressPaymentSuccess}
                         accentGradient={accentGradient}
                         accentColor={accentColor}
                         price={tier.price}

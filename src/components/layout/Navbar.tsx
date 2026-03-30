@@ -8,8 +8,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const navLinks = [
-  { label: "Instagram", href: "/instagram" },
-  { label: "TikTok", href: "/tiktok" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },

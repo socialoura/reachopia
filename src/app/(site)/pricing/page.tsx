@@ -711,7 +711,7 @@ function ResultsModal({
                 !
               </h2>
               <p className="mt-4 text-[15px] text-zinc-400 leading-relaxed max-w-sm mx-auto">
-                Test our AI power with a <span className="font-semibold text-white">Trial Pack</span>.{" "}
+                Test our followers package with a <span className="font-semibold text-white">Trial Pack</span>.{" "}
                 <span className="font-semibold text-white">+{downsell.reachAmount} Followers</span> for only{" "}
                 <span className="font-bold text-white">{formatCurrency(downsellPrice, currency)}</span>.
               </p>
