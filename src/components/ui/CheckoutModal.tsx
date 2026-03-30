@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, ExpressCheckoutElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { X, Lock, Shield, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { X, Lock, Shield, Loader2, CheckCircle2 } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { trackGoogleAdsPurchase } from "@/lib/track-google-ads";
 import { formatCurrency } from "@/lib/currency";
@@ -40,20 +40,16 @@ const stripePromise = loadStripe(
    ═══════════════════════════════════════════════════════════════ */
 function PaymentForm({
   onSuccess,
-  onBack,
   accentGradient,
   accentColor,
   price,
   currency,
-  currencySymbol,
 }: {
   onSuccess: () => void;
-  onBack: () => void;
   accentGradient: string;
   accentColor: string;
   price: number;
   currency?: string;
-  currencySymbol?: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -105,7 +101,7 @@ function PaymentForm({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Express Checkout — Apple Pay / Google Pay big buttons */}
       <ExpressCheckoutElement
         onConfirm={handleExpressConfirm}
@@ -126,7 +122,7 @@ function PaymentForm({
       </div>
 
       {/* Card payment form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <PaymentElement
           options={{
             layout: "tabs",
@@ -136,42 +132,30 @@ function PaymentForm({
 
         {error && <p className="text-red-400 text-[13px]">{error}</p>}
 
-        <div className="flex gap-3 pt-1">
-          <button
-            type="button"
-            onClick={onBack}
-            disabled={loading}
-            className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[13px] font-medium text-zinc-400 hover:bg-white/[0.08] transition-colors disabled:opacity-40"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back
-          </button>
-          <button
-            type="submit"
-            disabled={!stripe || loading}
-            className="shine flex-1 py-3.5 rounded-xl text-[14px] font-semibold text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2"
-            style={{ background: accentGradient }}
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                Pay {formatCurrency(price, currency || 'USD')}
-                <Lock className="w-3.5 h-3.5" />
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className="shine w-full py-4 rounded-2xl text-[14px] font-semibold text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+          style={{ background: accentGradient }}
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              Pay {formatCurrency(price, currency || 'USD')}
+              <Lock className="w-3.5 h-3.5" />
+            </>
+          )}
+        </button>
       </form>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CHECKOUT MODAL — 3-step in-modal payment
-   Step 1: Email (username pre-filled from tunnel)
-   Step 2: Stripe PaymentElement (card/Apple Pay/Google Pay)
-   Step 3: Success
+   CHECKOUT MODAL — Single-step checkout with success confirmation
+   Step 1: Username display + Email input + Payment (all in one)
+   Step 2: Success
    ═══════════════════════════════════════════════════════════════ */
 export default function CheckoutModal({
   isOpen,
@@ -184,7 +168,7 @@ export default function CheckoutModal({
   currency = "USD",
   currencySymbol = "$",
 }: CheckoutModalProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [username] = useState(prefillUsername);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -206,6 +190,37 @@ export default function CheckoutModal({
     };
   }, [isOpen]);
 
+  // Create PaymentIntent when modal opens (with email placeholder, update on submit)
+  useEffect(() => {
+    if (!isOpen || clientSecret) return;
+    
+    const createIntent = async () => {
+      try {
+        const res = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: tier.price,
+            platform,
+            package: `${tier.volume} AI Reach`,
+            username: prefillUsername.trim(),
+            email: "", // Will be updated on payment
+            currency,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        }
+      } catch (err) {
+        console.error("Failed to create payment intent:", err);
+      }
+    };
+
+    createIntent();
+  }, [isOpen, tier.price, tier.volume, platform, prefillUsername, currency, clientSecret]);
+
   const resetAndClose = useCallback(() => {
     setStep(1);
     setEmail("");
@@ -215,13 +230,14 @@ export default function CheckoutModal({
     onClose();
   }, [onClose]);
 
-  // Step 1 → Step 2: create PaymentIntent, get clientSecret
-  const handleInfoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
+  // Payment succeeded → Step 2
+  const handlePaymentSuccess = async () => {
+    if (!email.trim()) {
+      setError("Please enter your email address");
+      return;
+    }
 
-    setLoading(true);
-    setError(null);
+    const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
 
     posthog?.capture("checkout_submitted", {
       volume: tier.volume,
@@ -230,39 +246,6 @@ export default function CheckoutModal({
       network: platform,
     });
     posthog?.identify(email.trim());
-
-    try {
-      const res = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: tier.price,
-          platform,
-          package: `${tier.volume} AI Reach`,
-          username: username.trim(),
-          email: email.trim(),
-          currency, // Pass the currency to Stripe
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
-
-      setClientSecret(data.clientSecret);
-      setStep(2);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Step 2 → Step 3: payment succeeded
-  const handlePaymentSuccess = async () => {
-    const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
 
     posthog?.capture("payment_success", {
       volume: tier.volume,
@@ -278,7 +261,7 @@ export default function CheckoutModal({
       transactionId: orderId,
     });
 
-    setStep(3);
+    setStep(2);
 
     // Fire order notifications (email, Discord, DB) in background
     try {
@@ -300,9 +283,6 @@ export default function CheckoutModal({
       console.error("Failed to process order notifications:", err);
     }
   };
-
-  // Step indicators
-  const stepLabels = ["Info", "Payment", "Done"];
 
   return (
     <AnimatePresence>
@@ -337,7 +317,7 @@ export default function CheckoutModal({
             {/* ── Header ── */}
             <div className="px-6 pt-6 pb-5 border-b border-white/[0.06]">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-500">
-                {step === 3 ? "Order confirmed" : "Complete your setup"}
+                {step === 2 ? "Order confirmed" : "Complete your purchase"}
               </p>
               <div className="mt-3 flex items-baseline gap-3">
                 <span className="text-[28px] font-semibold text-white tracking-tight">
@@ -353,65 +333,28 @@ export default function CheckoutModal({
                   style={{ backgroundColor: accentColor }}
                 />
                 <span className="text-[13px] text-zinc-400">
-                  {platformLabel} {tier.volume} AI Reach
+                  {platformLabel} {tier.volume} Followers
                 </span>
-              </div>
-
-              {/* Step indicator */}
-              <div className="flex items-center gap-1.5 mt-4">
-                {stepLabels.map((label, i) => (
-                  <div key={label} className="flex items-center gap-1.5">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                        step > i + 1
-                          ? "text-white"
-                          : step === i + 1
-                            ? "text-white"
-                            : "bg-white/[0.04] text-zinc-600"
-                      }`}
-                      style={
-                        step >= i + 1
-                          ? { backgroundColor: accentColor }
-                          : undefined
-                      }
-                    >
-                      {step > i + 1 ? "✓" : i + 1}
-                    </div>
-                    <span
-                      className={`text-[10px] font-medium ${
-                        step >= i + 1 ? "text-zinc-300" : "text-zinc-600"
-                      }`}
-                    >
-                      {label}
-                    </span>
-                    {i < 2 && (
-                      <div
-                        className={`w-6 h-px mx-0.5 ${
-                          step > i + 1 ? "bg-white/20" : "bg-white/[0.06]"
-                        }`}
-                      />
-                    )}
-                  </div>
-                ))}
               </div>
             </div>
 
             {/* ── Body ── */}
             <div className="px-6 py-6">
-              {/* ── Step 1: Username + Email ── */}
+              {/* ── Step 1: Single checkout step (Username + Email + Payment) ── */}
               {step === 1 && (
-                <form onSubmit={handleInfoSubmit} className="space-y-4">
-                  {/* Username from tunnel (read-only display) */}
+                <div className="space-y-5">
+                  {/* Username display */}
                   {username && (
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
                       <span className="text-[12px] font-medium text-zinc-500">Account</span>
                       <span className="text-[14px] font-semibold text-white">@{username}</span>
                     </div>
                   )}
 
+                  {/* Email input */}
                   <div>
                     <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                      Contact Email (for receipt &amp; tracking)
+                      Email (for receipt &amp; order tracking)
                     </label>
                     <input
                       type="email"
@@ -428,82 +371,68 @@ export default function CheckoutModal({
                     <p className="text-red-400 text-[13px]">{error}</p>
                   )}
 
-                  <button
-                    type="submit"
-                    disabled={loading || !email.trim()}
-                    className="shine relative w-full py-4 rounded-2xl text-[14px] font-semibold text-white transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-2"
-                    style={{ background: accentGradient }}
-                  >
-                    {loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        Continue to Payment
-                        <Lock className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </button>
-                </form>
+                  {/* Payment form (Stripe Elements) */}
+                  {clientSecret ? (
+                    <Elements
+                      stripe={stripePromise}
+                      options={{
+                        clientSecret,
+                        appearance: {
+                          theme: "night",
+                          variables: {
+                            colorPrimary: accentColor,
+                            colorBackground: "#18181b",
+                            colorText: "#e4e4e7",
+                            colorTextPlaceholder: "#52525b",
+                            colorDanger: "#ef4444",
+                            borderRadius: "12px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                            spacingUnit: "4px",
+                          },
+                          rules: {
+                            ".Input": {
+                              backgroundColor: "rgba(255,255,255,0.04)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              padding: "14px 16px",
+                            },
+                            ".Input:focus": {
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              boxShadow: `0 0 0 2px ${accentColor}30`,
+                            },
+                            ".Tab": {
+                              backgroundColor: "rgba(255,255,255,0.04)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                            },
+                            ".Tab--selected": {
+                              backgroundColor: "rgba(255,255,255,0.08)",
+                              border: `1px solid ${accentColor}60`,
+                            },
+                            ".Label": {
+                              fontSize: "12px",
+                              fontWeight: "500",
+                            },
+                          },
+                        },
+                      }}
+                    >
+                      <PaymentForm
+                        onSuccess={handlePaymentSuccess}
+                        accentGradient={accentGradient}
+                        accentColor={accentColor}
+                        price={tier.price}
+                        currency={currency}
+                      />
+                    </Elements>
+                  ) : (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
+                    </div>
+                  )}
+                </div>
               )}
 
-              {/* ── Step 2: Stripe PaymentElement ── */}
-              {step === 2 && clientSecret && (
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret,
-                    appearance: {
-                      theme: "night",
-                      variables: {
-                        colorPrimary: accentColor,
-                        colorBackground: "#18181b",
-                        colorText: "#e4e4e7",
-                        colorTextPlaceholder: "#52525b",
-                        colorDanger: "#ef4444",
-                        borderRadius: "12px",
-                        fontFamily: "Inter, system-ui, sans-serif",
-                        spacingUnit: "4px",
-                      },
-                      rules: {
-                        ".Input": {
-                          backgroundColor: "rgba(255,255,255,0.04)",
-                          border: "1px solid rgba(255,255,255,0.08)",
-                          padding: "14px 16px",
-                        },
-                        ".Input:focus": {
-                          border: "1px solid rgba(255,255,255,0.2)",
-                          boxShadow: `0 0 0 2px ${accentColor}30`,
-                        },
-                        ".Tab": {
-                          backgroundColor: "rgba(255,255,255,0.04)",
-                          border: "1px solid rgba(255,255,255,0.08)",
-                        },
-                        ".Tab--selected": {
-                          backgroundColor: "rgba(255,255,255,0.08)",
-                          border: `1px solid ${accentColor}60`,
-                        },
-                        ".Label": {
-                          fontSize: "12px",
-                          fontWeight: "500",
-                        },
-                      },
-                    },
-                  }}
-                >
-                  <PaymentForm
-                    onSuccess={handlePaymentSuccess}
-                    onBack={() => setStep(1)}
-                    accentGradient={accentGradient}
-                    accentColor={accentColor}
-                    price={tier.price}
-                    currency={currency}
-                    currencySymbol={currencySymbol}
-                  />
-                </Elements>
-              )}
-
-              {/* ── Step 3: Success ── */}
-              {step === 3 && (
+              {/* ── Step 2: Success ── */}
+              {step === 2 && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -519,7 +448,7 @@ export default function CheckoutModal({
                     Payment Successful!
                   </h4>
                   <p className="text-[13px] text-zinc-400 mb-1">
-                    {platformLabel} {tier.volume} AI Reach campaign is now active for
+                    {platformLabel} {tier.volume} Followers campaign is now active for
                   </p>
                   <p className="text-[15px] font-semibold text-white mb-1">
                     @{username}
@@ -538,7 +467,7 @@ export default function CheckoutModal({
             </div>
 
             {/* ── Footer — Trust badges ── */}
-            {step !== 3 && (
+            {step === 1 && (
               <div className="px-6 pb-6 pt-2">
                 <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-600">
                   <Shield className="w-3 h-3" />
