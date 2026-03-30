@@ -362,9 +362,26 @@ export default function GrowthAnalyzerPage() {
                 </div>
 
                 {/* Trust badges */}
-                <div className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-600">
-                  <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> 100% secure</span>
-                  <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant delivery</span>
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  {/* Trustpilot badge */}
+                  <div className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2" aria-label="Trustpilot rating 4.8 out of 5">
+                    <span className="text-sm font-black text-white">4.8</span>
+                    <span className="h-4 w-px bg-white/20"></span>
+                    <span className="inline-flex items-center gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className="inline-flex items-center justify-center w-5 h-5 rounded-[3px]" style={{ backgroundColor: "rgb(0, 182, 122)" }}>
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="white" aria-hidden="true">
+                            <path d="M12 17.27l-5.18 3.05 1.4-5.95L3.5 9.24l6.06-.52L12 3l2.44 5.72 6.06.52-4.72 5.13 1.4 5.95z"></path>
+                          </svg>
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                  {/* Other badges */}
+                  <div className="flex items-center gap-5 text-[11px] text-zinc-600">
+                    <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> 100% secure</span>
+                    <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant delivery</span>
+                  </div>
                 </div>
               </motion.div>
             )}
