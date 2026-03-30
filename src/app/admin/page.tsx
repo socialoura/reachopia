@@ -21,6 +21,12 @@ interface CountryStat {
   revenue: number;
 }
 
+interface CurrencyStat {
+  currency: string;
+  orders: number;
+  revenue: number;
+}
+
 interface Stats {
   totalOrders: number;
   totalRevenue: number;
@@ -29,6 +35,7 @@ interface Stats {
   monthly: Array<{ month: string; orders: number; revenue: number }>;
   byPlatform: Array<{ platform: string; count: number; revenue: number }>;
   byCountry: CountryStat[];
+  byCurrency: CurrencyStat[];
 }
 
 function countryFlag(code: string): string {
@@ -105,9 +112,19 @@ export default function AdminAnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">Total Revenue</p>
-                    <p className="text-3xl font-bold text-white mt-1">
-                      {formatCurrency(stats.totalRevenue, 'USD')}
-                    </p>
+                    {stats.byCurrency && stats.byCurrency.length > 0 ? (
+                      <div className="mt-1 space-y-0.5">
+                        {stats.byCurrency.map((c) => (
+                          <p key={c.currency} className="text-lg font-bold text-white">
+                            {formatCurrency(c.revenue, c.currency as "USD" | "EUR" | "GBP" | "CAD" | "AUD")}
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-3xl font-bold text-white mt-1">
+                        {formatCurrency(stats.totalRevenue, 'USD')}
+                      </p>
+                    )}
                   </div>
                   <DollarSign className="w-10 h-10 text-green-400" />
                 </div>

@@ -293,7 +293,7 @@ export default function CheckoutModal({
           service: "AI Reach",
           quantity: tier.volume,
           price: tier.price,
-          currency: "USD",
+          currency: currency || "USD",
         }),
       });
     } catch (err) {

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await req.json();
 
-    const { orderId, email, username, platform, service, quantity, price } =
+    const { orderId, email, username, platform, service, quantity, price, currency } =
       body as OrderPayload;
 
     // Validate required fields
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       service,
       quantity,
       price,
-      currency: "USD",
+      currency: currency || "USD",
     };
 
     const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
         service,
         followers: parseInt(quantity, 10) || 0,
         price,
+        currency: currency || "USD",
         countryCode,
         countryName,
       });

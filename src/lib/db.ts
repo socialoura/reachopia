@@ -62,6 +62,9 @@ export async function initDatabase() {
     // Add country columns to existing tables (safe to run multiple times)
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS country_code VARCHAR(10)`;
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS country_name VARCHAR(255)`;
+    
+    // Add currency column for multi-currency support
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'USD'`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS pricing (
@@ -114,6 +117,7 @@ export interface DBOrder {
   price: number;
   amount: number;
   cost: number;
+  currency: string;
   payment_status: string;
   payment_intent_id: string | null;
   order_status: string;
@@ -134,14 +138,15 @@ export async function createOrder(data: {
   service: string;
   followers: number;
   price: number;
+  currency?: string;
   paymentIntentId?: string;
   countryCode?: string;
   countryName?: string;
 }): Promise<{ id: number; order_id: string }> {
   await ensureDbReady();
   const result = await sql`
-    INSERT INTO orders (order_id, username, email, platform, service, followers, price, amount, payment_intent_id, country_code, country_name)
-    VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.price}, ${data.price}, ${data.paymentIntentId || null}, ${data.countryCode || null}, ${data.countryName || null})
+    INSERT INTO orders (order_id, username, email, platform, service, followers, price, amount, currency, payment_intent_id, country_code, country_name)
+    VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.price}, ${data.price}, ${data.currency || 'USD'}, ${data.paymentIntentId || null}, ${data.countryCode || null}, ${data.countryName || null})
     RETURNING id, order_id
   `;
   return result[0] as { id: number; order_id: string };
@@ -186,6 +191,17 @@ export async function getOrderStats() {
     FROM orders
     GROUP BY platform
   `;
+  
+  // Revenue breakdown by currency
+  const byCurrencyResult = await sql`
+    SELECT 
+      COALESCE(currency, 'USD') AS currency,
+      COUNT(*)::int AS orders,
+      COALESCE(SUM(amount), 0)::float AS revenue
+    FROM orders
+    GROUP BY currency
+    ORDER BY revenue DESC
+  `;
 
   return {
     totalOrders: totalResult[0]?.total || 0,
@@ -194,6 +210,7 @@ export async function getOrderStats() {
     last24h: last24hResult[0]?.recent || 0,
     monthly: monthlyResult as unknown as Array<{ month: string; orders: number; revenue: number }>,
     byPlatform: platformResult as unknown as Array<{ platform: string; count: number; revenue: number }>,
+    byCurrency: byCurrencyResult as unknown as Array<{ currency: string; orders: number; revenue: number }>,
   };
 }
 
