@@ -15,6 +15,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
+import GmailPrivateAccountButton from "@/components/admin/GmailPrivateAccountButton";
+import GmailUsernameNotFoundButton from "@/components/admin/GmailUsernameNotFoundButton";
 
 interface Order {
   id: number;
@@ -257,12 +259,15 @@ export default function AdminOrdersPage() {
                     <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Date
                     </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {filteredOrders.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-5 py-16 text-center">
+                      <td colSpan={9} className="px-5 py-16 text-center">
                         <Package className="w-10 h-10 text-gray-600 mx-auto mb-3" />
                         <p className="text-gray-500">No orders found</p>
                       </td>
@@ -412,6 +417,24 @@ export default function AdminOrdersPage() {
                             <Calendar className="w-3.5 h-3.5" />
                             {formatDate(order.created_at)}
                           </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          {order.email && (
+                            <div className="flex items-center gap-2">
+                              <GmailPrivateAccountButton
+                                customerEmail={order.email}
+                                orderId={order.order_id}
+                                username={order.username}
+                                platform={order.platform}
+                              />
+                              <GmailUsernameNotFoundButton
+                                customerEmail={order.email}
+                                orderId={order.order_id}
+                                username={order.username}
+                                platform={order.platform}
+                              />
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))
