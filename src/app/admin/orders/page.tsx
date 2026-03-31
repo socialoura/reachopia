@@ -27,6 +27,7 @@ interface Order {
   price: number;
   amount: number;
   cost: number;
+  currency: string;
   order_status: string;
   notes: string;
   created_at: string;
@@ -147,8 +148,26 @@ export default function AdminOrdersPage() {
       minute: "2-digit",
     });
 
-  const formatCurrency = (n: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+  const formatAmount = (amount: number, currency: string = "USD") => {
+    try {
+      return new Intl.NumberFormat("en-US", { 
+        style: "currency", 
+        currency: currency.toUpperCase() 
+      }).format(amount);
+    } catch {
+      return new Intl.NumberFormat("en-US", { 
+        style: "currency", 
+        currency: "USD" 
+      }).format(amount);
+    }
+  };
+
+  const getCustomerStatus = (order: Order): { label: string; isNew: boolean } => {
+    const orderNum = order.customer_order_number ?? 1;
+    return orderNum === 1 
+      ? { label: "New", isNew: true }
+      : { label: "Returning", isNew: false };
+  };
 
   const getStatusStyle = (status: string) =>
     STATUS_OPTIONS.find((s) => s.value === status)?.color ||
@@ -221,6 +240,9 @@ export default function AdminOrdersPage() {
                       Client
                     </th>
                     <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Service
                     </th>
                     <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -240,7 +262,7 @@ export default function AdminOrdersPage() {
                 <tbody className="divide-y divide-white/5">
                   {filteredOrders.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-5 py-16 text-center">
+                      <td colSpan={8} className="px-5 py-16 text-center">
                         <Package className="w-10 h-10 text-gray-600 mx-auto mb-3" />
                         <p className="text-gray-500">No orders found</p>
                       </td>
@@ -271,6 +293,27 @@ export default function AdminOrdersPage() {
                           )}
                         </td>
                         <td className="px-5 py-4">
+                          {(() => {
+                            const status = getCustomerStatus(order);
+                            return (
+                              <span
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                  status.isNew
+                                    ? "bg-gray-500/20 text-gray-400"
+                                    : "bg-green-500/20 text-green-400"
+                                }`}
+                              >
+                                {status.label}
+                                {!status.isNew && order.customer_total_orders && (
+                                  <span className="ml-1 text-[10px] opacity-70">
+                                    #{order.customer_total_orders}
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
                             {order.platform === "instagram" ? (
                               <InstagramIcon className="w-4 h-4 text-pink-400" />
@@ -296,7 +339,7 @@ export default function AdminOrdersPage() {
                           </div>
                         </td>
                         <td className="px-5 py-4 text-white font-semibold text-sm">
-                          {formatCurrency(order.amount)}
+                          {formatAmount(order.amount, order.currency || "USD")}
                         </td>
                         <td className="px-5 py-4">
                           <div className="relative">

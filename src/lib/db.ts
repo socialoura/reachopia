@@ -229,6 +229,74 @@ export async function getCountryStats(): Promise<Array<{ country_code: string; c
   return result as unknown as Array<{ country_code: string; country_name: string; orders: number; revenue: number }>;
 }
 
+// ─── Analytics by Date ────────────────────────────────────
+
+export interface DailyStats {
+  totalOrders: number;
+  totalRevenueItems: Array<{ amount: number; currency: string }>;
+  uniqueCustomers: number;
+  exitIntentPurchases: number;
+  byCurrency: Array<{ currency: string; orders: number; revenue: number }>;
+}
+
+export async function getStatsByDate(date: string): Promise<DailyStats> {
+  await ensureDbReady();
+  
+  // Parse date and create range
+  const startDate = `${date} 00:00:00`;
+  const endDate = `${date} 23:59:59`;
+
+  // Total orders and revenue items for the day
+  const ordersResult = await sql`
+    SELECT 
+      COUNT(*)::int AS total_orders,
+      json_agg(json_build_object('amount', amount::float, 'currency', COALESCE(currency, 'USD'))) AS revenue_items
+    FROM orders
+    WHERE created_at >= ${startDate}::timestamp AND created_at <= ${endDate}::timestamp
+  `;
+
+  // Unique customers (by email or username)
+  const uniqueResult = await sql`
+    SELECT COUNT(DISTINCT LOWER(COALESCE(email, username)))::int AS unique_customers
+    FROM orders
+    WHERE created_at >= ${startDate}::timestamp AND created_at <= ${endDate}::timestamp
+  `;
+
+  // Exit intent purchases (downsell - typically 100 followers packs)
+  const exitIntentResult = await sql`
+    SELECT COUNT(*)::int AS exit_intent_count
+    FROM orders
+    WHERE created_at >= ${startDate}::timestamp AND created_at <= ${endDate}::timestamp
+    AND followers <= 100
+  `;
+
+  // Revenue by currency
+  const byCurrencyResult = await sql`
+    SELECT 
+      COALESCE(currency, 'USD') AS currency,
+      COUNT(*)::int AS orders,
+      COALESCE(SUM(amount), 0)::float AS revenue
+    FROM orders
+    WHERE created_at >= ${startDate}::timestamp AND created_at <= ${endDate}::timestamp
+    GROUP BY currency
+    ORDER BY revenue DESC
+  `;
+
+  const revenueItems = ordersResult[0]?.revenue_items || [];
+  // Filter out null items from json_agg when no orders
+  const validRevenueItems = Array.isArray(revenueItems) 
+    ? revenueItems.filter((item: { amount: number; currency: string } | null) => item !== null)
+    : [];
+
+  return {
+    totalOrders: ordersResult[0]?.total_orders || 0,
+    totalRevenueItems: validRevenueItems,
+    uniqueCustomers: uniqueResult[0]?.unique_customers || 0,
+    exitIntentPurchases: exitIntentResult[0]?.exit_intent_count || 0,
+    byCurrency: byCurrencyResult as unknown as Array<{ currency: string; orders: number; revenue: number }>,
+  };
+}
+
 export async function updateOrderStatus(orderId: number, status: string) {
   await sql`
     UPDATE orders SET order_status = ${status}, updated_at = CURRENT_TIMESTAMP
