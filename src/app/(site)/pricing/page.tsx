@@ -153,6 +153,7 @@ export default function GrowthAnalyzerPage() {
   const [tiers, setTiers] = useState<CheckoutTier[]>([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<CheckoutTier | null>(null);
+  const [isExitIntentPurchase, setIsExitIntentPurchase] = useState(false);
   const [downsellData, setDownsellData] = useState(defaultDownsellConfig);
 
   const accent = getAccent(platform);
@@ -253,9 +254,10 @@ export default function GrowthAnalyzerPage() {
     setSelectedTier(null);
   };
 
-  const handleSelectTier = (tier: CheckoutTier) => {
-    posthog?.capture("package_selected", { volume: tier.volume, price: tier.price, network: platform });
+  const handleSelectTier = (tier: CheckoutTier, fromExitIntent = false) => {
+    posthog?.capture("package_selected", { volume: tier.volume, price: tier.price, network: platform, is_exit_intent: fromExitIntent });
     setSelectedTier(tier);
+    setIsExitIntentPurchase(fromExitIntent);
     setCheckoutOpen(true);
   };
 
@@ -536,6 +538,7 @@ export default function GrowthAnalyzerPage() {
           username={username}
           currency={currency}
           currencySymbol={currencySymbol}
+          isExitIntent={isExitIntentPurchase}
         />
       )}
     </>
@@ -621,7 +624,7 @@ function ResultsModal({
   platform: Platform;
   tiers: CheckoutTier[];
   accent: { primary: string; gradient: string; tw: string };
-  onSelectTier: (t: CheckoutTier) => void;
+  onSelectTier: (t: CheckoutTier, fromExitIntent?: boolean) => void;
   onClose: () => void;
   downsell: import("@/config/pricing").DownsellConfig;
   currencySymbol: string;
@@ -634,6 +637,16 @@ function ResultsModal({
   const followersCount = profile?.followersCount ?? null;
   const scrollTrackedRef = useRef(false);
 
+  // Check if user has already claimed exit-intent offer (prevents showing downsell again)
+  // Default to true to avoid flash, then check localStorage after mount
+  const [hasClaimedExitIntent, setHasClaimedExitIntent] = useState(true);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const claimed = localStorage.getItem("hasClaimedExitIntent") === "true";
+      setHasClaimedExitIntent(claimed);
+    }
+  }, []);
+
   /* Track results modal view */
   useEffect(() => {
     posthog?.capture("results_modal_viewed", {
@@ -644,9 +657,10 @@ function ResultsModal({
     });
   }, []);
 
-  /* ── Exit-intent: first close attempt → downsell (only if enabled) ── */
+  /* ── Exit-intent: first close attempt → downsell (only if enabled AND not already claimed) ── */
   const handleClose = () => {
-    if (downsell.enabled && !showDownsell) {
+    // Show downsell only if: enabled, not already showing, and user hasn't claimed it before
+    if (downsell.enabled && !showDownsell && !hasClaimedExitIntent) {
       posthog?.capture("exit_intent_triggered", { network: platform, username });
       setShowDownsell(true);
     } else {
@@ -686,7 +700,7 @@ function ResultsModal({
       originalPrice: Math.round(downsellPrice * 2 * 100) / 100,
     };
     setShowDownsell(false);
-    onSelectTier(trialTier);
+    onSelectTier(trialTier, true); // true = fromExitIntent
   };
 
   return (

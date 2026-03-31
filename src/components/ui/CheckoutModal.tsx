@@ -29,6 +29,8 @@ export interface CheckoutModalProps {
   username?: string;
   currency?: string;
   currencySymbol?: string;
+  /** If true, marks this purchase as an exit-intent offer (downsell) to prevent showing it again */
+  isExitIntent?: boolean;
 }
 
 const stripePromise = loadStripe(
@@ -179,6 +181,7 @@ export default function CheckoutModal({
   username: prefillUsername = "",
   currency = "USD",
   currencySymbol = "$",
+  isExitIntent = false,
 }: CheckoutModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [username] = useState(prefillUsername);
@@ -267,6 +270,12 @@ export default function CheckoutModal({
       currency: currency || "USD",
       transactionId: orderId,
     });
+
+    // Mark exit-intent offer as claimed to prevent showing it again
+    // Using localStorage (client-side) - checked before showing downsell in ResultsModal
+    if (isExitIntent && typeof window !== "undefined") {
+      localStorage.setItem("hasClaimedExitIntent", "true");
+    }
 
     setStep(2);
 
