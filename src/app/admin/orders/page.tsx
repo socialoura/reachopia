@@ -165,8 +165,8 @@ export default function AdminOrdersPage() {
   const getCustomerStatus = (order: Order): { label: string; isNew: boolean } => {
     const orderNum = order.customer_order_number ?? 1;
     return orderNum === 1 
-      ? { label: "New", isNew: true }
-      : { label: "Returning", isNew: false };
+      ? { label: "Nouveau client", isNew: true }
+      : { label: "Récurrent", isNew: false };
   };
 
   const getStatusStyle = (status: string) =>
