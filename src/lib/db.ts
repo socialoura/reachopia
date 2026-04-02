@@ -66,6 +66,11 @@ export async function initDatabase() {
     // Add currency column for multi-currency support
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'USD'`;
 
+    // Add likes, views, and assignments columns for bundle orders
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS likes_qty INTEGER DEFAULT 0`;
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS views_qty INTEGER DEFAULT 0`;
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS assignments JSONB DEFAULT '{}'::jsonb`;
+
     await sql`
       CREATE TABLE IF NOT EXISTS pricing (
         id VARCHAR(50) PRIMARY KEY,
@@ -114,6 +119,12 @@ export interface DBOrder {
   platform: string;
   service: string;
   followers: number;
+  likes_qty: number;
+  views_qty: number;
+  assignments: {
+    likes?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+    views?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+  };
   price: number;
   amount: number;
   cost: number;
@@ -137,6 +148,12 @@ export async function createOrder(data: {
   platform: string;
   service: string;
   followers: number;
+  likesQty?: number;
+  viewsQty?: number;
+  assignments?: {
+    likes?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+    views?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+  };
   price: number;
   currency?: string;
   paymentIntentId?: string;
@@ -144,9 +161,10 @@ export async function createOrder(data: {
   countryName?: string;
 }): Promise<{ id: number; order_id: string }> {
   await ensureDbReady();
+  const assignmentsJson = JSON.stringify(data.assignments || {});
   const result = await sql`
-    INSERT INTO orders (order_id, username, email, platform, service, followers, price, amount, currency, payment_intent_id, country_code, country_name)
-    VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.price}, ${data.price}, ${data.currency || 'USD'}, ${data.paymentIntentId || null}, ${data.countryCode || null}, ${data.countryName || null})
+    INSERT INTO orders (order_id, username, email, platform, service, followers, likes_qty, views_qty, assignments, price, amount, currency, payment_intent_id, country_code, country_name)
+    VALUES (${data.orderId}, ${data.username}, ${data.email}, ${data.platform}, ${data.service}, ${data.followers}, ${data.likesQty || 0}, ${data.viewsQty || 0}, ${assignmentsJson}::jsonb, ${data.price}, ${data.price}, ${data.currency || 'USD'}, ${data.paymentIntentId || null}, ${data.countryCode || null}, ${data.countryName || null})
     RETURNING id, order_id
   `;
   return result[0] as { id: number; order_id: string };
@@ -339,6 +357,10 @@ export interface DownsellConfig {
 export interface PricingData {
   instagram: PricingTier[];
   tiktok: PricingTier[];
+  tiktokLikes?: PricingTier[];
+  tiktokViews?: PricingTier[];
+  instagramLikes?: PricingTier[];
+  instagramViews?: PricingTier[];
   downsell?: DownsellConfig;
 }
 
@@ -371,6 +393,44 @@ const DEFAULT_PRICING: PricingData = {
     { followers: "5000",  price: "64.90",  prices: { USD: "64.90",  EUR: "59.90",  GBP: "49.90",  CAD: "79.90",  AUD: "89.90"  } },
     { followers: "10000", price: "99.90",  prices: { USD: "99.90",  EUR: "89.90",  GBP: "79.90",  CAD: "124.90", AUD: "139.90" } },
     { followers: "25000", price: "175.00", prices: { USD: "175.00", EUR: "159.90", GBP: "139.90", CAD: "219.90", AUD: "249.90" } },
+  ],
+  tiktokLikes: [
+    { followers: "100",   price: "1.90",  prices: { USD: "1.90",  EUR: "1.90",  GBP: "1.50",  CAD: "2.50",  AUD: "2.90"  } },
+    { followers: "250",   price: "3.50",  prices: { USD: "3.50",  EUR: "3.20",  GBP: "2.90",  CAD: "4.50",  AUD: "5.20"  } },
+    { followers: "500",   price: "5.90",  prices: { USD: "5.90",  EUR: "5.50",  GBP: "4.90",  CAD: "7.90",  AUD: "8.90"  } },
+    { followers: "1000",  price: "9.90",  prices: { USD: "9.90",  EUR: "8.90",  GBP: "7.90",  CAD: "12.90", AUD: "14.90" } },
+    { followers: "2500",  price: "19.90", prices: { USD: "19.90", EUR: "17.90", GBP: "15.90", CAD: "24.90", AUD: "27.90" } },
+    { followers: "5000",  price: "34.90", prices: { USD: "34.90", EUR: "29.90", GBP: "27.90", CAD: "44.90", AUD: "49.90" } },
+    { followers: "10000", price: "59.90", prices: { USD: "59.90", EUR: "54.90", GBP: "47.90", CAD: "74.90", AUD: "84.90" } },
+  ],
+  tiktokViews: [
+    { followers: "500",    price: "1.50",  prices: { USD: "1.50",  EUR: "1.50",  GBP: "1.20",  CAD: "1.90",  AUD: "2.20"  } },
+    { followers: "1000",   price: "2.50",  prices: { USD: "2.50",  EUR: "2.20",  GBP: "1.90",  CAD: "3.20",  AUD: "3.50"  } },
+    { followers: "2500",   price: "4.90",  prices: { USD: "4.90",  EUR: "4.50",  GBP: "3.90",  CAD: "6.50",  AUD: "7.20"  } },
+    { followers: "5000",   price: "7.90",  prices: { USD: "7.90",  EUR: "6.90",  GBP: "5.90",  CAD: "9.90",  AUD: "11.90" } },
+    { followers: "10000",  price: "12.90", prices: { USD: "12.90", EUR: "11.90", GBP: "9.90",  CAD: "16.90", AUD: "18.90" } },
+    { followers: "25000",  price: "24.90", prices: { USD: "24.90", EUR: "22.90", GBP: "19.90", CAD: "32.90", AUD: "36.90" } },
+    { followers: "50000",  price: "39.90", prices: { USD: "39.90", EUR: "36.90", GBP: "32.90", CAD: "52.90", AUD: "59.90" } },
+    { followers: "100000", price: "69.90", prices: { USD: "69.90", EUR: "64.90", GBP: "56.90", CAD: "89.90", AUD: "99.90" } },
+  ],
+  instagramLikes: [
+    { followers: "100",   price: "1.50",  prices: { USD: "1.50",  EUR: "1.50",  GBP: "1.20",  CAD: "1.90",  AUD: "2.20"  } },
+    { followers: "250",   price: "2.90",  prices: { USD: "2.90",  EUR: "2.50",  GBP: "2.20",  CAD: "3.50",  AUD: "3.90"  } },
+    { followers: "500",   price: "4.90",  prices: { USD: "4.90",  EUR: "4.50",  GBP: "3.90",  CAD: "6.50",  AUD: "7.20"  } },
+    { followers: "1000",  price: "7.90",  prices: { USD: "7.90",  EUR: "6.90",  GBP: "5.90",  CAD: "9.90",  AUD: "11.90" } },
+    { followers: "2500",  price: "14.90", prices: { USD: "14.90", EUR: "12.90", GBP: "11.90", CAD: "18.90", AUD: "21.90" } },
+    { followers: "5000",  price: "24.90", prices: { USD: "24.90", EUR: "22.90", GBP: "19.90", CAD: "32.90", AUD: "36.90" } },
+    { followers: "10000", price: "44.90", prices: { USD: "44.90", EUR: "39.90", GBP: "34.90", CAD: "54.90", AUD: "59.90" } },
+  ],
+  instagramViews: [
+    { followers: "500",    price: "1.50",  prices: { USD: "1.50",  EUR: "1.50",  GBP: "1.20",  CAD: "1.90",  AUD: "2.20"  } },
+    { followers: "1000",   price: "2.50",  prices: { USD: "2.50",  EUR: "2.20",  GBP: "1.90",  CAD: "3.20",  AUD: "3.50"  } },
+    { followers: "2500",   price: "4.90",  prices: { USD: "4.90",  EUR: "4.50",  GBP: "3.90",  CAD: "6.50",  AUD: "7.20"  } },
+    { followers: "5000",   price: "7.90",  prices: { USD: "7.90",  EUR: "6.90",  GBP: "5.90",  CAD: "9.90",  AUD: "11.90" } },
+    { followers: "10000",  price: "12.90", prices: { USD: "12.90", EUR: "11.90", GBP: "9.90",  CAD: "16.90", AUD: "18.90" } },
+    { followers: "25000",  price: "24.90", prices: { USD: "24.90", EUR: "22.90", GBP: "19.90", CAD: "32.90", AUD: "36.90" } },
+    { followers: "50000",  price: "39.90", prices: { USD: "39.90", EUR: "36.90", GBP: "32.90", CAD: "52.90", AUD: "59.90" } },
+    { followers: "100000", price: "69.90", prices: { USD: "69.90", EUR: "64.90", GBP: "56.90", CAD: "89.90", AUD: "99.90" } },
   ],
   downsell: DEFAULT_DOWNSELL,
 };

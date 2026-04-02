@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await req.json();
 
-    const { orderId, email, username, platform, service, quantity, price, currency } =
+    const { orderId, email, username, platform, service, quantity, price, currency, followersQty, likesQty, viewsQty, assignments } =
       body as OrderPayload;
 
     // Validate required fields
@@ -58,7 +58,10 @@ export async function POST(req: NextRequest) {
         email,
         platform,
         service,
-        followers: parseInt(quantity, 10) || 0,
+        followers: followersQty ?? (parseInt(quantity, 10) || 0),
+        likesQty: likesQty ?? 0,
+        viewsQty: viewsQty ?? 0,
+        assignments: assignments ?? {},
         price,
         currency: currency || "USD",
         countryCode,

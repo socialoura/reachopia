@@ -1,0 +1,247 @@
+"use client";
+
+import { useMemo } from "react";
+import { ArrowLeft, Users, Heart, Eye, Lock, ChevronRight, Shield, Clock } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
+import { formatQty } from "@/config/tiktok-services";
+import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/context/CurrencyContext";
+import { usePricingTiers } from "@/hooks/usePricingTiers";
+
+const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
+const IG_GRADIENT = "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)";
+const BUNDLE_DISCOUNT = 0.10;
+
+
+export default function OrderRecap({ onBack }: { onBack: () => void }) {
+  const posthog = usePostHog();
+  const { currency } = useCurrency();
+  const {
+    platform,
+    profile,
+    followersQty,
+    likesQty,
+    viewsQty,
+    likesAssignments,
+    viewsAssignments,
+    setStep,
+    setCheckoutOpen,
+  } = useTiktokUpsellStore();
+
+  const isIG = platform === "instagram";
+  const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
+  const followerAccent = isIG ? "#dd2a7b" : "#ee1d52";
+
+  const { getTierPrice: getPrice, getOriginalPrice } = usePricingTiers(currency);
+  const followersPrice = isIG ? getPrice("instagram", followersQty) : getPrice("tiktok", followersQty);
+  const likesPrice = isIG ? getPrice("instagramLikes", likesQty) : getPrice("tiktokLikes", likesQty);
+  const viewsPrice = isIG ? getPrice("instagramViews", viewsQty) : getPrice("tiktokViews", viewsQty);
+
+  const serviceCount = (followersQty > 0 ? 1 : 0) + (likesQty > 0 ? 1 : 0) + (viewsQty > 0 ? 1 : 0);
+  const hasBundleDiscount = serviceCount >= 2;
+
+  const rawTotal = useMemo(
+    () => Math.round((followersPrice + likesPrice + viewsPrice) * 100) / 100,
+    [followersPrice, likesPrice, viewsPrice],
+  );
+
+  const totalPrice = hasBundleDiscount
+    ? Math.round(rawTotal * (1 - BUNDLE_DISCOUNT) * 100) / 100
+    : rawTotal;
+
+  const totalOriginal = useMemo(() => {
+    return (
+      getOriginalPrice(isIG ? "instagram" : "tiktok", followersQty) +
+      getOriginalPrice(isIG ? "instagramLikes" : "tiktokLikes", likesQty) +
+      getOriginalPrice(isIG ? "instagramViews" : "tiktokViews", viewsQty)
+    );
+  }, [followersQty, likesQty, viewsQty, getOriginalPrice, isIG]);
+
+  const totalSavings = totalOriginal > 0 ? Math.round((1 - totalPrice / totalOriginal) * 100) : 0;
+
+  const handleCheckout = () => {
+    posthog?.capture("bundle_checkout_started", {
+      platform,
+      username: profile?.username,
+      followers: followersQty,
+      likes: likesQty,
+      views: viewsQty,
+      total_price: totalPrice,
+      likes_videos: likesAssignments.length,
+      views_videos: viewsAssignments.length,
+    });
+    setStep("checkout");
+    setCheckoutOpen(true);
+  };
+
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="text-[clamp(1.3rem,3vw,2rem)] font-semibold text-white tracking-tight">
+          Order Summary
+        </h2>
+        <p className="mt-2 text-[13px] text-zinc-400">
+          Review your bundle for <span className="text-white font-medium">@{profile?.username}</span>
+        </p>
+      </div>
+
+      {/* Profile mini card */}
+      <div className="flex items-center gap-3 mb-6 p-3 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+        <img
+          src={profile?.avatarUrl}
+          alt={profile?.username}
+          className="w-12 h-12 rounded-full object-cover ring-2 ring-zinc-800"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
+        />
+        <div>
+          <p className="text-[14px] font-semibold text-white">@{profile?.username}</p>
+          <p className="text-[12px] text-zinc-500">{formatQty(profile?.followersCount ?? 0)} followers</p>
+        </div>
+      </div>
+
+      {/* Line items */}
+      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+        {/* Followers */}
+        {followersQty > 0 && (
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${followerAccent}1a` }}>
+                <Users className="w-4 h-4" style={{ color: followerAccent }} />
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-white">{formatQty(followersQty)} Followers</p>
+                <p className="text-[11px] text-zinc-500">Delivered to your profile</p>
+              </div>
+            </div>
+            <span className="text-[13px] sm:text-[15px] font-semibold text-white">{formatCurrency(followersPrice, currency)}</span>
+          </div>
+        )}
+
+        {/* Likes */}
+        {likesQty > 0 && (
+          <div className="p-4 sm:p-5 md:p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-pink-400" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-medium text-white">{formatQty(likesQty)} Likes</p>
+                  <p className="text-[11px] text-zinc-500">Across {likesAssignments.length} {isIG ? "post" : "video"}{likesAssignments.length !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+              <span className="text-[13px] sm:text-[15px] font-semibold text-white">{formatCurrency(likesPrice, currency)}</span>
+            </div>
+            {likesAssignments.length > 0 && (
+              <div className="mt-3 ml-12 flex flex-wrap gap-2">
+                {likesAssignments.map((a) => (
+                  <div key={a.postId} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                    <img src={a.imageUrl} alt="" className="w-6 h-8 rounded object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                    <span className="text-[11px] text-zinc-300">{formatQty(a.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Views */}
+        {viewsQty > 0 && (
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: isIG ? "rgba(129,52,175,0.1)" : "rgba(105,201,208,0.1)" }}>
+                  <Eye className="w-4 h-4" style={{ color: isIG ? "#8134af" : "#69C9D0" }} />
+                </div>
+                <div>
+                  <p className="text-[14px] font-medium text-white">{formatQty(viewsQty)} Views</p>
+                  <p className="text-[11px] text-zinc-500">Across {viewsAssignments.length} {isIG ? "post" : "video"}{viewsAssignments.length !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+              <span className="text-[13px] sm:text-[15px] font-semibold text-white">{formatCurrency(viewsPrice, currency)}</span>
+            </div>
+            {viewsAssignments.length > 0 && (
+              <div className="mt-3 ml-12 flex flex-wrap gap-2">
+                {viewsAssignments.map((a) => (
+                  <div key={a.postId} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                    <img src={a.imageUrl} alt="" className="w-6 h-8 rounded object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                    <span className="text-[11px] text-zinc-300">{formatQty(a.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Bundle discount line */}
+        {hasBundleDiscount && (
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-emerald-400">Bundle Discount</p>
+                <p className="text-[11px] text-zinc-500">{serviceCount} services combined</p>
+              </div>
+            </div>
+            <span className="text-[13px] sm:text-[15px] font-semibold text-emerald-400">-{formatCurrency(rawTotal - totalPrice, currency)}</span>
+          </div>
+        )}
+
+        {/* Total */}
+        <div className="p-4 bg-white/[0.02]">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-medium text-zinc-400 uppercase tracking-wider">Total</span>
+            <div className="flex items-baseline gap-2">
+              {totalOriginal > 0 && (
+                <span className="text-[14px] text-zinc-600 line-through">{formatCurrency(totalOriginal, currency)}</span>
+              )}
+              <span className="text-[18px] sm:text-[22px] font-bold text-white">{formatCurrency(totalPrice, currency)}</span>
+            </div>
+          </div>
+          {totalSavings > 0 && (
+            <p className="text-right text-[12px] font-semibold text-emerald-400 mt-1">
+              You save {totalSavings}%
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Trust signals */}
+      <div className="mt-5 flex items-center justify-center gap-3 sm:gap-5 flex-wrap">
+        <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+          <Shield className="w-3.5 h-3.5" /> Refund if undelivered
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+          <Lock className="w-3.5 h-3.5" /> Stripe secure checkout
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+          <Clock className="w-3.5 h-3.5" /> 24-72h delivery
+        </span>
+      </div>
+
+
+      {/* Navigation */}
+      <div className="mt-6 sm:mt-8 flex items-center justify-between gap-3">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 rounded-xl text-[12px] sm:text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          Back
+        </button>
+        <button
+          onClick={handleCheckout}
+          className="shine inline-flex items-center gap-1.5 sm:gap-2.5 px-5 sm:px-8 py-3 sm:py-4 rounded-2xl text-white text-[13px] sm:text-[15px] font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+          style={{ background: gradient }}
+        >
+          <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          Review &amp; Pay Securely
+          <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}

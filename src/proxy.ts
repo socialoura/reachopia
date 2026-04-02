@@ -20,7 +20,7 @@ function countryToCurrency(country: string | undefined | null): string {
   return "USD";
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
   // Skip if user already has a currency cookie (don't overwrite manual choice)

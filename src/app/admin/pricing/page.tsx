@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
-import { Loader2, Plus, Trash2, Save, Music } from "lucide-react";
+import { Loader2, Plus, Trash2, Save, Music, Heart, Eye } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
 
 interface Tier {
@@ -28,9 +28,15 @@ interface DownsellConfig {
   prices?: Record<string, number>;
 }
 
+type PlatformKey = "instagram" | "tiktok" | "tiktokLikes" | "tiktokViews" | "instagramLikes" | "instagramViews";
+
 interface PricingData {
   instagram: Tier[];
   tiktok: Tier[];
+  tiktokLikes?: Tier[];
+  tiktokViews?: Tier[];
+  instagramLikes?: Tier[];
+  instagramViews?: Tier[];
   downsell?: DownsellConfig;
 }
 
@@ -98,51 +104,50 @@ export default function AdminPricingPage() {
     }
   };
 
+  const getTiers = (platform: PlatformKey): Tier[] => {
+    if (!pricing) return [];
+    return (pricing[platform] ?? []) as Tier[];
+  };
+
+  const setTiers = (platform: PlatformKey, tiers: Tier[]) => {
+    if (!pricing) return;
+    setPricing({ ...pricing, [platform]: tiers });
+  };
+
   const updateTier = (
-    platform: "instagram" | "tiktok",
+    platform: PlatformKey,
     index: number,
     field: "followers" | "price",
     value: string
   ) => {
-    if (!pricing) return;
-    const updated = { ...pricing };
-    updated[platform] = [...updated[platform]];
-    updated[platform][index] = { ...updated[platform][index], [field]: value };
-    setPricing(updated);
+    const tiers = [...getTiers(platform)];
+    tiers[index] = { ...tiers[index], [field]: value };
+    setTiers(platform, tiers);
   };
 
   const updateTierCurrencyPrice = (
-    platform: "instagram" | "tiktok",
+    platform: PlatformKey,
     index: number,
     currencyCode: string,
     value: string
   ) => {
-    if (!pricing) return;
-    const updated = { ...pricing };
-    updated[platform] = [...updated[platform]];
-    const tier = { ...updated[platform][index] };
+    const tiers = [...getTiers(platform)];
+    const tier = { ...tiers[index] };
     tier.prices = { ...(tier.prices || {}), [currencyCode]: value };
-    // Keep the base price field in sync with USD
     if (currencyCode === "USD") tier.price = value;
-    updated[platform][index] = tier;
-    setPricing(updated);
+    tiers[index] = tier;
+    setTiers(platform, tiers);
   };
 
-  const addTier = (platform: "instagram" | "tiktok") => {
-    if (!pricing) return;
-    const updated = { ...pricing };
-    updated[platform] = [
-      ...updated[platform],
-      { followers: "", price: "", prices: { USD: "", EUR: "", GBP: "", CAD: "", AUD: "" } },
-    ];
-    setPricing(updated);
+  const addTier = (platform: PlatformKey) => {
+    const tiers = [...getTiers(platform)];
+    tiers.push({ followers: "", price: "", prices: { USD: "", EUR: "", GBP: "", CAD: "", AUD: "" } });
+    setTiers(platform, tiers);
   };
 
-  const removeTier = (platform: "instagram" | "tiktok", index: number) => {
-    if (!pricing) return;
-    const updated = { ...pricing };
-    updated[platform] = updated[platform].filter((_, i) => i !== index);
-    setPricing(updated);
+  const removeTier = (platform: PlatformKey, index: number) => {
+    const tiers = getTiers(platform).filter((_, i) => i !== index);
+    setTiers(platform, tiers);
   };
 
   const updateDownsell = (field: keyof DownsellConfig, value: string | number | boolean) => {
@@ -236,12 +241,13 @@ export default function AdminPricingPage() {
   };
 
   const renderPlatformSection = (
-    platform: "instagram" | "tiktok",
+    platform: PlatformKey,
     label: string,
     Icon: React.ComponentType<{ className?: string }>,
-    colorClass: string
+    colorClass: string,
+    quantityLabel = "Followers"
   ) => {
-    const tiers = pricing?.[platform] || [];
+    const tiers = getTiers(platform);
     const activeCur = CURRENCIES.find((c) => c.code === selectedCurrency) || CURRENCIES[0];
     return (
       <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-6">
@@ -280,7 +286,7 @@ export default function AdminPricingPage() {
           {/* Header */}
           <div className="grid grid-cols-[1fr_1fr_40px] gap-3 px-1">
             <span className="text-xs font-semibold text-gray-500 uppercase">
-              Followers
+              {quantityLabel}
             </span>
             <span className="text-xs font-semibold text-gray-500 uppercase">
               Price ({activeCur.symbol} {activeCur.code})
@@ -382,13 +388,43 @@ export default function AdminPricingPage() {
               "instagram",
               "Instagram Followers",
               InstagramIcon,
-              "text-pink-400"
+              "text-pink-400",
+              "Followers"
+            )}
+            {renderPlatformSection(
+              "instagramLikes",
+              "Instagram Likes",
+              Heart,
+              "text-pink-400",
+              "Likes"
+            )}
+            {renderPlatformSection(
+              "instagramViews",
+              "Instagram Views",
+              Eye,
+              "text-purple-400",
+              "Views"
             )}
             {renderPlatformSection(
               "tiktok",
               "TikTok Followers",
               Music,
-              "text-cyan-400"
+              "text-cyan-400",
+              "Followers"
+            )}
+            {renderPlatformSection(
+              "tiktokLikes",
+              "TikTok Likes",
+              Heart,
+              "text-rose-400",
+              "Likes"
+            )}
+            {renderPlatformSection(
+              "tiktokViews",
+              "TikTok Views",
+              Eye,
+              "text-emerald-400",
+              "Views"
             )}
             {renderDownsellSection()}
           </div>

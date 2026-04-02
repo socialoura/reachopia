@@ -13,10 +13,19 @@ import {
   ChevronDown,
   Save,
   MessageSquare,
+  Heart,
+  Eye,
+  Users,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
 import GmailPrivateAccountButton from "@/components/admin/GmailPrivateAccountButton";
 import GmailUsernameNotFoundButton from "@/components/admin/GmailUsernameNotFoundButton";
+
+interface Assignment {
+  postId: string;
+  quantity: number;
+  imageUrl?: string;
+}
 
 interface Order {
   id: number;
@@ -26,6 +35,12 @@ interface Order {
   platform: string;
   service: string;
   followers: number;
+  likes_qty: number;
+  views_qty: number;
+  assignments: {
+    likes?: Assignment[];
+    views?: Assignment[];
+  };
   price: number;
   amount: number;
   cost: number;
@@ -337,9 +352,35 @@ export default function AdminOrdersPage() {
                                   ? "Instagram"
                                   : "TikTok"}
                               </span>
-                              <p className="text-xs text-gray-500">
-                                +{order.followers.toLocaleString()} {order.service}
-                              </p>
+                              <div className="space-y-0.5 mt-0.5">
+                                {order.followers > 0 && (
+                                  <p className="flex items-center gap-1 text-xs text-gray-400">
+                                    <Users className="w-3 h-3 text-gray-500" />
+                                    +{order.followers.toLocaleString()} followers
+                                  </p>
+                                )}
+                                {(order.likes_qty ?? 0) > 0 && (
+                                  <p className="flex items-center gap-1 text-xs text-gray-400">
+                                    <Heart className="w-3 h-3 text-pink-400" />
+                                    +{order.likes_qty.toLocaleString()} likes
+                                    {order.assignments?.likes && order.assignments.likes.length > 0 && (
+                                      <span className="text-gray-600">({order.assignments.likes.length} {order.platform === "instagram" ? "posts" : "videos"})</span>
+                                    )}
+                                  </p>
+                                )}
+                                {(order.views_qty ?? 0) > 0 && (
+                                  <p className="flex items-center gap-1 text-xs text-gray-400">
+                                    <Eye className="w-3 h-3 text-purple-400" />
+                                    +{order.views_qty.toLocaleString()} views
+                                    {order.assignments?.views && order.assignments.views.length > 0 && (
+                                      <span className="text-gray-600">({order.assignments.views.length} {order.platform === "instagram" ? "posts" : "videos"})</span>
+                                    )}
+                                  </p>
+                                )}
+                                {order.followers === 0 && !(order.likes_qty > 0) && !(order.views_qty > 0) && (
+                                  <p className="text-xs text-gray-500">{order.service}</p>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>

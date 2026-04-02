@@ -7,4 +7,11 @@ export interface OrderPayload {
   quantity: string;
   price: number;
   currency?: string;
+  followersQty?: number;
+  likesQty?: number;
+  viewsQty?: number;
+  assignments?: {
+    likes?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+    views?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+  };
 }

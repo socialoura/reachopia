@@ -21,7 +21,8 @@
     "react-countup": "^6.5.3",
     "react-dom": "19.2.4",
     "resend": "^6.9.4",
-    "stripe": "^20.4.1"
+    "stripe": "^20.4.1",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
