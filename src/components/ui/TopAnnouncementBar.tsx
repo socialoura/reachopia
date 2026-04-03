@@ -65,7 +65,7 @@ export default function TopAnnouncementBar() {
           className="w-full bg-zinc-950 border-b border-white/[0.08] overflow-hidden relative z-50"
         >
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center gap-3 py-2.5 sm:py-3">
+            <div className="hidden sm:flex items-center justify-center gap-3 py-2.5 sm:py-3">
               {/* Fire emoji with pulse animation */}
               <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400 animate-pulse flex-shrink-0" />
               
