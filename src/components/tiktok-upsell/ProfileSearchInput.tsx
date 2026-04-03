@@ -55,6 +55,9 @@ export default function ProfileSearchInput() {
       return;
     }
 
+    // Blur input to reset iOS Safari auto-zoom
+    inputRef.current?.blur();
+
     posthog?.capture("username_submitted", { username: clean, platform });
     setUsername(clean);
     setProfileLoading(true);
@@ -167,7 +170,7 @@ export default function ProfileSearchInput() {
             onFocus={() => posthog?.capture("input_focused", { platform })}
             onKeyDown={handleKeyDown}
             placeholder={isIG ? "Enter Instagram username" : "Enter TikTok username"}
-            className="w-full pl-9 pr-4 py-3.5 sm:py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[14px] sm:text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
+            className="w-full pl-9 pr-4 py-3.5 sm:py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[16px] sm:text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
             autoComplete="off"
             spellCheck={false}
             disabled={profileLoading}
