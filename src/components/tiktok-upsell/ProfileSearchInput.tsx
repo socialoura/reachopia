@@ -86,12 +86,13 @@ export default function ProfileSearchInput() {
       clearInterval(interval);
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: "Profile not found" }));
+        const data = await res.json().catch(() => ({ error: "We couldn't find this profile. Check the spelling or make sure the account is public." }));
+        posthog?.capture("profile_not_found", { username: clean, platform, has_suggestion: !!data.suggestion });
         if (data.suggestion) {
           setSuggestion(data.suggestion);
-          setProfileError(null);
+          setProfileError(data.error || "We couldn't find this profile. Check the spelling or make sure the account is public.");
         } else {
-          setProfileError(data.error || "Profile not found");
+          setProfileError(data.error || "We couldn't find this profile. Check the spelling or make sure the account is public.");
         }
         setStep("search");
         setProfileLoading(false);
@@ -151,6 +152,10 @@ export default function ProfileSearchInput() {
 
   return (
     <div className="w-full max-w-lg mx-auto">
+      <p className="flex items-center gap-1.5 text-[12px] text-zinc-500 mb-2">
+        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/[0.06] border border-white/[0.08] text-[9px] font-bold text-zinc-400 flex-shrink-0">i</span>
+        Make sure your account is set to public
+      </p>
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <div className="relative w-full">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-[15px] font-medium select-none">@</span>
@@ -189,6 +194,7 @@ export default function ProfileSearchInput() {
       {suggestion && (
         <button
           onClick={() => {
+            posthog?.capture("suggestion_clicked", { suggested_username: suggestion.username, platform });
             setLocalUsername(suggestion.username);
             setSuggestion(null);
             handleSearch(suggestion.username);

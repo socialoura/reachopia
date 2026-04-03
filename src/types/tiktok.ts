@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TikTok Types — Used by /pricing2 page and scraper API
+   TikTok Types — Used by /pricing-social page and scraper API
    ═══════════════════════════════════════════════════════════════ */
 
 export interface TiktokProfile {

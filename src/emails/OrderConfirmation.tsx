@@ -169,7 +169,7 @@ export default function OrderConfirmationEmail({
             <Text style={ctaText}>
               Need help? Our support team is available 24/7.
             </Text>
-            <Link href="mailto:support@reachopia.com" style={ctaButton}>
+            <Link href="mailto:reachopia@gmail.com" style={ctaButton}>
               Contact Support
             </Link>
           </Section>

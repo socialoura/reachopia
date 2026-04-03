@@ -178,12 +178,36 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
 /* ═══════════════════════════════════════════════════════════════
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════ */
+/* ─── Scroll section tracker (fires once per section) ─── */
+function useScrollSectionTracker(posthog: ReturnType<typeof usePostHog>, variant: string) {
+  const firedRef = useRef<Set<string>>(new Set());
+  const observe = useCallback(
+    (sectionName: string) => (node: HTMLElement | null) => {
+      if (!node || firedRef.current.has(sectionName)) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !firedRef.current.has(sectionName)) {
+            firedRef.current.add(sectionName);
+            posthog?.capture("section_viewed", { section: sectionName, variant });
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.3 },
+      );
+      observer.observe(node);
+    },
+    [posthog, variant],
+  );
+  return observe;
+}
+
 export default function TikTokFollowersPage() {
   const posthog = usePostHog();
   const isMobile = useIsMobile();
   const v = isMobile ? noAnim : fadeUp;
   const { currency } = useCurrency();
   const hasTrackedRef = useRef(false);
+  const trackSection = useScrollSectionTracker(posthog, "pricing-social");
 
   /* ─── Client-only gate: hide sensitive sections from SSR/crawlers ─── */
   const [mounted, setMounted] = useState(false);
@@ -217,7 +241,7 @@ export default function TikTokFollowersPage() {
   /* Track page view once */
   useEffect(() => {
     if (!hasTrackedRef.current) {
-      posthog?.capture("tiktok_landing_viewed", { referrer: document.referrer || "direct", variant: "pricing2" });
+      posthog?.capture("tiktok_landing_viewed", { referrer: document.referrer || "direct", variant: "pricing-social" });
       hasTrackedRef.current = true;
     }
   }, []);
@@ -298,11 +322,12 @@ export default function TikTokFollowersPage() {
     return () => { cancelled = true; };
   }, [profile?.username, isIG]);
 
-  /* Scroll to top on step change */
+  /* Scroll to top on step change + track */
   useEffect(() => {
     if (step !== "search" && step !== "scanning") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+    posthog?.capture("step_changed", { step, platform, variant: "pricing-social" });
   }, [step]);
 
   const hasPosts = (profile?.posts?.length ?? 0) > 0;
@@ -339,7 +364,7 @@ export default function TikTokFollowersPage() {
                     return (
                       <button
                         key={p}
-                        onClick={() => { if (!active) { reset(); setPlatform(p); } }}
+                        onClick={() => { if (!active) { posthog?.capture("platform_switched", { from: platform, to: p, variant: "pricing-social" }); reset(); setPlatform(p); } }}
                         className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-[12px] font-medium transition-all duration-300 ${
                           active
                             ? "text-white shadow-lg"
@@ -381,11 +406,6 @@ export default function TikTokFollowersPage() {
                   </motion.p>
                 )}
 
-                <div className="mt-6 flex items-center justify-center flex-wrap gap-x-5 gap-y-2 text-[11px] text-zinc-500">
-                  <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> Privacy-First Approach</span>
-                  <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Algorithmic Pacing</span>
-                  <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> 100% Secure Checkout</span>
-                </div>
               </motion.div>
             )}
 
@@ -516,7 +536,7 @@ export default function TikTokFollowersPage() {
 
       {/* ───────────── BELOW-THE-FOLD: hidden from SSR / crawlers, only on search step ───────────── */}
       {mounted && (step === "search" || step === "scanning") && <div data-nosnippet="">
-      <section className="relative z-10 py-16 md:py-24 lg:py-32">
+      <section ref={trackSection("how_it_works")} className="relative z-10 py-16 md:py-24 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
@@ -564,7 +584,7 @@ export default function TikTokFollowersPage() {
       </section>
 
       {/* ───────────── WHY CHOOSE US ───────────── */}
-      <section className="relative z-10 py-12 md:py-16">
+      <section ref={trackSection("why_choose_us")} className="relative z-10 py-12 md:py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {(isIG
@@ -602,7 +622,7 @@ export default function TikTokFollowersPage() {
       </section>
 
       {/* ───────────── GUARANTEES ───────────── */}
-      <section className="relative z-10 py-12 md:py-16 lg:py-24">
+      <section ref={trackSection("guarantees")} className="relative z-10 py-12 md:py-16 lg:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-8 lg:px-12">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-10">
             <motion.h2 variants={v} custom={0} className="text-[clamp(1.4rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight">
@@ -636,7 +656,7 @@ export default function TikTokFollowersPage() {
       </section>
 
       {/* ───────────── FAQ ───────────── */}
-      <section className="relative z-10 py-16 md:py-24 lg:py-32">
+      <section ref={trackSection("faq")} className="relative z-10 py-16 md:py-24 lg:py-32">
         <div className="max-w-3xl mx-auto px-4 sm:px-8 lg:px-12">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
@@ -656,7 +676,7 @@ export default function TikTokFollowersPage() {
       </section>
 
       {/* ───────────── CTA BOTTOM ───────────── */}
-      <section className="relative z-10 py-16 md:py-20 lg:py-28">
+      <section ref={trackSection("cta_bottom")} className="relative z-10 py-16 md:py-20 lg:py-28">
         <div className="max-w-2xl mx-auto px-4 sm:px-8 lg:px-12 text-center">
           <h2 className="text-[clamp(1.6rem,4vw,2.8rem)] font-semibold text-white tracking-tight">
             Ready to get started?
@@ -665,7 +685,7 @@ export default function TikTokFollowersPage() {
             Enter your username and configure your personalized growth campaign.
           </p>
           <button
-            onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            onClick={() => { posthog?.capture("cta_bottom_clicked", { variant: "pricing-social", platform }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             className="shine mt-8 inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl text-white text-[15px] font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
             style={{ background: gradient }}
           >

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const navLinks = [
-  { label: "Pricing", href: "/pricing" },
+  { label: "Pricing", href: "/pricing-social" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];

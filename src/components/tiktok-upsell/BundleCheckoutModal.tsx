@@ -216,10 +216,14 @@ export default function BundleCheckoutModal() {
   if (viewsQty > 0) parts.push(`${formatQty(viewsQty)} Views`);
   const packageDesc = parts.join(" + ");
 
-  // Lock body scroll
+  // Lock body scroll + track modal open/close
   useEffect(() => {
-    if (checkoutOpen) { document.body.style.overflow = "hidden"; }
-    else { document.body.style.overflow = ""; }
+    if (checkoutOpen) {
+      document.body.style.overflow = "hidden";
+      posthog?.capture("checkout_modal_opened", { platform, total_price: totalPrice, package: packageDesc, username: username.trim() });
+    } else {
+      document.body.style.overflow = "";
+    }
     return () => { document.body.style.overflow = ""; };
   }, [checkoutOpen]);
 
@@ -241,7 +245,10 @@ export default function BundleCheckoutModal() {
           }),
         });
         const data = await res.json();
-        if (res.ok && data.clientSecret) setClientSecret(data.clientSecret);
+        if (res.ok && data.clientSecret) {
+          setClientSecret(data.clientSecret);
+          posthog?.capture("payment_form_loaded", { platform, total_price: totalPrice, currency });
+        }
       } catch (err) {
         console.error("Failed to create payment intent:", err);
       }
@@ -250,12 +257,13 @@ export default function BundleCheckoutModal() {
   }, [checkoutOpen, totalPrice, packageDesc, username, currency, clientSecret]);
 
   const resetAndClose = useCallback(() => {
+    posthog?.capture("checkout_modal_closed", { platform, total_price: totalPrice });
     setStep(1);
     setEmail("");
     setError(null);
     setClientSecret(null);
     setCheckoutOpen(false);
-  }, [setCheckoutOpen]);
+  }, [setCheckoutOpen, posthog, platform, totalPrice]);
 
   const processPaymentSuccess = async (customerEmail: string) => {
     const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
@@ -487,7 +495,7 @@ export default function BundleCheckoutModal() {
                         posthog?.capture("post_purchase_upsell_click", { platform });
                         resetAndClose();
                         reset();
-                        window.location.href = "/pricing2";
+                        window.location.href = "/pricing-social";
                       }}
                       className="w-full flex items-center justify-between p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all group"
                     >
@@ -509,7 +517,7 @@ export default function BundleCheckoutModal() {
                         posthog?.capture("post_purchase_crosssell", { from: platform, to: isIG ? "tiktok" : "instagram" });
                         resetAndClose();
                         reset();
-                        window.location.href = "/pricing2";
+                        window.location.href = "/pricing-social";
                       }}
                       className="w-full flex items-center justify-between p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all group mt-2"
                     >

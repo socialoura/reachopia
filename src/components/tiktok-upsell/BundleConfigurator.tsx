@@ -285,17 +285,20 @@ export default function BundleConfigurator() {
   const selectFollowers = useCallback((qty: number) => {
     setFollowersQty(qty);
     if (qty > 0) showFeedback(`${formatQty(qty)} followers`);
-  }, [setFollowersQty]);
+    posthog?.capture("slider_changed", { service: "followers", quantity: qty, platform });
+  }, [setFollowersQty, posthog, platform]);
 
   const selectLikes = useCallback((qty: number) => {
     setLikesQty(qty);
     if (qty > 0) showFeedback(`${formatQty(qty)} likes`);
-  }, [setLikesQty]);
+    posthog?.capture("slider_changed", { service: "likes", quantity: qty, platform });
+  }, [setLikesQty, posthog, platform]);
 
   const selectViews = useCallback((qty: number) => {
     setViewsQty(qty);
     if (qty > 0) showFeedback(`${formatQty(qty)} views`);
-  }, [setViewsQty]);
+    posthog?.capture("slider_changed", { service: "views", quantity: qty, platform });
+  }, [setViewsQty, posthog, platform]);
 
   const handleContinue = () => {
     posthog?.capture("bundle_configured", {

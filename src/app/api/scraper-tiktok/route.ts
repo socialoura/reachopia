@@ -9,6 +9,57 @@ import { NextRequest, NextResponse } from "next/server";
 import type { TiktokProfile } from "@/types/tiktok";
 import { profileCache, fetchVideosInBackground, CACHE_TTL, isRateLimited, fetchWithTimeout, RAPIDAPI_HOST, getApiKey } from "./shared";
 
+/* ─── Search fallback: find user by keyword/nickname ─── */
+async function searchTikTokByKeyword(
+  keyword: string,
+  headers: Record<string, string>
+): Promise<{ username: string; nickname: string; avatarUrl: string } | null> {
+  try {
+    const res = await fetchWithTimeout(
+      `https://${RAPIDAPI_HOST}/api/search/account?keyword=${encodeURIComponent(keyword)}&count=5&cursor=0`,
+      { method: "GET", headers },
+      10000
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+
+    // The new API returns { data: { user_list: [...] } } or similar structures
+    const dataObj = json.data as Record<string, unknown> | undefined;
+    const users: Array<Record<string, unknown>> =
+      (dataObj?.user_list as Array<Record<string, unknown>>) ??
+      (json.user_list as Array<Record<string, unknown>>) ??
+      [];
+    if (users.length === 0) return null;
+
+    // Find a user whose nickname or uniqueId contains the keyword
+    const kw = keyword.toLowerCase();
+    const match = users.find((u) => {
+      const info = (u.user_info ?? u.user ?? u) as Record<string, unknown>;
+      const nick = String(info.nickname ?? info.nick_name ?? "").toLowerCase();
+      const uid = String(info.unique_id ?? info.uniqueId ?? "").toLowerCase();
+      return nick.includes(kw) || uid.includes(kw) || kw.includes(uid);
+    });
+
+    if (!match) return null;
+    const info = (match.user_info ?? match.user ?? match) as Record<string, unknown>;
+    const uid = String(info.unique_id ?? info.uniqueId ?? "");
+    const nick = String(info.nickname ?? info.nick_name ?? "");
+    const avatar = String(
+      info.avatar_larger ?? info.avatarLarger ?? info.avatar_medium ?? info.avatarMedium ?? ""
+    );
+    if (!uid) return null;
+    return {
+      username: uid,
+      nickname: nick,
+      avatarUrl: avatar.startsWith("http")
+        ? `/api/image-proxy?url=${encodeURIComponent(avatar)}`
+        : avatar,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     /* Rate limit */
@@ -46,7 +97,14 @@ export async function GET(req: NextRequest) {
     if (!infoRes.ok) {
       const text = await infoRes.text().catch(() => "");
       if (infoRes.status === 404 || text.includes("not found")) {
-        return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+        const suggestion = await searchTikTokByKeyword(username, headers);
+        if (suggestion) {
+          return NextResponse.json(
+            { error: "We couldn't find this profile. Check the spelling or make sure the account is public.", suggestion },
+            { status: 404 }
+          );
+        }
+        return NextResponse.json({ error: "We couldn't find this profile. Check the spelling or make sure the account is public." }, { status: 404 });
       }
       throw new Error(`TikTok API ${infoRes.status}: ${text.slice(0, 200)}`);
     }
@@ -55,7 +113,14 @@ export async function GET(req: NextRequest) {
 
     // The new API may return 200 with a non-zero statusCode when user not found
     if (infoJson.statusCode !== 0 && infoJson.statusCode !== undefined) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+      const suggestion = await searchTikTokByKeyword(username, headers);
+      if (suggestion) {
+        return NextResponse.json(
+          { error: "We couldn't find this profile. Check the spelling or make sure the account is public.", suggestion },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ error: "We couldn't find this profile. Check the spelling or make sure the account is public." }, { status: 404 });
     }
 
     const userInfo = infoJson.userInfo ?? infoJson;

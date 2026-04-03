@@ -166,7 +166,7 @@ export default function FaqPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
-                  href="/pricing"
+                  href="/pricing-social"
                   className="shine w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold text-base transition-all hover:opacity-90 active:scale-[0.97]"
                 >
                   Calculate My Growth Potential
