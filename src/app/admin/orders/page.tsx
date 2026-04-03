@@ -302,10 +302,19 @@ export default function AdminOrdersPage() {
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-2 text-white text-sm">
+                          <a
+                            href={
+                              order.platform === "instagram"
+                                ? `https://www.instagram.com/${order.username}`
+                                : `https://www.tiktok.com/@${order.username}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-white text-sm hover:text-indigo-400 transition-colors"
+                          >
                             <User className="w-3.5 h-3.5 text-gray-500" />
                             @{order.username}
-                          </div>
+                          </a>
                           {order.email && (
                             <p className="text-xs text-gray-500 mt-0.5 ml-5">
                               {order.email}
