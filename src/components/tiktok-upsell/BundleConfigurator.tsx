@@ -183,6 +183,7 @@ export default function BundleConfigurator() {
     likesQty, setLikesQty,
     viewsQty, setViewsQty,
     setStep,
+    discountPct,
   } = useTiktokUpsellStore();
 
   const isIG = platform === "instagram";
@@ -235,9 +236,12 @@ export default function BundleConfigurator() {
     );
   }, [followersQty, likesQty, viewsQty, getPrice, followersPricingKey, likesPricingKey, viewsPricingKey]);
 
-  const totalPrice = hasBundleDiscount
+  const priceAfterBundle = hasBundleDiscount
     ? Math.round(rawTotal * (1 - BUNDLE_DISCOUNT) * 100) / 100
     : rawTotal;
+  const totalPrice = discountPct > 0
+    ? Math.round(priceAfterBundle * (1 - discountPct / 100) * 100) / 100
+    : priceAfterBundle;
 
   const totalOriginal = useMemo(() => {
     return (
@@ -312,7 +316,7 @@ export default function BundleConfigurator() {
       services_count: serviceCount,
     });
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.getElementById("flow-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
     if (needsLikesAssignment) {
       setStep("assignLikes");
@@ -328,9 +332,10 @@ export default function BundleConfigurator() {
     return QUICK_PACKS.map((p) => {
       const raw = getPrice(followersPricingKey, p.followers) + getPrice(likesPricingKey, p.likes) + getPrice(viewsPricingKey, p.views);
       const sc = (p.followers > 0 ? 1 : 0) + (p.likes > 0 ? 1 : 0) + (p.views > 0 ? 1 : 0);
-      return sc >= 2 ? Math.round(raw * (1 - BUNDLE_DISCOUNT) * 100) / 100 : raw;
+      const afterBundle = sc >= 2 ? Math.round(raw * (1 - BUNDLE_DISCOUNT) * 100) / 100 : raw;
+      return discountPct > 0 ? Math.round(afterBundle * (1 - discountPct / 100) * 100) / 100 : afterBundle;
     });
-  }, [getPrice, followersPricingKey, likesPricingKey, viewsPricingKey]);
+  }, [getPrice, followersPricingKey, likesPricingKey, viewsPricingKey, discountPct]);
 
   if (loading) return <SkeletonLoader />;
 
@@ -455,14 +460,24 @@ export default function BundleConfigurator() {
       {/* ─── Total + Continue (desktop) ─── */}
       <div className="mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <p className="text-[12px] text-zinc-500 uppercase tracking-wider font-medium">Bundle Total</p>
+          <p className="text-[12px] text-zinc-500 uppercase tracking-wider font-medium">
+            Bundle Total
+            {discountPct > 0 && (
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 animate-pulse">
+                −{discountPct}% APPLIED
+              </span>
+            )}
+          </p>
           <div className="flex items-baseline gap-2.5">
             <p className="text-[22px] sm:text-[28px] font-bold text-white tracking-tight">
               {displayTotal > 0 ? formatCurrency(displayTotal, currency) : "\u2014"}
             </p>
+            {discountPct > 0 && priceAfterBundle > 0 && displayTotal > 0 && (
+              <span className="text-[14px] text-zinc-600 line-through">{formatCurrency(priceAfterBundle, currency)}</span>
+            )}
             {totalOriginal > 0 && displayTotal > 0 && (
               <>
-                <span className="text-[14px] text-zinc-600 line-through">{formatCurrency(totalOriginal, currency)}</span>
+                {discountPct === 0 && <span className="text-[14px] text-zinc-600 line-through">{formatCurrency(totalOriginal, currency)}</span>}
                 <span className="text-[12px] font-bold text-emerald-400">-{totalSavings}%</span>
               </>
             )}

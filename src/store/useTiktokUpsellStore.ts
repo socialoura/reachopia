@@ -46,6 +46,10 @@ interface TiktokUpsellState {
   checkoutOpen: boolean;
   setCheckoutOpen: (open: boolean) => void;
 
+  /* ── Discount (post-purchase) ── */
+  discountPct: number;
+  setDiscountPct: (pct: number) => void;
+
   /* ── Computed helpers ── */
   getTotalPrice: (followersTiers: ServiceTier[], likesTiers: ServiceTier[], viewsTiers: ServiceTier[]) => number;
 
@@ -66,6 +70,7 @@ const INITIAL_STATE = {
   likesAssignments: [] as VideoAssignment[],
   viewsAssignments: [] as VideoAssignment[],
   checkoutOpen: false,
+  discountPct: 0,
 };
 
 function findTierPrice(tiers: ServiceTier[], qty: number): number {
@@ -100,6 +105,8 @@ export const useTiktokUpsellStore = create<TiktokUpsellState>((set, get) => ({
   setViewsAssignments: (viewsAssignments) => set({ viewsAssignments }),
 
   setCheckoutOpen: (checkoutOpen) => set({ checkoutOpen }),
+
+  setDiscountPct: (discountPct) => set({ discountPct }),
 
   getTotalPrice: (fTiers, lTiers, vTiers) => {
     const s = get();

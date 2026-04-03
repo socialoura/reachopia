@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
@@ -234,6 +235,14 @@ export default function PricingSocialsPage() {
   const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
 
   const { getTierPrice: getPrice } = usePricingTiers(currency);
+  const searchParams = useSearchParams();
+  const { setDiscountPct } = useTiktokUpsellStore();
+
+  /* Read discount from URL param (e.g. ?discount=20) */
+  useEffect(() => {
+    const d = parseInt(searchParams.get("discount") || "0", 10);
+    if (d > 0 && d <= 50) setDiscountPct(d);
+  }, [searchParams, setDiscountPct]);
 
   /* Track page view once */
   useEffect(() => {
@@ -319,13 +328,13 @@ export default function PricingSocialsPage() {
     return () => { cancelled = true; };
   }, [profile?.username, isIG]);
 
-  /* Scroll to top on step change (mobile only — desktop uses sticky) + track */
+  /* Scroll to flow section on step change + track */
   useEffect(() => {
-    if (isMobile && step !== "search" && step !== "scanning") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (step !== "search" && step !== "scanning") {
+      document.getElementById("flow-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     posthog?.capture("step_changed", { step, platform, variant: "pricing-socials" });
-  }, [step, isMobile]);
+  }, [step]);
 
   const hasPosts = (profile?.posts?.length ?? 0) > 0;
   const isSearchPhase = step === "search" || step === "scanning";
@@ -575,7 +584,7 @@ export default function PricingSocialsPage() {
 
       {/* ───────────── CONFIG PHASE: Split layout (desktop) ───────────── */}
       {isConfigPhase && (
-        <div className="relative z-10 min-h-[100dvh]">
+        <div id="flow-section" className="relative z-10 min-h-[100dvh]">
           {/* Subtle background */}
           <div className="pointer-events-none fixed inset-0 z-0">
             <div className="absolute top-[30%] left-[20%] w-[500px] h-[500px] rounded-full blur-[160px] opacity-[0.06] transition-colors duration-700" style={{ backgroundColor: accent }} />

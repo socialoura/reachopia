@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ArrowLeft, Users, Heart, Eye, Lock, ChevronRight, Shield, Clock } from "lucide-react";
+import { ArrowLeft, Users, Heart, Eye, Lock, ChevronRight, Shield, Clock, Sparkles } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
 import { formatQty } from "@/config/tiktok-services";
@@ -27,6 +27,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
     viewsAssignments,
     setStep,
     setCheckoutOpen,
+    discountPct,
   } = useTiktokUpsellStore();
 
   const isIG = platform === "instagram";
@@ -46,9 +47,12 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
     [followersPrice, likesPrice, viewsPrice],
   );
 
-  const totalPrice = hasBundleDiscount
+  const priceAfterBundle = hasBundleDiscount
     ? Math.round(rawTotal * (1 - BUNDLE_DISCOUNT) * 100) / 100
     : rawTotal;
+  const totalPrice = discountPct > 0
+    ? Math.round(priceAfterBundle * (1 - discountPct / 100) * 100) / 100
+    : priceAfterBundle;
 
   const totalOriginal = useMemo(() => {
     return (
@@ -186,7 +190,23 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
                 <p className="text-[11px] text-zinc-500">{serviceCount} services combined</p>
               </div>
             </div>
-            <span className="text-[13px] sm:text-[15px] font-semibold text-emerald-400">-{formatCurrency(rawTotal - totalPrice, currency)}</span>
+            <span className="text-[13px] sm:text-[15px] font-semibold text-emerald-400">-{formatCurrency(rawTotal - priceAfterBundle, currency)}</span>
+          </div>
+        )}
+
+        {/* Post-purchase discount line */}
+        {discountPct > 0 && (
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-emerald-400">Loyalty Discount</p>
+                <p className="text-[11px] text-zinc-500">{discountPct}% off applied</p>
+              </div>
+            </div>
+            <span className="text-[13px] sm:text-[15px] font-semibold text-emerald-400">-{formatCurrency(priceAfterBundle - totalPrice, currency)}</span>
           </div>
         )}
 

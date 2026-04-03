@@ -184,6 +184,7 @@ export default function BundleCheckoutModal() {
     likesAssignments,
     viewsAssignments,
     reset,
+    discountPct,
   } = useTiktokUpsellStore();
 
   const isIG = platform === "instagram";
@@ -203,9 +204,12 @@ export default function BundleCheckoutModal() {
   const serviceCount = (followersQty > 0 ? 1 : 0) + (likesQty > 0 ? 1 : 0) + (viewsQty > 0 ? 1 : 0);
   const hasBundleDiscount = serviceCount >= 2;
   const rawTotal = Math.round((followersPrice + likesPrice + viewsPrice) * 100) / 100;
-  const totalPrice = hasBundleDiscount
+  const priceAfterBundle = hasBundleDiscount
     ? Math.round(rawTotal * (1 - BUNDLE_DISCOUNT) * 100) / 100
     : rawTotal;
+  const totalPrice = discountPct > 0
+    ? Math.round(priceAfterBundle * (1 - discountPct / 100) * 100) / 100
+    : priceAfterBundle;
 
   const username = profile?.username ?? "";
 
@@ -495,7 +499,7 @@ export default function BundleCheckoutModal() {
                         posthog?.capture("post_purchase_upsell_click", { platform });
                         resetAndClose();
                         reset();
-                        window.location.href = "/pricing-social";
+                        window.location.href = "/pricing-social?discount=20";
                       }}
                       className="w-full flex items-center justify-between p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all group"
                     >
@@ -517,7 +521,7 @@ export default function BundleCheckoutModal() {
                         posthog?.capture("post_purchase_crosssell", { from: platform, to: isIG ? "tiktok" : "instagram" });
                         resetAndClose();
                         reset();
-                        window.location.href = "/pricing-social";
+                        window.location.href = "/pricing-social?discount=15";
                       }}
                       className="w-full flex items-center justify-between p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all group mt-2"
                     >

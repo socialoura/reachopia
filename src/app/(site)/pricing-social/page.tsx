@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
@@ -237,6 +238,14 @@ export default function TikTokFollowersPage() {
   const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
 
   const { getTierPrice: getPrice } = usePricingTiers(currency);
+  const searchParams = useSearchParams();
+  const { setDiscountPct } = useTiktokUpsellStore();
+
+  /* Read discount from URL param (e.g. ?discount=20) */
+  useEffect(() => {
+    const d = parseInt(searchParams.get("discount") || "0", 10);
+    if (d > 0 && d <= 50) setDiscountPct(d);
+  }, [searchParams, setDiscountPct]);
 
   /* Track page view once */
   useEffect(() => {
@@ -322,10 +331,10 @@ export default function TikTokFollowersPage() {
     return () => { cancelled = true; };
   }, [profile?.username, isIG]);
 
-  /* Scroll to top on step change + track */
+  /* Scroll to flow section on step change + track */
   useEffect(() => {
     if (step !== "search" && step !== "scanning") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      document.getElementById("flow-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     posthog?.capture("step_changed", { step, platform, variant: "pricing-social" });
   }, [step]);
@@ -340,7 +349,7 @@ export default function TikTokFollowersPage() {
       </div>
 
       {/* ───────────── HERO / MAIN FLOW ───────────── */}
-      <section className={`relative z-10 overflow-hidden ${
+      <section id="flow-section" className={`relative z-10 overflow-hidden ${
         step === "search" || step === "scanning"
           ? "min-h-[100dvh] flex items-center justify-center pt-0 md:pt-0 -mt-16 md:mt-0"
           : "pt-8 md:pt-12 pb-16"
