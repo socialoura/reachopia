@@ -312,6 +312,8 @@ export default function BundleConfigurator() {
       services_count: serviceCount,
     });
 
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     if (needsLikesAssignment) {
       setStep("assignLikes");
     } else if (needsViewsAssignment) {
