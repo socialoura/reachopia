@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useRef, useState, useCallback } from "react";
+import React, { useMemo, useEffect, useRef, useState, useCallback } from "react";
 import { Users, Heart, Eye, ArrowRight, Sparkles, Lock, Clock, Shield, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePostHog } from "posthog-js/react";
@@ -75,15 +75,16 @@ function ServiceSlider({ label, icon, tiers, selectedQty, onSelect, currency, co
   return (
     <div
       className={`rounded-2xl border p-4 sm:p-5 transition-all duration-300 ${
-        isActive ? "border-white/[0.12] bg-white/[0.03]" : "border-white/[0.06] bg-white/[0.02]"
+        isActive ? "border-white/[0.12]" : "border-white/[0.06] bg-white/[0.02]"
       }`}
+      style={isActive ? { background: `linear-gradient(135deg, ${color}08 0%, transparent 60%)` } : undefined}
     >
       {/* Header row: icon + label | quantity + price */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
-            style={{ backgroundColor: isActive ? `${color}20` : `${color}10` }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300"
+            style={{ backgroundColor: isActive ? `${color}25` : `${color}10` }}
           >
             {icon}
           </div>
@@ -341,54 +342,6 @@ export default function BundleConfigurator() {
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-3 sm:mb-6">
-        <div className="hidden sm:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] mb-4">
-          <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-          <span className="text-[12px] font-medium text-zinc-300">Build Your Growth Package</span>
-        </div>
-        <h2 className="text-[clamp(1.3rem,3vw,2rem)] font-semibold text-white tracking-tight">
-          Choose what you need for{" "}
-          <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] to-[#ee1d52]"} bg-clip-text text-transparent`}>
-            @{profile?.username}
-          </span>
-        </h2>
-        <p className="hidden sm:block mt-2 text-[14px] text-zinc-400 max-w-md mx-auto">
-          Slide to set your quantities. Combine 2+ services for an extra 10% off.
-        </p>
-      </div>
-
-      {/* ─── Quick Packs ─── */}
-      {(
-        <div className="mb-3 sm:mb-5">
-          <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium mb-2.5 text-center">Quick Packs</p>
-          <div className="grid grid-cols-1 min-[400px]:grid-cols-3 gap-2">
-            {QUICK_PACKS.map((pack, i) => (
-              <button
-                key={pack.label}
-                onClick={() => applyQuickPack(pack)}
-                className="relative group rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] p-3 text-center transition-all duration-200 hover:-translate-y-0.5"
-              >
-                {i > 0 && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-[1px] rounded-full text-[8px] font-bold uppercase tracking-wider text-white whitespace-nowrap"
-                    style={{ background: gradient }}
-                  >
-                    {pack.tag}
-                  </span>
-                )}
-                <span className="block text-[14px] font-semibold text-white mt-1">{pack.label}</span>
-                <span className="block text-[10px] text-zinc-500 mt-0.5">
-                  {pack.followers > 0 && `${formatQty(pack.followers)} foll.`}
-                  {pack.likes > 0 && ` + ${formatQty(pack.likes)} likes`}
-                  {pack.views > 0 && ` + ${formatQty(pack.views)} views`}
-                </span>
-                <span className="block text-[13px] font-bold text-white mt-1">{formatCurrency(packPrices[i], currency)}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* ─── Bundle discount hint ─── */}
       {(
         <div className={`mb-4 flex items-center justify-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 ${
@@ -426,17 +379,59 @@ export default function BundleConfigurator() {
         )}
       </AnimatePresence>
 
-      {/* ─── Service sliders ─── */}
+      {/* ─── Followers packs ─── */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accent}20` }}>
+              <Users className="w-4 h-4" style={{ color: accent }} />
+            </div>
+            <h3 className="text-[15px] font-semibold text-white">Followers</h3>
+          </div>
+          {followersQty > 0 && (
+            <span className="text-[13px] font-bold" style={{ color: accent }}>{formatQty(followersQty)} selected</span>
+          )}
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {followersTiers.map((tier, idx) => {
+            const isSelected = followersQty === tier.quantity;
+            const isPopular = idx === Math.floor(followersTiers.length / 2);
+            return (
+              <button
+                key={tier.quantity}
+                onClick={() => selectFollowers(tier.quantity)}
+                className={`relative rounded-xl border p-3 text-center transition-all duration-200 ${
+                  isSelected
+                    ? "border-transparent scale-[1.03] shadow-lg"
+                    : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.15] active:scale-[0.97]"
+                }`}
+                style={isSelected ? {
+                  background: `linear-gradient(135deg, ${accent}18 0%, ${accent}08 100%)`,
+                  boxShadow: `0 0 0 1.5px ${accent}80, 0 4px 20px ${accent}20`,
+                } : undefined}
+              >
+                {tier.discountPct >= 15 && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-[1px] rounded-full text-[8px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/25 whitespace-nowrap">
+                    -{tier.discountPct}%
+                  </span>
+                )}
+                {isPopular && !tier.discountPct && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-[1px] rounded-full text-[8px] font-bold text-white whitespace-nowrap"
+                    style={{ background: gradient }}
+                  >
+                    Popular
+                  </span>
+                )}
+                <span className={`block text-[14px] font-bold ${isSelected ? 'text-white' : 'text-zinc-300'}`}>{formatQty(tier.quantity)}</span>
+                <span className={`block text-[12px] font-semibold mt-0.5 ${isSelected ? '' : 'opacity-70'}`} style={{ color: accent }}>{formatCurrency(tier.price, currency)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ─── Service sliders (Likes & Views) ─── */}
       <div className="space-y-3">
-        <ServiceSlider
-          label="Followers"
-          icon={<Users className="w-4 h-4" style={{ color: accent }} />}
-          tiers={followersTiers}
-          selectedQty={followersQty}
-          onSelect={selectFollowers}
-          currency={currency}
-          color={accent}
-        />
         <ServiceSlider
           label="Likes"
           icon={<Heart className="w-4 h-4" style={{ color: accent }} />}
@@ -457,8 +452,8 @@ export default function BundleConfigurator() {
         />
       </div>
 
-      {/* ─── Total + Continue (desktop) ─── */}
-      <div className="mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* ─── Total + Continue (desktop only) ─── */}
+      <div className="hidden sm:flex mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 sm:p-5 flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <p className="text-[12px] text-zinc-500 uppercase tracking-wider font-medium">
             Bundle Total
@@ -469,7 +464,7 @@ export default function BundleConfigurator() {
             )}
           </p>
           <div className="flex items-baseline gap-2.5">
-            <p className="text-[22px] sm:text-[28px] font-bold text-white tracking-tight">
+            <p className="text-[28px] font-bold text-white tracking-tight">
               {displayTotal > 0 ? formatCurrency(displayTotal, currency) : "\u2014"}
             </p>
             {discountPct > 0 && priceAfterBundle > 0 && displayTotal > 0 && (
@@ -499,13 +494,51 @@ export default function BundleConfigurator() {
         <button
           onClick={handleContinue}
           disabled={!hasSelection}
-          className="shine w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-white text-[13px] sm:text-[14px] font-semibold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed"
+          className="shine cta-pulse w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-white text-[14px] font-semibold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed disabled:animate-none"
           style={{ background: gradient }}
         >
           <Lock className="w-3.5 h-3.5" />
           {hasSelection ? `Secure my bundle \u2014 ${formatCurrency(displayTotal, currency)}` : "Select a service"}
           <ArrowRight className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* ─── Mobile sticky bottom bar ─── */}
+      <div className="sm:hidden h-24" />
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom">
+        <div className="bg-zinc-950/95 backdrop-blur-xl border-t border-white/[0.08] px-4 pt-3 pb-4">
+          {hasSelection && (
+            <div className="flex items-center justify-between mb-2 px-1">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[18px] font-bold text-white">{formatCurrency(displayTotal, currency)}</span>
+                {totalOriginal > 0 && (
+                  <span className="text-[12px] text-zinc-600 line-through">{formatCurrency(totalOriginal, currency)}</span>
+                )}
+                {totalSavings > 0 && (
+                  <span className="text-[11px] font-bold text-emerald-400">-{totalSavings}%</span>
+                )}
+              </div>
+              <span className="text-[10px] text-zinc-500">
+                {followersQty > 0 && `${formatQty(followersQty)} foll.`}
+                {likesQty > 0 && ` + ${formatQty(likesQty)} likes`}
+                {viewsQty > 0 && ` + ${formatQty(viewsQty)} views`}
+              </span>
+            </div>
+          )}
+          <button
+            onClick={handleContinue}
+            disabled={!hasSelection}
+            className="shine w-full inline-flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white text-[16px] font-bold tracking-tight transition-all active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ background: hasSelection ? gradient : undefined, backgroundColor: hasSelection ? undefined : 'rgba(255,255,255,0.06)' }}
+          >
+            {hasSelection ? (
+              <>
+                Continue
+                <ArrowRight className="w-5 h-5" />
+              </>
+            ) : "Select a service"}
+          </button>
+        </div>
       </div>
 
     </div>

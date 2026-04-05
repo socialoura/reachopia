@@ -21,6 +21,12 @@ import {
   Eye,
 } from "lucide-react";
 
+/* ─── Wrapper: renders <motion.div> on desktop, plain <div> on mobile ─── */
+function M({ mobile, children, className, ...motionProps }: { mobile: boolean; children: React.ReactNode; className?: string; [key: string]: any }) {
+  if (mobile) return <div className={className}>{children}</div>;
+  return <motion.div className={className} {...motionProps}>{children}</motion.div>;
+}
+
 /* ─── Custom Icons (not in lucide-react) ─── */
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -126,123 +132,79 @@ export default function Home() {
     <>
       {/* ───────────── HERO — iPhone-launch style ───────────── */}
       <section className="relative min-h-[100dvh] flex items-center overflow-hidden bg-black">
-        {/* Ambient glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-violet-600/20 blur-[120px]" />
-          <div className="absolute bottom-0 left-1/3 w-[600px] h-[400px] rounded-full bg-cyan-500/10 blur-[100px]" />
-        </div>
+        {/* Ambient glow — hidden on mobile for perf */}
+        {!isMobile && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-violet-600/20 blur-[120px]" />
+            <div className="absolute bottom-0 left-1/3 w-[600px] h-[400px] rounded-full bg-cyan-500/10 blur-[100px]" />
+          </div>
+        )}
 
         <div className="relative w-full max-w-7xl mx-auto px-5 sm:px-8 pt-28 pb-20 md:pt-36 md:pb-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left — Text + CTAs */}
             <div>
               {/* Badge */}
-              <motion.div
-                initial={isMobile ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={isMobile ? { duration: 0 } : { duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm mb-8"
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow" />
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] mb-8">
+                <div className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${isMobile ? '' : 'animate-glow'}`} />
                 <span className="text-[12px] font-medium text-zinc-300">
                   Trusted by 50,000+ creators & brands
                 </span>
-              </motion.div>
+              </div>
 
               {/* H1 */}
-              <motion.h1
-                initial={isMobile ? false : { opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={isMobile ? { duration: 0 } : { duration: 0.8, delay: 0.1, ease: [0.25, 0.4, 0.25, 1] }}
-                className="text-[clamp(2rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.05]"
-              >
+              <h1 className="text-[clamp(2rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.05]">
                 AI-Powered Growth
                 <br />
                 <span className="text-gradient-white">for Social Media</span>
-              </motion.h1>
+              </h1>
 
               {/* Subtitle */}
-              <motion.p
-                initial={isMobile ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={isMobile ? { duration: 0 } : { duration: 0.7, delay: 0.25 }}
-                className="mt-6 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-lg"
-              >
+              <p className="mt-6 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-lg">
                 Our proprietary algorithm connects your profile to a network of active,
                 niche-relevant users — delivering guaranteed reach and organic momentum.
-              </motion.p>
+              </p>
 
               {/* CTAs */}
-              <motion.div
-                initial={isMobile ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={isMobile ? { duration: 0 } : { duration: 0.7, delay: 0.4 }}
-                className="mt-10 flex flex-col sm:flex-row gap-4"
-              >
+              <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/instagram"
+                  href="/pricing-socials"
                   className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white text-black text-[14px] font-semibold hover:bg-zinc-100 transition-colors"
                 >
                   <InstagramIcon className="w-4 h-4" />
                   Instagram Growth
                 </Link>
                 <Link
-                  href="/tiktok"
-                  className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white/[0.08] border border-white/[0.1] text-white text-[14px] font-semibold hover:bg-white/[0.12] transition-colors backdrop-blur-sm"
+                  href="/pricing-socials"
+                  className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white/[0.08] border border-white/[0.1] text-white text-[14px] font-semibold hover:bg-white/[0.12] transition-colors"
                 >
                   <TikTokIcon className="w-4 h-4" />
                   TikTok Growth
                 </Link>
-              </motion.div>
+              </div>
 
               {/* Micro trust */}
-              <motion.div
-                initial={isMobile ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={isMobile ? { duration: 0 } : { duration: 0.5, delay: 0.6 }}
-                className="mt-8 flex flex-wrap gap-5 text-[11px] text-zinc-600"
-              >
+              <div className="mt-8 flex flex-wrap gap-5 text-[11px] text-zinc-600">
                 <span className="flex items-center gap-1.5">
                   <Shield className="w-3 h-3" /> 100% platform safe
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Zap className="w-3 h-3" /> Instant activation
                 </span>
-              </motion.div>
+              </div>
             </div>
 
-            {/* Right — Hero image (floating) */}
-            <motion.div
-              initial={isMobile ? false : { opacity: 0, x: 40, scale: 0.97 }}
-              animate={isMobile ? { opacity: 1 } : {
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                y: [0, -12, 0],
-              }}
-              transition={isMobile ? { duration: 0 } : {
-                opacity: { duration: 1, delay: 0.4 },
-                x: { duration: 1, delay: 0.4, ease: [0.25, 0.4, 0.25, 1] },
-                scale: { duration: 1, delay: 0.4 },
-                y: {
-                  duration: 4,
-                  delay: 1.4,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "easeInOut",
-                },
-              }}
-              className="relative"
-            >
+            {/* Right — Hero image (no float on mobile) */}
+            <div className="relative">
               <Image
                 src="/hero-section.png"
                 alt="Reachopia AI Dashboard"
                 width={1200}
                 height={680}
-                className="w-full h-auto rounded-2xl drop-shadow-[0_20px_50px_rgba(124,58,237,0.15)]"
+                className={`w-full h-auto rounded-2xl ${isMobile ? '' : 'drop-shadow-[0_20px_50px_rgba(124,58,237,0.15)]'}`}
                 priority
               />
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -268,32 +230,21 @@ export default function Home() {
       {/* ───────────── SERVICE CARDS — Platform Selection ───────────── */}
       <section className="py-24 md:py-32 bg-black">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
-          >
-            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               Choose Your Platform
-            </motion.p>
-            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            </p>
+            <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Where do you want to grow?
-            </motion.h2>
-          </motion.div>
+            </h2>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-4xl mx-auto">
             {/* Instagram Card */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={v}
-              custom={0}
-            >
-              <Link href="/instagram" className="group block">
+            <M mobile={isMobile} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={v} custom={0}>
+              <Link href="/pricing-socials" className="group block">
                 <div className="relative rounded-3xl overflow-hidden border border-white/[0.06] bg-zinc-950 hover:border-white/[0.12] transition-all duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#f58529]/5 via-[#dd2a7b]/5 to-[#8134af]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {!isMobile && <div className="absolute inset-0 bg-gradient-to-br from-[#f58529]/5 via-[#dd2a7b]/5 to-[#8134af]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
                   <div className="relative p-8 sm:p-10">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] flex items-center justify-center mb-6">
                       <InstagramIcon className="w-7 h-7 text-white" />
@@ -311,30 +262,24 @@ export default function Home() {
                         src="/product-instagram/1.png"
                         alt="Instagram Growth"
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className={`object-cover ${isMobile ? '' : 'group-hover:scale-105 transition-transform duration-700'}`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent" />
                     </div>
                     <div className="mt-6 flex items-center gap-2 text-[13px] font-medium text-zinc-400 group-hover:text-white transition-colors">
                       Explore Instagram packages
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </M>
 
             {/* TikTok Card */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={v}
-              custom={1}
-            >
-              <Link href="/tiktok" className="group block">
+            <M mobile={isMobile} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={v} custom={1}>
+              <Link href="/pricing-socials" className="group block">
                 <div className="relative rounded-3xl overflow-hidden border border-white/[0.06] bg-zinc-950 hover:border-white/[0.12] transition-all duration-500">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#69C9D0]/5 via-transparent to-[#ee1d52]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {!isMobile && <div className="absolute inset-0 bg-gradient-to-br from-[#69C9D0]/5 via-transparent to-[#ee1d52]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
                   <div className="relative p-8 sm:p-10">
                     <div className="w-14 h-14 rounded-2xl bg-black border border-white/[0.1] flex items-center justify-center mb-6">
                       <TikTokIcon className="w-7 h-7 text-white" />
@@ -352,18 +297,18 @@ export default function Home() {
                         src="/product-tiktok/1.png"
                         alt="TikTok Growth"
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className={`object-cover ${isMobile ? '' : 'group-hover:scale-105 transition-transform duration-700'}`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent" />
                     </div>
                     <div className="mt-6 flex items-center gap-2 text-[13px] font-medium text-zinc-400 group-hover:text-white transition-colors">
                       Explore TikTok packages
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </M>
           </div>
         </div>
       </section>
@@ -371,19 +316,14 @@ export default function Home() {
       {/* ───────────── HOW IT WORKS ───────────── */}
       <section id="how-it-works" className="py-24 md:py-32 bg-zinc-950">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
-          >
-            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               3-step process
-            </motion.p>
-            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            </p>
+            <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               How It Works
-            </motion.h2>
-          </motion.div>
+            </h2>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
             {[
@@ -406,8 +346,9 @@ export default function Home() {
                 desc: "Your profile is deployed across our premium audience network. Measurable results begin within minutes.",
               },
             ].map((item, i) => (
-              <motion.div
+              <M
                 key={i}
+                mobile={isMobile}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
@@ -415,15 +356,15 @@ export default function Home() {
                 custom={i}
                 className="relative rounded-2xl p-7 sm:p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
               >
-                <span className="absolute top-6 right-6 text-[40px] font-bold text-white/[0.04] group-hover:text-white/[0.08] transition-colors leading-none">
+                <span className="absolute top-6 right-6 text-[40px] font-bold text-white/[0.04] leading-none">
                   {item.step}
                 </span>
-                <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center mb-5 group-hover:bg-white/[0.1] transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center mb-5">
                   <item.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-[17px] font-semibold text-white mb-2 tracking-tight">{item.title}</h3>
                 <p className="text-[14px] text-zinc-500 leading-relaxed">{item.desc}</p>
-              </motion.div>
+              </M>
             ))}
           </div>
         </div>
@@ -432,19 +373,14 @@ export default function Home() {
       {/* ───────────── BENTO GRID — Tech / AI Features (Google Ads) ───────────── */}
       <section className="py-24 md:py-32 bg-black">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
-          >
-            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               Our Technology
-            </motion.p>
-            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            </p>
+            <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Built for Results
-            </motion.h2>
-          </motion.div>
+            </h2>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {[
@@ -455,21 +391,16 @@ export default function Home() {
               { icon: Brain, title: "AI-Powered Targeting", desc: "Our algorithm continuously optimizes campaign targeting for maximum growth velocity." },
               { icon: Eye, title: "Transparent Analytics", desc: "Real-time visibility into your campaign performance with clear, honest metrics." },
             ].map((item, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={v}
-                custom={i}
-                className="rounded-2xl p-6 sm:p-7 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 hover:-translate-y-0.5 group"
+                className={`rounded-2xl p-6 sm:p-7 border border-white/[0.06] bg-white/[0.02] ${isMobile ? '' : 'hover:bg-white/[0.04] hover:-translate-y-0.5'} transition-all duration-500 group`}
               >
-                <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-4 group-hover:bg-white/[0.08] transition-colors duration-300">
-                  <item.icon className="w-5 h-5 text-zinc-300 group-hover:text-white transition-colors duration-300" />
+                <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-4">
+                  <item.icon className="w-5 h-5 text-zinc-300" />
                 </div>
                 <h3 className="text-[15px] font-semibold text-white mb-1.5 tracking-tight">{item.title}</h3>
                 <p className="text-[13px] text-zinc-500 leading-relaxed">{item.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -480,27 +411,22 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={v}
-                custom={i}
-                className="text-center"
-              >
+              <div key={i} className="text-center">
                 <p className="text-[clamp(2rem,4vw,3.5rem)] font-semibold text-white tracking-tight">
-                  <CountUp
-                    end={stat.value}
-                    decimals={stat.decimals || 0}
-                    duration={2.5}
-                    enableScrollSpy
-                    scrollSpyOnce
-                  />
-                  {stat.suffix}
+                  {isMobile ? (
+                    <>{stat.decimals ? stat.value.toFixed(stat.decimals) : stat.value.toLocaleString()}{stat.suffix}</>
+                  ) : (
+                    <><CountUp
+                      end={stat.value}
+                      decimals={stat.decimals || 0}
+                      duration={2.5}
+                      enableScrollSpy
+                      scrollSpyOnce
+                    />{stat.suffix}</>
+                  )}
                 </p>
                 <p className="text-[12px] sm:text-[13px] text-zinc-500 mt-1">{stat.label}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -509,19 +435,14 @@ export default function Home() {
       {/* ───────────── FAQ ───────────── */}
       <section className="py-24 md:py-32 bg-zinc-950">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-14"
-          >
-            <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
+          <div className="text-center mb-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               FAQ
-            </motion.p>
-            <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            </p>
+            <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               Frequently Asked Questions
-            </motion.h2>
-          </motion.div>
+            </h2>
+          </div>
 
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.06] px-6 sm:px-8">
             {faqs.map((faq, i) => (
@@ -533,45 +454,33 @@ export default function Home() {
 
       {/* ───────────── FINAL CTA ───────────── */}
       <section className="relative py-28 md:py-36 bg-black overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-violet-600/10 blur-[100px]" />
-        </div>
+        {!isMobile && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-violet-600/10 blur-[100px]" />
+          </div>
+        )}
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            <motion.h2
-              variants={v}
-              custom={0}
-              className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight"
+          <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            Ready to Accelerate
+            <br />
+            Your Growth?
+          </h2>
+          <p className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
+            Join 50,000+ creators and brands using Reachopia&apos;s AI engine
+            to build unstoppable social momentum.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/pricing-socials"
+              className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-white text-black text-[14px] font-semibold hover:bg-zinc-100 transition-colors"
             >
-              Ready to Accelerate
-              <br />
-              Your Growth?
-            </motion.h2>
-            <motion.p
-              variants={v}
-              custom={1}
-              className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed"
-            >
-              Join 50,000+ creators and brands using Reachopia&apos;s AI engine
-              to build unstoppable social momentum.
-            </motion.p>
-            <motion.div variants={v} custom={2} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/instagram"
-                className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-white text-black text-[14px] font-semibold hover:bg-zinc-100 transition-colors"
-              >
-                Start Growth
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </motion.div>
-            <motion.p variants={v} custom={3} className="mt-5 text-[11px] text-zinc-600">
-              Stripe secured · Results guaranteed
-            </motion.p>
-          </motion.div>
+              Start Growth
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <p className="mt-5 text-[11px] text-zinc-600">
+            Stripe secured · Results guaranteed
+          </p>
         </div>
       </section>
     </>

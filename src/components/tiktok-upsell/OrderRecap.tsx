@@ -244,21 +244,21 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
 
 
       {/* Navigation */}
-      <div className="mt-6 sm:mt-8 flex items-center justify-between gap-3">
+      <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 rounded-xl text-[12px] sm:text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+          className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 rounded-xl text-[12px] sm:text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           Back
         </button>
         <button
           onClick={handleCheckout}
-          className="shine inline-flex items-center gap-1.5 sm:gap-2.5 px-5 sm:px-8 py-3 sm:py-4 rounded-2xl text-white text-[13px] sm:text-[15px] font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+          className="shine cta-pulse inline-flex items-center justify-center gap-1.5 sm:gap-2.5 px-5 sm:px-8 py-4 rounded-2xl text-white text-[14px] sm:text-[15px] font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
           style={{ background: gradient }}
         >
           <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          Review &amp; Pay Securely
+          Proceed to Checkout
           <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
       </div>

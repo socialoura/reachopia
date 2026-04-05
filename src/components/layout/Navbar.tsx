@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CurrencySelector from "@/components/ui/CurrencySelector";
 
 const navLinks = [
-  { label: "Pricing", href: "/pricing-social" },
+  { label: "Pricing", href: "/pricing-socials" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -61,7 +61,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <CurrencySelector />
             <Link
-              href="/instagram"
+              href="/pricing-socials"
               className="shine inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-[13px] font-semibold hover:bg-zinc-100 transition-colors"
             >
               Start Growth
@@ -107,7 +107,7 @@ export default function Navbar() {
                   <CurrencySelector />
                 </div>
                 <Link
-                  href="/instagram"
+                  href="/pricing-socials"
                   onClick={() => setMobileOpen(false)}
                   className="shine block w-full text-center px-5 py-3.5 rounded-2xl bg-white text-black text-sm font-semibold"
                 >

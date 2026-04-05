@@ -43,6 +43,7 @@ const stripePromise = loadStripe(
 function PaymentForm({
   onCardSuccess,
   onExpressSuccess,
+  onPaymentAttempted,
   accentGradient,
   accentColor,
   price,
@@ -52,6 +53,7 @@ function PaymentForm({
 }: {
   onCardSuccess: () => void;
   onExpressSuccess: () => void;
+  onPaymentAttempted: (method: "card" | "express") => void;
   accentGradient: string;
   accentColor: string;
   price: number;
@@ -78,6 +80,8 @@ function PaymentForm({
     setLoading(true);
     setError(null);
 
+    onPaymentAttempted("card");
+
     const { error: submitError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
@@ -98,6 +102,8 @@ function PaymentForm({
   // Express Checkout (Apple Pay / Google Pay) confirm - email optional (Apple/Google provides it)
   const handleExpressConfirm = async () => {
     if (!stripe || !elements) return;
+
+    onPaymentAttempted("express");
 
     const { error: confirmError } = await stripe.confirmPayment({
       elements,
@@ -193,10 +199,17 @@ export default function CheckoutModal({
   const posthog = usePostHog();
   const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
 
-  // Lock body scroll when modal is open
+  // Lock body scroll when modal is open + track checkout opened
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      posthog?.capture("checkout_modal_opened", {
+        volume: tier.volume,
+        price: tier.price,
+        network: platform,
+        username: prefillUsername.trim(),
+        is_exit_intent: isExitIntent,
+      });
     } else {
       document.body.style.overflow = "";
     }
@@ -249,12 +262,6 @@ export default function CheckoutModal({
   const processPaymentSuccess = async (customerEmail: string) => {
     const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
 
-    posthog?.capture("checkout_submitted", {
-      volume: tier.volume,
-      price: tier.price,
-      email: customerEmail,
-      network: platform,
-    });
     posthog?.identify(customerEmail);
 
     posthog?.capture("payment_success", {
@@ -339,6 +346,11 @@ export default function CheckoutModal({
             transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] as const }}
             className="relative w-full max-w-[440px] mx-4 sm:mx-auto bg-zinc-950 border border-white/[0.1] rounded-t-3xl sm:rounded-3xl shadow-2xl shadow-black/50 overflow-hidden max-h-[90dvh] overflow-y-auto"
           >
+            {/* Mobile drag handle */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-white/[0.15]" />
+            </div>
+
             {/* Close button */}
             <button
               onClick={resetAndClose}
@@ -348,7 +360,7 @@ export default function CheckoutModal({
             </button>
 
             {/* ── Header ── */}
-            <div className="px-6 pt-6 pb-5 border-b border-white/[0.06]">
+            <div className="px-5 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 border-b border-white/[0.06]">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-500">
                 {step === 2 ? "Order confirmed" : "Complete your purchase"}
               </p>
@@ -393,9 +405,17 @@ export default function CheckoutModal({
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => {
+                        if (email.trim()) {
+                          posthog?.capture("checkout_email_entered", {
+                            network: platform,
+                            volume: tier.volume,
+                          });
+                        }
+                      }}
                       placeholder="your@email.com"
                       required
-                      className="w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[14px] text-white placeholder:text-zinc-600 focus:border-white/[0.2] focus:ring-2 focus:outline-none transition-all"
+                      className="w-full px-4 py-4 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[16px] sm:text-[14px] text-white placeholder:text-zinc-600 focus:border-white/[0.2] focus:ring-2 focus:outline-none transition-all"
                       style={{ ["--tw-ring-color" as string]: `${accentColor}30` } as React.CSSProperties}
                     />
                   </div>
@@ -451,6 +471,15 @@ export default function CheckoutModal({
                       <PaymentForm
                         onCardSuccess={handleCardPaymentSuccess}
                         onExpressSuccess={handleExpressPaymentSuccess}
+                        onPaymentAttempted={(method) => {
+                          posthog?.capture("checkout_payment_attempted", {
+                            volume: tier.volume,
+                            price: tier.price,
+                            network: platform,
+                            payment_method: method,
+                            email: email.trim(),
+                          });
+                        }}
                         accentGradient={accentGradient}
                         accentColor={accentColor}
                         price={tier.price}

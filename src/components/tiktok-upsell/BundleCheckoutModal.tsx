@@ -80,6 +80,7 @@ function ConfettiCanvas() {
 function PaymentForm({
   onCardSuccess,
   onExpressSuccess,
+  onPaymentAttempted,
   price,
   currency,
   email,
@@ -87,6 +88,7 @@ function PaymentForm({
 }: {
   onCardSuccess: () => void;
   onExpressSuccess: () => void;
+  onPaymentAttempted: (method: "card" | "express") => void;
   price: number;
   currency?: string;
   email: string;
@@ -106,6 +108,8 @@ function PaymentForm({
     setLoading(true);
     setError(null);
 
+    onPaymentAttempted("card");
+
     const { error: submitError } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: window.location.href },
@@ -123,6 +127,9 @@ function PaymentForm({
 
   const handleExpressConfirm = async () => {
     if (!stripe || !elements) return;
+
+    onPaymentAttempted("express");
+
     const { error: confirmError } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: window.location.href },
@@ -272,6 +279,7 @@ export default function BundleCheckoutModal() {
   const processPaymentSuccess = async (customerEmail: string) => {
     const orderId = `VPX-${Date.now().toString(36).toUpperCase()}`;
 
+    posthog?.identify(customerEmail);
     posthog?.capture("bundle_payment_success", {
       platform,
       followers: followersQty,
@@ -281,7 +289,6 @@ export default function BundleCheckoutModal() {
       email: customerEmail,
       username: username.trim(),
     });
-    posthog?.identify(customerEmail);
 
     trackGoogleAdsPurchase({
       value: totalPrice,
@@ -356,6 +363,11 @@ export default function BundleCheckoutModal() {
             {/* Confetti on success */}
             {step === 2 && <ConfettiCanvas />}
 
+            {/* Mobile drag handle */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-white/[0.15]" />
+            </div>
+
             <button
               onClick={resetAndClose}
               className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.1] transition-all"
@@ -419,8 +431,16 @@ export default function BundleCheckoutModal() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => {
+                        if (email.trim()) {
+                          posthog?.capture("checkout_email_entered", {
+                            network: platform,
+                            package: packageDesc,
+                          });
+                        }
+                      }}
                       placeholder="your@email.com"
-                      className="w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[14px] text-white placeholder:text-zinc-600 focus:border-white/[0.2] focus:ring-2 focus:outline-none transition-all"
+                      className="w-full px-4 py-4 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[16px] sm:text-[14px] text-white placeholder:text-zinc-600 focus:border-white/[0.2] focus:ring-2 focus:outline-none transition-all"
                       style={{ ["--tw-ring-color" as string]: `${accent}30` } as React.CSSProperties}
                     />
                   </div>
@@ -457,6 +477,15 @@ export default function BundleCheckoutModal() {
                       <PaymentForm
                         onCardSuccess={handleCardSuccess}
                         onExpressSuccess={handleExpressSuccess}
+                        onPaymentAttempted={(method) => {
+                          posthog?.capture("checkout_payment_attempted", {
+                            price: totalPrice,
+                            network: platform,
+                            payment_method: method,
+                            email: email.trim(),
+                            package: packageDesc,
+                          });
+                        }}
                         price={totalPrice}
                         currency={currency}
                         email={email}

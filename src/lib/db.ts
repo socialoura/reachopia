@@ -71,6 +71,9 @@ export async function initDatabase() {
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS views_qty INTEGER DEFAULT 0`;
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS assignments JSONB DEFAULT '{}'::jsonb`;
 
+    // Add provider_orders column for BulkFollows integration
+    await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS provider_orders JSONB DEFAULT '[]'::jsonb`;
+
     await sql`
       CREATE TABLE IF NOT EXISTS pricing (
         id VARCHAR(50) PRIMARY KEY,
@@ -137,6 +140,15 @@ export interface DBOrder {
   country_name: string | null;
   created_at: string;
   updated_at: string;
+  provider_orders: Array<{
+    type: string;
+    serviceId: number;
+    bfOrderId: number | null;
+    link: string;
+    quantity: number;
+    error?: string;
+    status?: string;
+  }>;
   customer_total_orders?: number;
   customer_order_number?: number;
 }
@@ -168,6 +180,15 @@ export async function createOrder(data: {
     RETURNING id, order_id
   `;
   return result[0] as { id: number; order_id: string };
+}
+
+export async function updateProviderOrders(orderId: string, providerOrders: unknown[]) {
+  await ensureDbReady();
+  const json = JSON.stringify(providerOrders);
+  await sql`
+    UPDATE orders SET provider_orders = ${json}::jsonb, updated_at = NOW()
+    WHERE order_id = ${orderId}
+  `;
 }
 
 export async function getAllOrders(): Promise<DBOrder[]> {

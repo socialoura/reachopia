@@ -25,6 +25,113 @@ interface DiscordWebhookPayload {
   embeds: DiscordEmbed[];
 }
 
+/**
+ * Send a Discord alert when BulkFollows orders fail.
+ */
+export async function sendBulkFollowsAlert(params: {
+  orderId: string;
+  username: string;
+  failures: Array<{ type: string; quantity: number; error?: string }>;
+}): Promise<void> {
+  if (!DISCORD_WEBHOOK_URL) return;
+
+  const failLines = params.failures
+    .map((f) => `• **${f.type}** (${f.quantity}) — \`${f.error || "unknown error"}\``)
+    .join("\n");
+
+  const embed: DiscordEmbed = {
+    title: "⚠️ BulkFollows — Échec de commande",
+    description: `Des sous-commandes ont échoué pour **#${params.orderId}** (@${params.username}).`,
+    color: 0xe74c3c, // Red
+    fields: [
+      {
+        name: "📋 Commande",
+        value: `\`#${params.orderId}\``,
+        inline: true,
+      },
+      {
+        name: "👤 Username",
+        value: `\`@${params.username}\``,
+        inline: true,
+      },
+      {
+        name: "❌ Erreurs",
+        value: failLines,
+        inline: false,
+      },
+    ],
+    footer: { text: "Action requise — vérifier manuellement sur BulkFollows" },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Reachopia Alerts",
+        avatar_url: "https://reachopia.com/logo.png",
+        embeds: [embed],
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (err) {
+    console.error("[Discord] Failed to send BulkFollows alert:", err);
+  }
+}
+
+/**
+ * Send a Discord alert when a username doesn't exist (order needs manual handling).
+ */
+export async function sendUsernameNotFoundAlert(params: {
+  orderId: string;
+  username: string;
+  platform: string;
+  email: string;
+}): Promise<void> {
+  if (!DISCORD_WEBHOOK_URL) return;
+
+  const embed: DiscordEmbed = {
+    title: "🔍 Username introuvable — Commande en attente",
+    description: `Le profil **@${params.username}** n'a pas été trouvé sur ${params.platform === "instagram" ? "Instagram" : "TikTok"}. La commande BulkFollows n'a **pas** été envoyée.`,
+    color: 0xf39c12, // Orange
+    fields: [
+      {
+        name: "📋 Commande",
+        value: `\`#${params.orderId}\``,
+        inline: true,
+      },
+      {
+        name: "👤 Username",
+        value: `\`@${params.username}\``,
+        inline: true,
+      },
+      {
+        name: "📧 Email client",
+        value: params.email,
+        inline: true,
+      },
+    ],
+    footer: { text: "Action requise — vérifier le username et traiter manuellement" },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Reachopia Alerts",
+        avatar_url: "https://reachopia.com/logo.png",
+        embeds: [embed],
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (err) {
+    console.error("[Discord] Failed to send username-not-found alert:", err);
+  }
+}
+
 export async function sendDiscordNotification(
   order: OrderPayload
 ): Promise<void> {

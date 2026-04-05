@@ -2,18 +2,22 @@ import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
-import { sendDiscordNotification } from "@/lib/discord";
-import { createOrder } from "@/lib/db";
+import { sendDiscordNotification, sendBulkFollowsAlert, sendUsernameNotFoundAlert } from "@/lib/discord";
+import { createOrder, updateProviderOrders } from "@/lib/db";
+import { submitTikTokOrder, verifyTikTokUsername, type ProviderOrder } from "@/lib/bulkfollows";
 import { getCountryName } from "@/lib/country-names";
 import type { OrderPayload } from "@/lib/types";
+import { extractUsername } from "@/lib/extract-username";
 
 export async function POST(req: NextRequest) {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await req.json();
 
-    const { orderId, email, username, platform, service, quantity, price, currency, followersQty, likesQty, viewsQty, assignments } =
-      body as OrderPayload;
+    const raw = body as OrderPayload;
+    const cleanUsername = extractUsername(raw.username);
+    const { orderId, email, platform, service, quantity, price, currency, followersQty, likesQty, viewsQty, assignments } = raw;
+    const username = cleanUsername || raw.username;
 
     // Validate required fields
     if (
@@ -73,7 +77,51 @@ export async function POST(req: NextRequest) {
       // Continue with notifications even if DB fails
     }
 
-    // 2. Run email + Discord in parallel — neither should block the other
+    // 2. Auto-submit to BulkFollows for TikTok orders
+    let providerOrders: ProviderOrder[] = [];
+    if (platform === "tiktok") {
+      // First verify the username actually exists
+      const usernameExists = await verifyTikTokUsername(username);
+
+      if (!usernameExists) {
+        console.warn(`[BulkFollows] Username @${username} not found — skipping auto-order for ${orderId}`);
+        await sendUsernameNotFoundAlert({ orderId, username, platform, email });
+      } else {
+        try {
+          providerOrders = await submitTikTokOrder({
+            username,
+            followersQty: followersQty ?? (parseInt(quantity, 10) || 0),
+            likesQty: likesQty ?? 0,
+            viewsQty: viewsQty ?? 0,
+            assignments,
+          });
+          // Save provider order IDs back to DB
+          if (providerOrders.length > 0) {
+            await updateProviderOrders(orderId, providerOrders);
+          }
+          console.log(`[BulkFollows] Submitted ${providerOrders.length} sub-orders for ${orderId}`);
+
+          // Alert on Discord if any sub-order failed
+          const failures = providerOrders.filter((po) => !po.bfOrderId);
+          if (failures.length > 0) {
+            await sendBulkFollowsAlert({
+              orderId,
+              username,
+              failures: failures.map((f) => ({ type: f.type, quantity: f.quantity, error: f.error })),
+            });
+          }
+        } catch (bfErr) {
+          console.error("[BulkFollows] Failed to submit orders:", bfErr);
+          await sendBulkFollowsAlert({
+            orderId,
+            username,
+            failures: [{ type: "all", quantity: 0, error: String(bfErr) }],
+          });
+        }
+      }
+    }
+
+    // 3. Run email + Discord in parallel — neither should block the other
     const [emailResult] = await Promise.allSettled([
       resend.emails.send({
         from: process.env.RESEND_FROM || "Reachopia <orders@reachopia.com>",

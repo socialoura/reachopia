@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
+import { extractUsername } from "@/lib/extract-username";
 import type { TiktokProfile } from "@/types/tiktok";
 
 const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
@@ -49,7 +50,7 @@ export default function ProfileSearchInput() {
   const [suggestion, setSuggestion] = useState<{ username: string; nickname?: string; fullName?: string; avatarUrl?: string } | null>(null);
 
   const handleSearch = async (overrideUsername?: string) => {
-    const clean = (overrideUsername ?? localUsername).replace(/^@/, "").trim();
+    const clean = extractUsername(overrideUsername ?? localUsername);
     if (!clean) {
       inputRef.current?.focus();
       return;
@@ -170,7 +171,7 @@ export default function ProfileSearchInput() {
             onFocus={() => posthog?.capture("input_focused", { platform })}
             onKeyDown={handleKeyDown}
             placeholder={isIG ? "Enter Instagram username" : "Enter TikTok username"}
-            className="w-full pl-9 pr-4 py-3.5 sm:py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[16px] sm:text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
+            className="w-full pl-9 pr-4 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[16px] sm:text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
             autoComplete="off"
             spellCheck={false}
             disabled={profileLoading}
@@ -179,7 +180,7 @@ export default function ProfileSearchInput() {
         <button
           onClick={() => handleSearch()}
           disabled={profileLoading}
-          className="shine w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-white text-[14px] font-semibold transition-all duration-300 hover:opacity-90 active:scale-[0.97] disabled:opacity-50"
+          className="shine cta-pulse w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-white text-[15px] font-semibold transition-all duration-300 hover:opacity-90 active:scale-[0.97] disabled:opacity-50 disabled:animate-none"
           style={{ background: gradient }}
         >
           {profileLoading ? (
@@ -187,7 +188,7 @@ export default function ProfileSearchInput() {
           ) : (
             <>
               <Search className="w-4 h-4" />
-              Boost
+              {isIG ? "Boost my Instagram" : "Boost my TikTok"}
             </>
           )}
         </button>

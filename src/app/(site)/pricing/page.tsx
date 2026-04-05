@@ -26,6 +26,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { usePostHog } from "posthog-js/react";
 import { formatCurrency } from "@/lib/currency";
 import { useIsMobile } from "@/hooks/useMediaQuery";
+import { extractUsername } from "@/lib/extract-username";
 
 /* ─── Custom Icons ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -184,7 +185,7 @@ export default function GrowthAnalyzerPage() {
 
   /* ── Fetch data + transition to results after scan delay ── */
   const startAnalysis = useCallback(() => {
-    const clean = username.replace(/^@/, "").trim();
+    const clean = extractUsername(username);
     if (!clean) {
       inputRef.current?.focus();
       return;

@@ -17,6 +17,7 @@ import {
   Eye,
   Users,
   ExternalLink,
+  Zap,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
 import GmailPrivateAccountButton from "@/components/admin/GmailPrivateAccountButton";
@@ -49,6 +50,15 @@ interface Order {
   order_status: string;
   notes: string;
   created_at: string;
+  provider_orders?: Array<{
+    type: string;
+    serviceId: number;
+    bfOrderId: number | null;
+    link: string;
+    quantity: number;
+    error?: string;
+    status?: string;
+  }>;
   customer_total_orders?: number;
   customer_order_number?: number;
 }
@@ -270,6 +280,9 @@ export default function AdminOrdersPage() {
                       Status
                     </th>
                     <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Provider
+                    </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Notes
                     </th>
                     <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -283,7 +296,7 @@ export default function AdminOrdersPage() {
                 <tbody className="divide-y divide-white/5">
                   {filteredOrders.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-5 py-16 text-center">
+                      <td colSpan={10} className="px-5 py-16 text-center">
                         <Package className="w-10 h-10 text-gray-600 mx-auto mb-3" />
                         <p className="text-gray-500">No orders found</p>
                       </td>
@@ -470,6 +483,32 @@ export default function AdminOrdersPage() {
                               </div>
                             )}
                           </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          {order.provider_orders && order.provider_orders.length > 0 ? (
+                            <div className="space-y-1.5">
+                              {order.provider_orders.map((po, idx) => (
+                                <div key={idx}>
+                                  <div className="flex items-center gap-1.5">
+                                    <Zap className={`w-3 h-3 flex-shrink-0 ${po.bfOrderId ? 'text-emerald-400' : 'text-red-400'}`} />
+                                    <span className="text-[10px] text-gray-400">{po.type}</span>
+                                    {po.bfOrderId ? (
+                                      <span className="text-[10px] font-mono text-emerald-400">#{po.bfOrderId}</span>
+                                    ) : (
+                                      <span className="text-[10px] font-semibold text-red-400">FAILED</span>
+                                    )}
+                                  </div>
+                                  {po.error && !po.bfOrderId && (
+                                    <p className="ml-[18px] text-[9px] text-red-400/70 max-w-[150px] truncate" title={po.error}>
+                                      {po.error}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-gray-600">—</span>
+                          )}
                         </td>
                         <td className="px-5 py-4">
                           {editingNotes === order.id ? (

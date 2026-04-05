@@ -344,7 +344,7 @@ export default function PricingSocialsPage() {
     <>
       {/* ───────────── SEARCH PHASE: Full-width split hero ───────────── */}
       {isSearchPhase && (
-        <div className="relative z-10 min-h-[100dvh] flex flex-col -mt-16 md:mt-0">
+        <div className="relative z-10 min-h-[100dvh] flex flex-col">
           {/* Subtle gradient mesh background */}
           <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full">
@@ -355,13 +355,13 @@ export default function PricingSocialsPage() {
 
           {/* Main split hero */}
           <div className="relative z-10 flex-1 flex items-center">
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-16 md:py-0">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-16 md:py-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center">
 
                 {/* LEFT — Copy + Social Proof */}
-                <div className="order-2 lg:order-1">
+                <div className="order-1 lg:order-1">
                   {/* Platform switcher — pill tabs */}
-                  <div className="inline-flex items-center rounded-lg bg-white/[0.04] border border-white/[0.08] p-0.5 mb-8">
+                  <div className="inline-flex items-center rounded-lg bg-white/[0.04] border border-white/[0.08] p-0.5 mb-5 sm:mb-8">
                     {(["tiktok", "instagram"] as const).map((p) => {
                       const active = platform === p;
                       return (
@@ -379,7 +379,7 @@ export default function PricingSocialsPage() {
                     })}
                   </div>
 
-                  <h1 className="text-[clamp(1.75rem,4.5vw,3.8rem)] font-bold text-white tracking-tight leading-[1.1] mb-6">
+                  <h1 className="text-[clamp(1.6rem,4.5vw,3.8rem)] font-bold text-white tracking-tight leading-[1.1] mb-4 sm:mb-6">
                     Grow your{" "}
                     <span className="relative inline-block">
                       <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] to-[#ee1d52]"} bg-clip-text text-transparent`}>
@@ -388,12 +388,12 @@ export default function PricingSocialsPage() {
                       <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full" style={{ background: gradient, opacity: 0.4 }} />
                     </span>
                     <span className="hidden sm:inline"><br /></span>{" "}
-                    audience today.
+                    today.
                   </h1>
 
                   {/* Social proof counters */}
                   {mounted && (
-                    <div data-nosnippet="" className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-8 mb-8 sm:mb-10">
+                    <div data-nosnippet="" className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-8 mb-6 sm:mb-10">
                       {[
                         { value: 12847, label: "Campaigns delivered", icon: BarChart3 },
                         { value: 4200, label: "Active creators", icon: Users },
@@ -418,10 +418,10 @@ export default function PricingSocialsPage() {
                 </div>
 
                 {/* RIGHT — Search Card */}
-                <div className="order-1 lg:order-2">
-                  <div className="relative rounded-3xl bg-white/[0.03] border border-white/[0.08] p-6 sm:p-8 backdrop-blur-sm">
+                <div className="order-2 lg:order-2">
+                  <div className="relative rounded-3xl bg-white/[0.03] border border-white/[0.08] p-5 sm:p-8 backdrop-blur-sm">
                     {/* Card header */}
-                    <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center gap-3 mb-5 sm:mb-6">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: gradient }}>
                         {isIG ? <InstagramIcon className="w-5 h-5 text-white" /> : <TikTokIcon className="w-5 h-5 text-white" />}
                       </div>
@@ -439,9 +439,17 @@ export default function PricingSocialsPage() {
                       </motion.p>
                     )}
 
-                    {/* Mini how-it-works inside card */}
+                    {/* Compact trust strip — visible on mobile */}
+                    <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center justify-center sm:hidden">
+                      <div className="flex items-center gap-1.5">
+                        <Shield className="w-3 h-3" style={{ color: accent }} />
+                        <span className="text-[10px] text-zinc-500 font-medium">One-time payment</span>
+                      </div>
+                    </div>
+
+                    {/* Mini how-it-works inside card — desktop only */}
                     {mounted && (
-                      <div data-nosnippet="" className="mt-8 pt-6 border-t border-white/[0.06]">
+                      <div data-nosnippet="" className="hidden sm:block mt-8 pt-6 border-t border-white/[0.06]">
                         <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-4">How it works</p>
                         <div className="space-y-3">
                           {[
@@ -592,7 +600,7 @@ export default function PricingSocialsPage() {
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 md:py-10">
             {/* Top bar: back + steps */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-3">
               <button onClick={reset} className="text-[13px] text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5">
                 <ChevronDown className="w-3.5 h-3.5 rotate-90" />
                 New search
@@ -603,7 +611,7 @@ export default function PricingSocialsPage() {
             </div>
 
             {/* Mobile step progress */}
-            <div className="md:hidden mb-4">
+            <div className="md:hidden mb-2">
               <StepProgress currentStep={step} />
             </div>
 
