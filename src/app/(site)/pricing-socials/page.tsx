@@ -37,6 +37,7 @@ import VideoSelector from "@/components/tiktok-upsell/VideoSelector";
 import OrderRecap from "@/components/tiktok-upsell/OrderRecap";
 import BundleCheckoutModal from "@/components/tiktok-upsell/BundleCheckoutModal";
 import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ─── TikTok Icon ─── */
 function TikTokIcon({ className }: { className?: string }) {
@@ -64,15 +65,6 @@ const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
 const IG_ACCENT = "#dd2a7b";
 const IG_GRADIENT = "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)";
 
-/* ─── FAQ ─── */
-const faqs = [
-  { q: "How does the campaign work?", a: "After you configure your growth campaign and complete payment, our AI engine begins optimizing your profile's reach. Campaigns are distributed over 24-72 hours to ensure organic, algorithm-friendly growth." },
-  { q: "Is my account secure during the campaign?", a: "Yes. Our systems operate entirely externally. We never ask for your login details, ensuring your account remains 100% secure and under your full control." },
-  { q: "Can I prioritize specific content?", a: "Yes. After configuring your campaign goals, you can select which of your recent videos should receive prioritized promotion and amplification." },
-  { q: "What results can I expect?", a: "Our AI targets active, real users within your niche. Campaign delivery is paced gradually to match organic patterns. Some natural fluctuation over time is expected." },
-  { q: "What payment methods do you accept?", a: "We accept all major credit and debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay. All payments are processed securely through Stripe." },
-  { q: "What is your refund policy?", a: "If we are unable to deliver on the agreed campaign metrics, you will receive a full refund. Contact our support team if you experience any issues." },
-];
 
 /* ─── Animated counter ─── */
 function AnimCounter({ target, duration = 2000 }: { target: number; duration?: number }) {
@@ -149,11 +141,12 @@ function StepBadge({ number, label, active, done }: { number: number; label: str
 
 /* ─── Horizontal step progress ─── */
 function StepProgress({ currentStep }: { currentStep: string }) {
+  const { t } = useTranslation();
   const steps = [
-    { key: "bundle", label: "Configure", n: 1 },
-    { key: "assignLikes", label: "Likes", n: 2 },
-    { key: "assignViews", label: "Views", n: 3 },
-    { key: "recap", label: "Checkout", n: 4 },
+    { key: "bundle", label: t("steps.configure"), n: 1 },
+    { key: "assignLikes", label: t("steps.likes"), n: 2 },
+    { key: "assignViews", label: t("steps.views"), n: 3 },
+    { key: "recap", label: t("steps.checkout"), n: 4 },
   ];
 
   const activeSteps = ["bundle", "assignLikes", "assignViews", "recap", "checkout"];
@@ -234,7 +227,17 @@ export default function PricingSocialsPage() {
   const accent = isIG ? IG_ACCENT : TT_ACCENT;
   const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
 
+  const { t } = useTranslation();
   const { getTierPrice: getPrice } = usePricingTiers(currency);
+
+  const faqs = [
+    { q: t("pricing.faq1Q"), a: t("pricing.faq1A") },
+    { q: t("pricing.faq2Q"), a: t("pricing.faq2A") },
+    { q: t("pricing.faq3Q"), a: t("pricing.faq3A") },
+    { q: t("pricing.faq4Q"), a: t("pricing.faq4A") },
+    { q: t("pricing.faq5Q"), a: t("pricing.faq5A") },
+    { q: t("pricing.faq6Q"), a: t("pricing.faq6A") },
+  ];
   const searchParams = useSearchParams();
   const { setDiscountPct } = useTiktokUpsellStore();
 
@@ -380,7 +383,7 @@ export default function PricingSocialsPage() {
                   </div>
 
                   <h1 className="text-[clamp(1.6rem,4.5vw,3.8rem)] font-bold text-white tracking-tight leading-[1.1] mb-4 sm:mb-6">
-                    Grow your{" "}
+                    {t("pricing.heroTitle")}{" "}
                     <span className="relative inline-block">
                       <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] to-[#ee1d52]"} bg-clip-text text-transparent`}>
                         {isIG ? "Instagram" : "TikTok"}
@@ -388,16 +391,16 @@ export default function PricingSocialsPage() {
                       <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full" style={{ background: gradient, opacity: 0.4 }} />
                     </span>
                     <span className="hidden sm:inline"><br /></span>{" "}
-                    today.
+                    {t("pricing.heroTitleEnd")}
                   </h1>
 
                   {/* Social proof counters */}
                   {mounted && (
                     <div data-nosnippet="" className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-8 mb-6 sm:mb-10">
                       {[
-                        { value: 12847, label: "Campaigns delivered", icon: BarChart3 },
-                        { value: 4200, label: "Active creators", icon: Users },
-                        { value: 98, suffix: "%", label: "Satisfaction rate", icon: Star },
+                        { value: 12847, label: t("pricing.statCampaigns"), icon: BarChart3 },
+                        { value: 4200, label: t("pricing.statCreators"), icon: Users },
+                        { value: 98, suffix: "%", label: t("pricing.statSatisfaction"), icon: Star },
                       ].map((stat, i) => (
                         <div key={i} className="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3">
                           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.08]">
@@ -426,8 +429,8 @@ export default function PricingSocialsPage() {
                         {isIG ? <InstagramIcon className="w-5 h-5 text-white" /> : <TikTokIcon className="w-5 h-5 text-white" />}
                       </div>
                       <div>
-                        <h2 className="text-[16px] font-semibold text-white">Start your campaign</h2>
-                        <p className="text-[12px] text-zinc-500">Enter your username to begin</p>
+                        <h2 className="text-[16px] font-semibold text-white">{t("pricing.startCampaign")}</h2>
+                        <p className="text-[12px] text-zinc-500">{t("pricing.enterUsername")}</p>
                       </div>
                     </div>
 
@@ -443,20 +446,20 @@ export default function PricingSocialsPage() {
                     <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center justify-center sm:hidden">
                       <div className="flex items-center gap-1.5">
                         <Shield className="w-3 h-3" style={{ color: accent }} />
-                        <span className="text-[10px] text-zinc-500 font-medium">One-time payment</span>
+                        <span className="text-[10px] text-zinc-500 font-medium">{t("pricing.oneTimePayment")}</span>
                       </div>
                     </div>
 
                     {/* Mini how-it-works inside card — desktop only */}
                     {mounted && (
                       <div data-nosnippet="" className="hidden sm:block mt-8 pt-6 border-t border-white/[0.06]">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-4">How it works</p>
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-4">{t("pricing.howItWorks")}</p>
                         <div className="space-y-3">
                           {[
-                            { n: "1", text: "Enter your public username" },
-                            { n: "2", text: "Configure your growth targets" },
-                            { n: "3", text: "Select content to promote" },
-                            { n: "4", text: "Pay securely & launch" },
+                            { n: "1", text: t("pricing.step1") },
+                            { n: "2", text: t("pricing.step2") },
+                            { n: "3", text: t("pricing.step3") },
+                            { n: "4", text: t("pricing.step4") },
                           ].map((s) => (
                             <div key={s.n} className="flex items-center gap-3">
                               <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-zinc-500 flex-shrink-0">
@@ -480,45 +483,45 @@ export default function PricingSocialsPage() {
             <section ref={trackSection("testimonials")} className="relative z-10 py-16 md:py-24 border-t border-white/[0.04]">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12">
                 <div className="text-center mb-12">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-3">Trusted by creators worldwide</p>
-                  <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">Why creators choose us</h2>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-3">{t("pricing.trustLabel")}</p>
+                  <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">{t("pricing.trustTitle")}</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {[
                     {
-                      quote: "My engagement tripled in the first week. The campaign felt completely organic.",
-                      name: "Sarah M.",
-                      role: "Lifestyle Creator",
-                      followers: "45K followers",
+                      quote: t("pricing.testimonial1Quote"),
+                      name: t("pricing.testimonial1Name"),
+                      role: t("pricing.testimonial1Role"),
+                      followers: t("pricing.testimonial1Followers"),
                     },
                     {
-                      quote: "I was skeptical at first, but the results spoke for themselves. Real followers, real engagement.",
-                      name: "Alex T.",
-                      role: "Fitness Influencer",
-                      followers: "120K followers",
+                      quote: t("pricing.testimonial2Quote"),
+                      name: t("pricing.testimonial2Name"),
+                      role: t("pricing.testimonial2Role"),
+                      followers: t("pricing.testimonial2Followers"),
                     },
                     {
-                      quote: "The best part is choosing which videos get boosted. Smart and easy to use.",
-                      name: "Mia L.",
-                      role: "Beauty Creator",
-                      followers: "28K followers",
+                      quote: t("pricing.testimonial3Quote"),
+                      name: t("pricing.testimonial3Name"),
+                      role: t("pricing.testimonial3Role"),
+                      followers: t("pricing.testimonial3Followers"),
                     },
-                  ].map((t, i) => (
+                  ].map((tm, i) => (
                     <div key={i} className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-6">
                       <div className="flex gap-1 mb-4">
                         {[...Array(5)].map((_, j) => (
                           <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                         ))}
                       </div>
-                      <p className="text-[14px] text-zinc-300 leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</p>
+                      <p className="text-[14px] text-zinc-300 leading-relaxed mb-5">&ldquo;{tm.quote}&rdquo;</p>
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center text-[11px] font-bold text-zinc-400">
-                          {t.name[0]}
+                          {tm.name[0]}
                         </div>
                         <div>
-                          <p className="text-[13px] font-medium text-white">{t.name}</p>
-                          <p className="text-[11px] text-zinc-500">{t.role} &middot; {t.followers}</p>
+                          <p className="text-[13px] font-medium text-white">{tm.name}</p>
+                          <p className="text-[11px] text-zinc-500">{tm.role} &middot; {tm.followers}</p>
                         </div>
                       </div>
                     </div>
@@ -532,10 +535,10 @@ export default function PricingSocialsPage() {
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[
-                    { icon: Shield, title: "Privacy-First", desc: "No login required. We only need your public handle." },
-                    { icon: Clock, title: "24-72h Delivery", desc: "Gradual, algorithm-friendly campaign pacing." },
-                    { icon: Globe, title: "Global Reach", desc: "Active, real users targeted within your niche." },
-                    { icon: CheckCircle2, title: "Refund Guarantee", desc: "Full refund if we can't deliver on agreed metrics." },
+                    { icon: Shield, title: t("pricing.guarantee1Title"), desc: t("pricing.guarantee1Desc") },
+                    { icon: Clock, title: t("pricing.guarantee2Title"), desc: t("pricing.guarantee2Desc") },
+                    { icon: Globe, title: t("pricing.guarantee3Title"), desc: t("pricing.guarantee3Desc") },
+                    { icon: CheckCircle2, title: t("pricing.guarantee4Title"), desc: t("pricing.guarantee4Desc") },
                   ].map((g, i) => (
                     <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${accent}10` }}>
@@ -555,8 +558,8 @@ export default function PricingSocialsPage() {
             <section ref={trackSection("faq")} className="relative z-10 py-16 md:py-24 border-t border-white/[0.04]">
               <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
                 <div className="text-center mb-12">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-3">FAQ</p>
-                  <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">Common questions</h2>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-3">{t("pricing.faqLabel")}</p>
+                  <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">{t("pricing.faqTitle")}</h2>
                 </div>
                 <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-6">
                   {faqs.map((faq, i) => (
@@ -570,10 +573,10 @@ export default function PricingSocialsPage() {
             <section ref={trackSection("cta_bottom")} className="relative z-10 py-16 md:py-20 border-t border-white/[0.04]">
               <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
                 <h2 className="text-[clamp(1.5rem,3.5vw,2.6rem)] font-bold text-white tracking-tight mb-4">
-                  Start your campaign now
+                  {t("pricing.ctaBottomTitle")}
                 </h2>
                 <p className="text-[15px] text-zinc-400 mb-8">
-                  Join thousands of creators growing their audience with AI-powered campaigns.
+                  {t("pricing.ctaBottomSubtitle")}
                 </p>
                 <button
                   onClick={() => { posthog?.capture("cta_bottom_clicked", { variant: "pricing-socials", platform }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
@@ -581,7 +584,7 @@ export default function PricingSocialsPage() {
                   style={{ background: gradient }}
                 >
                   {isIG ? <InstagramIcon className="w-5 h-5" /> : <TikTokIcon className="w-5 h-5" />}
-                  Get Started
+                  {t("pricing.ctaBottomButton")}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -603,7 +606,7 @@ export default function PricingSocialsPage() {
             <div className="flex items-center justify-between mb-3">
               <button onClick={reset} className="text-[13px] text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5">
                 <ChevronDown className="w-3.5 h-3.5 rotate-90" />
-                New search
+                {t("pricing.newSearch")}
               </button>
               <div className="hidden md:block">
                 <StepProgress currentStep={step} />
@@ -627,12 +630,12 @@ export default function PricingSocialsPage() {
 
                   {/* Trust sidebar */}
                   <div className="hidden lg:block rounded-2xl bg-white/[0.02] border border-white/[0.06] p-5 space-y-4">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-2">Guarantees</p>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-2">{t("pricing.guaranteesLabel")}</p>
                     {[
-                      { icon: Shield, text: "No login required" },
-                      { icon: Clock, text: "24-72h gradual delivery" },
-                      { icon: CheckCircle2, text: "Full refund if undelivered" },
-                      { icon: Lock, text: "Stripe-encrypted payments" },
+                      { icon: Shield, text: t("pricing.guaranteeNoLogin") },
+                      { icon: Clock, text: t("pricing.guaranteeDelivery") },
+                      { icon: CheckCircle2, text: t("pricing.guaranteeRefund") },
+                      { icon: Lock, text: t("pricing.guaranteeStripe") },
                     ].map((g, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <g.icon className="w-4 h-4 flex-shrink-0" style={{ color: accent }} />
@@ -753,7 +756,7 @@ export default function PricingSocialsPage() {
                       <div className="mt-6 flex items-center justify-center gap-3 lg:hidden flex-wrap">
                         <div className="flex items-center gap-2 text-[10px] text-zinc-600">
                           <Shield className="w-3 h-3" />
-                          <span>Stripe secured</span>
+                          <span>{t("pricing.stripeSecured")}</span>
                         </div>
                         <Image
                           src="/badges_paiement.png"

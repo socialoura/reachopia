@@ -182,6 +182,29 @@ export async function createOrder(data: {
   return result[0] as { id: number; order_id: string };
 }
 
+/**
+ * Check if there's an active (non-completed) BulkFollows order for the same username + platform
+ * within the last 24 hours. Used to prevent duplicate concurrent submissions.
+ */
+export async function hasActiveBulkFollowsOrder(username: string, platform: string, excludeOrderId?: string): Promise<{ active: boolean; conflictOrderId?: string }> {
+  await ensureDbReady();
+  const result = await sql`
+    SELECT order_id FROM orders
+    WHERE LOWER(username) = LOWER(${username})
+      AND platform = ${platform}
+      AND order_status NOT IN ('completed', 'cancelled', 'refunded')
+      AND provider_orders != '[]'::jsonb
+      AND created_at > NOW() - INTERVAL '24 hours'
+      ${excludeOrderId ? sql`AND order_id != ${excludeOrderId}` : sql``}
+    ORDER BY created_at DESC
+    LIMIT 1
+  `;
+  if (result.length > 0) {
+    return { active: true, conflictOrderId: result[0].order_id };
+  }
+  return { active: false };
+}
+
 export async function updateProviderOrders(orderId: string, providerOrders: unknown[]) {
   await ensureDbReady();
   const json = JSON.stringify(providerOrders);

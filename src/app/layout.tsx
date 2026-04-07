@@ -4,6 +4,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import ConditionalHeader from "@/components/layout/ConditionalHeader";
 import { CurrencyProvider } from "@/context/CurrencyContext";
+import { TranslationProvider } from "@/context/TranslationContext";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
@@ -33,8 +34,10 @@ export default function RootLayout({
         <PostHogProvider>
           <Suspense fallback={null}>
             <CurrencyProvider>
-              <ConditionalHeader />
-              {children}
+              <TranslationProvider>
+                <ConditionalHeader />
+                {children}
+              </TranslationProvider>
             </CurrencyProvider>
           </Suspense>
         </PostHogProvider>

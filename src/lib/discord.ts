@@ -132,6 +132,78 @@ export async function sendUsernameNotFoundAlert(params: {
   }
 }
 
+/**
+ * Send a Discord alert when an order is queued because a previous order
+ * for the same username is still active on BulkFollows.
+ */
+export async function sendOrderQueuedAlert(params: {
+  orderId: string;
+  username: string;
+  platform: string;
+  email: string;
+  conflictOrderId: string;
+  followersQty: number;
+  likesQty: number;
+  viewsQty: number;
+}): Promise<void> {
+  if (!DISCORD_WEBHOOK_URL) return;
+
+  const parts: string[] = [];
+  if (params.followersQty > 0) parts.push(`${params.followersQty} followers`);
+  if (params.likesQty > 0) parts.push(`${params.likesQty} likes`);
+  if (params.viewsQty > 0) parts.push(`${params.viewsQty} views`);
+
+  const embed: DiscordEmbed = {
+    title: "⏳ Commande en file d'attente — Conflit BulkFollows",
+    description: `La commande **#${params.orderId}** pour **@${params.username}** n'a **pas** été envoyée à BulkFollows car une commande précédente (**#${params.conflictOrderId}**) est encore en cours pour le même profil.`,
+    color: 0xe67e22, // Orange
+    fields: [
+      {
+        name: "📋 Nouvelle commande",
+        value: `\`#${params.orderId}\``,
+        inline: true,
+      },
+      {
+        name: "⚠️ Commande en conflit",
+        value: `\`#${params.conflictOrderId}\``,
+        inline: true,
+      },
+      {
+        name: "👤 Username",
+        value: `\`@${params.username}\``,
+        inline: true,
+      },
+      {
+        name: "📦 Services demandés",
+        value: parts.join(" + ") || "—",
+        inline: false,
+      },
+      {
+        name: "📧 Email client",
+        value: params.email,
+        inline: true,
+      },
+    ],
+    footer: { text: "Action requise — soumettre manuellement quand la commande précédente sera terminée" },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Reachopia Alerts",
+        avatar_url: "https://reachopia.com/logo.png",
+        embeds: [embed],
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (err) {
+    console.error("[Discord] Failed to send order-queued alert:", err);
+  }
+}
+
 export async function sendDiscordNotification(
   order: OrderPayload
 ): Promise<void> {

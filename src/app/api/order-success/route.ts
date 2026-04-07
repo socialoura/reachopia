@@ -2,8 +2,8 @@ import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
-import { sendDiscordNotification, sendBulkFollowsAlert, sendUsernameNotFoundAlert } from "@/lib/discord";
-import { createOrder, updateProviderOrders } from "@/lib/db";
+import { sendDiscordNotification, sendBulkFollowsAlert, sendUsernameNotFoundAlert, sendOrderQueuedAlert } from "@/lib/discord";
+import { createOrder, updateProviderOrders, hasActiveBulkFollowsOrder } from "@/lib/db";
 import { submitTikTokOrder, verifyTikTokUsername, type ProviderOrder } from "@/lib/bulkfollows";
 import { getCountryName } from "@/lib/country-names";
 import type { OrderPayload } from "@/lib/types";
@@ -78,6 +78,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Auto-submit to BulkFollows for TikTok orders
+    const fQty = followersQty ?? (parseInt(quantity, 10) || 0);
+    const lQty = likesQty ?? 0;
+    const vQty = viewsQty ?? 0;
     let providerOrders: ProviderOrder[] = [];
     if (platform === "tiktok") {
       // First verify the username actually exists
@@ -87,36 +90,53 @@ export async function POST(req: NextRequest) {
         console.warn(`[BulkFollows] Username @${username} not found — skipping auto-order for ${orderId}`);
         await sendUsernameNotFoundAlert({ orderId, username, platform, email });
       } else {
-        try {
-          providerOrders = await submitTikTokOrder({
-            username,
-            followersQty: followersQty ?? (parseInt(quantity, 10) || 0),
-            likesQty: likesQty ?? 0,
-            viewsQty: viewsQty ?? 0,
-            assignments,
-          });
-          // Save provider order IDs back to DB
-          if (providerOrders.length > 0) {
-            await updateProviderOrders(orderId, providerOrders);
-          }
-          console.log(`[BulkFollows] Submitted ${providerOrders.length} sub-orders for ${orderId}`);
+        // Check for active BulkFollows orders on the same username to avoid conflicts
+        const conflict = await hasActiveBulkFollowsOrder(username, platform, orderId);
 
-          // Alert on Discord if any sub-order failed
-          const failures = providerOrders.filter((po) => !po.bfOrderId);
-          if (failures.length > 0) {
+        if (conflict.active) {
+          console.warn(`[BulkFollows] Active order #${conflict.conflictOrderId} exists for @${username} — queuing ${orderId}`);
+          await sendOrderQueuedAlert({
+            orderId,
+            username,
+            platform,
+            email,
+            conflictOrderId: conflict.conflictOrderId!,
+            followersQty: fQty,
+            likesQty: lQty,
+            viewsQty: vQty,
+          });
+        } else {
+          try {
+            providerOrders = await submitTikTokOrder({
+              username,
+              followersQty: fQty,
+              likesQty: lQty,
+              viewsQty: vQty,
+              assignments,
+            });
+            // Save provider order IDs back to DB
+            if (providerOrders.length > 0) {
+              await updateProviderOrders(orderId, providerOrders);
+            }
+            console.log(`[BulkFollows] Submitted ${providerOrders.length} sub-orders for ${orderId}`);
+
+            // Alert on Discord if any sub-order failed
+            const failures = providerOrders.filter((po) => !po.bfOrderId);
+            if (failures.length > 0) {
+              await sendBulkFollowsAlert({
+                orderId,
+                username,
+                failures: failures.map((f) => ({ type: f.type, quantity: f.quantity, error: f.error })),
+              });
+            }
+          } catch (bfErr) {
+            console.error("[BulkFollows] Failed to submit orders:", bfErr);
             await sendBulkFollowsAlert({
               orderId,
               username,
-              failures: failures.map((f) => ({ type: f.type, quantity: f.quantity, error: f.error })),
+              failures: [{ type: "all", quantity: 0, error: String(bfErr) }],
             });
           }
-        } catch (bfErr) {
-          console.error("[BulkFollows] Failed to submit orders:", bfErr);
-          await sendBulkFollowsAlert({
-            orderId,
-            username,
-            failures: [{ type: "all", quantity: 0, error: String(bfErr) }],
-          });
         }
       }
     }

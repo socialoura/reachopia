@@ -2,21 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/context/TranslationContext";
 
-const activities = [
-  { name: "Alex", city: "Paris", action: "started an AI Growth Campaign" },
-  { name: "Sarah", city: "London", action: "activated Instagram Growth" },
-  { name: "Marco", city: "Milan", action: "launched a TikTok Campaign" },
-  { name: "Emily", city: "New York", action: "started an AI Growth Campaign" },
-  { name: "Yuki", city: "Tokyo", action: "activated Instagram Growth" },
-  { name: "Lucas", city: "Berlin", action: "launched a TikTok Campaign" },
-  { name: "Sofia", city: "Madrid", action: "started an AI Growth Campaign" },
-  { name: "James", city: "Sydney", action: "activated Instagram Growth" },
-  { name: "Léa", city: "Montreal", action: "launched a TikTok Campaign" },
-  { name: "Omar", city: "Dubai", action: "started an AI Growth Campaign" },
+const names = [
+  { name: "Alex", city: "Paris", actionKey: "toast.action1" },
+  { name: "Sarah", city: "London", actionKey: "toast.action2" },
+  { name: "Marco", city: "Milan", actionKey: "toast.action3" },
+  { name: "Emily", city: "New York", actionKey: "toast.action1" },
+  { name: "Yuki", city: "Tokyo", actionKey: "toast.action2" },
+  { name: "Lucas", city: "Berlin", actionKey: "toast.action3" },
+  { name: "Sofia", city: "Madrid", actionKey: "toast.action1" },
+  { name: "James", city: "Sydney", actionKey: "toast.action2" },
+  { name: "Léa", city: "Montreal", actionKey: "toast.action3" },
+  { name: "Omar", city: "Dubai", actionKey: "toast.action1" },
 ];
 
 export default function LiveActivityToast() {
+  const { t } = useTranslation();
   const [current, setCurrent] = useState<number | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -35,13 +37,13 @@ export default function LiveActivityToast() {
     setTimeout(() => {
       setVisible(false);
       setTimeout(() => {
-        const next = (index + 1) % activities.length;
+        const next = (index + 1) % names.length;
         showNext(next);
       }, 8000 + Math.random() * 7000);
     }, 4000);
   };
 
-  const activity = current !== null ? activities[current] : null;
+  const activity = current !== null ? names[current] : null;
 
   return (
     <AnimatePresence>
@@ -61,12 +63,12 @@ export default function LiveActivityToast() {
             </div>
             <div className="min-w-0">
               <p className="text-[12px] font-semibold text-white truncate">
-                {activity.name} from {activity.city}
+                {activity.name} {t("toast.from")} {activity.city}
               </p>
               <p className="text-[11px] text-zinc-400 truncate">
-                {activity.action}
+                {t(activity.actionKey)}
               </p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">Just now</p>
+              <p className="text-[10px] text-zinc-600 mt-0.5">{t("toast.justNow")}</p>
             </div>
           </div>
         </motion.div>

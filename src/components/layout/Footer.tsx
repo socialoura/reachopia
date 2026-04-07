@@ -1,24 +1,28 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import CurrencySelector from "@/components/ui/CurrencySelector";
-
-const footerLinks = {
-  product: [
-    { label: "Instagram Growth", href: "/instagram" },
-    { label: "TikTok Growth", href: "/tiktok" },
-  ],
-  company: [
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
-  ],
-  legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Refund Policy", href: "/refund" },
-  ],
-};
+import { useTranslation } from "@/context/TranslationContext";
 
 export default function Footer() {
+  const { t } = useTranslation();
+
+  const footerLinks = {
+    product: [
+      { label: t("footer.instagramGrowth"), href: "/instagram" },
+      { label: t("footer.tiktokGrowth"), href: "/tiktok" },
+    ],
+    company: [
+      { label: t("footer.about"), href: "/about" },
+      { label: t("footer.contact"), href: "/contact" },
+    ],
+    legal: [
+      { label: t("footer.privacy"), href: "/privacy" },
+      { label: t("footer.terms"), href: "/terms" },
+      { label: t("footer.refund"), href: "/refund" },
+    ],
+  };
   return (
     <footer className="relative z-10 border-t border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 md:py-20">
@@ -38,15 +42,14 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-[13px] text-zinc-500 leading-relaxed max-w-[260px]">
-              Proprietary AI audience-targeting engine for Instagram &amp; TikTok.
-              Trusted by 50,000+ creators worldwide.
+              {t("footer.brandDesc")}
             </p>
           </div>
 
           {/* Product */}
           <div>
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-5">
-              Product
+              {t("footer.product")}
             </h4>
             <nav className="flex flex-col gap-3">
               {footerLinks.product.map((link) => (
@@ -64,7 +67,7 @@ export default function Footer() {
           {/* Company */}
           <div>
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-5">
-              Company
+              {t("footer.company")}
             </h4>
             <nav className="flex flex-col gap-3">
               {footerLinks.company.map((link) => (
@@ -82,7 +85,7 @@ export default function Footer() {
           {/* Legal */}
           <div>
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-5">
-              Legal
+              {t("footer.legal")}
             </h4>
             <nav className="flex flex-col gap-3">
               {footerLinks.legal.map((link) => (
@@ -100,13 +103,13 @@ export default function Footer() {
 
         <div className="mt-16 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[11px] text-zinc-600">
-            &copy; {new Date().getFullYear()} Reachopia. All rights reserved.
+            &copy; {new Date().getFullYear()} {t("footer.copyright")}
           </p>
           <div className="flex items-center gap-4">
             <CurrencySelector />
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-glow" />
-              <span className="text-[11px] text-zinc-600">All systems operational</span>
+              <span className="text-[11px] text-zinc-600">{t("footer.systemsOk")}</span>
             </div>
           </div>
         </div>

@@ -26,6 +26,7 @@ import { toCheckoutTiers } from "@/lib/pricing-utils";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePostHog } from "posthog-js/react";
 import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ─── TikTok Icon ─── */
 function TikTokIcon({ className }: { className?: string }) {
@@ -56,28 +57,6 @@ const TT_ACCENT = "#ee1d52";
 const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
 
 /* ─── FAQ Data ─── */
-const faqs = [
-  {
-    q: "How does your TikTok AI targeting work?",
-    a: "Our algorithm analyzes your content style, sound usage, audience signals, and engagement velocity to map optimal growth vectors. We then deploy your profile across our network of active TikTok users who match your niche — driving organic discovery through the For You Page algorithm.",
-  },
-  {
-    q: "Will this affect my TikTok account safety?",
-    a: "Never. We don't require your password or login credentials — only your public username. Our methods are 100% compliant with TikTok's community guidelines and use organic audience targeting exclusively.",
-  },
-  {
-    q: "How fast will I see results?",
-    a: "Most campaigns begin delivering measurable profile momentum within minutes. Full deployment completes within 24-72 hours with gradual, algorithm-friendly delivery patterns that maximize For You Page visibility.",
-  },
-  {
-    q: "Can this help my videos go viral?",
-    a: "Our AI amplification engine increases your engagement velocity — one of the key signals TikTok's algorithm uses to push content to the For You Page. Higher initial engagement creates a snowball effect for organic reach.",
-  },
-  {
-    q: "What's the difference between tiers?",
-    a: "Higher tiers unlock faster deployment speeds, advanced niche targeting, dedicated growth specialists, and extended retention guarantees. The Accelerate tier offers the best balance of virality potential and ROI.",
-  },
-];
 
 /* ─── FAQ Accordion Item ─── */
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -111,6 +90,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    TIKTOK PRODUCT PAGE
    ═══════════════════════════════════════════════════════════════ */
 export default function TikTokPage() {
+  const { t } = useTranslation();
   const posthog = usePostHog();
   const isMobile = useIsMobile();
   const v = isMobile ? noAnim : fadeUp;
@@ -131,6 +111,14 @@ export default function TikTokPage() {
       })
       .catch(console.error);
   }, [currency]);
+
+  const faqs = [
+    { q: t("ttPage.faq1Q"), a: t("ttPage.faq1A") },
+    { q: t("ttPage.faq2Q"), a: t("ttPage.faq2A") },
+    { q: t("ttPage.faq3Q"), a: t("ttPage.faq3A") },
+    { q: t("ttPage.faq4Q"), a: t("ttPage.faq4A") },
+    { q: t("ttPage.faq5Q"), a: t("ttPage.faq5A") },
+  ];
 
   const handlePackClick = (tier: CheckoutTier) => {
     posthog?.capture("package_selected", { volume: tier.volume, price: tier.price, network: "tiktok" });
@@ -154,7 +142,7 @@ export default function TikTokPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex justify-center mb-6">
             <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm">
               <TikTokIcon className="w-3.5 h-3.5 text-[#69C9D0]" />
-              <span className="text-[12px] font-medium text-zinc-300">TikTok Viral Engine</span>
+              <span className="text-[12px] font-medium text-zinc-300">{t("ttPage.badge")}</span>
             </div>
           </motion.div>
 
@@ -164,14 +152,13 @@ export default function TikTokPage() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.4, 0.25, 1] as const }}
             className="text-center text-[clamp(1.8rem,4.5vw,3.2rem)] font-semibold text-white tracking-tight leading-[1.1]"
           >
-            Select Your <span className="text-gradient-tt">TikTok</span>
+            {t("ttPage.heroTitle1")} <span className="text-gradient-tt">{t("ttPage.heroTitle2")}</span>
             <br />
-            AI Growth Volume
+            {t("ttPage.heroTitle3")}
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }} className="mt-4 text-center text-[14px] sm:text-[16px] text-zinc-400 leading-relaxed max-w-lg mx-auto">
-            Tap a volume to instantly configure your viral campaign.
-            Results guaranteed.
+            {t("ttPage.heroSubtitle")}
           </motion.p>
 
           {/* ── 8-Pack Grid ── */}
@@ -184,11 +171,11 @@ export default function TikTokPage() {
               >
                 {i === 3 && (
                   <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider text-white whitespace-nowrap" style={{ background: TT_GRADIENT }}>
-                    Popular
+                    {t("ttPage.popular")}
                   </span>
                 )}
                 <span className="block text-[20px] sm:text-[22px] font-semibold text-white tracking-tight group-hover:text-white/90 transition-colors">{tier.label}</span>
-                <span className="block mt-0.5 text-[10px] font-medium text-[#69C9D0]/70 group-hover:text-[#69C9D0] transition-colors">AI Reach</span>
+                <span className="block mt-0.5 text-[10px] font-medium text-[#69C9D0]/70 group-hover:text-[#69C9D0] transition-colors">{t("ttPage.aiReach")}</span>
                 <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">{currencySymbol}{tier.price.toFixed(2)}</span>
                 <span className="block text-[11px] text-zinc-600 line-through">{currencySymbol}{tier.originalPrice.toFixed(2)}</span>
               </button>
@@ -196,8 +183,8 @@ export default function TikTokPage() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.6 }} className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-600">
-            <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> Stripe secured</span>
-            <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant activation</span>
+            <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> {t("ttPage.stripeSecured")}</span>
+            <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> {t("ttPage.instantActivation")}</span>
           </motion.div>
         </div>
       </section>
@@ -212,10 +199,10 @@ export default function TikTokPage() {
             className="text-center mb-16"
           >
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
-              Viral Amplification
+              {t("ttPage.howLabel")}
             </motion.p>
             <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              How Our TikTok AI Works
+              {t("ttPage.howTitle")}
             </motion.h2>
           </motion.div>
 
@@ -224,20 +211,20 @@ export default function TikTokPage() {
               {
                 step: "01",
                 icon: Users,
-                title: "Profile Analysis",
-                desc: "Enter your username. Our AI scans your content style, sounds, hashtags, and engagement velocity patterns.",
+                title: t("ttPage.how1Title"),
+                desc: t("ttPage.how1Desc"),
               },
               {
                 step: "02",
                 icon: Brain,
-                title: "FYP Algorithm Mapping",
-                desc: "We reverse-engineer TikTok's recommendation engine to identify high-intent users who engage with content like yours.",
+                title: t("ttPage.how2Title"),
+                desc: t("ttPage.how2Desc"),
               },
               {
                 step: "03",
                 icon: TrendingUp,
-                title: "Viral Deployment",
-                desc: "Your profile is amplified across our network with engagement-velocity optimization — signaling TikTok's algorithm to push your content wider.",
+                title: t("ttPage.how3Title"),
+                desc: t("ttPage.how3Desc"),
               },
             ].map((item, i) => (
               <motion.div
@@ -294,20 +281,20 @@ export default function TikTokPage() {
               viewport={{ once: true }}
             >
               <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#69C9D0] mb-4">
-                Why Reachopia for TikTok
+                {t("ttPage.featLabel")}
               </motion.p>
               <motion.h2 variants={v} custom={1} className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-semibold text-white tracking-tight mb-8">
-                Engineered for the
+                {t("ttPage.featTitle1")}
                 <br />
-                For You Page
+                {t("ttPage.featTitle2")}
               </motion.h2>
 
               <div className="space-y-5">
                 {[
-                  { icon: Flame, title: "Engagement Velocity Boost", desc: "Rapid initial engagement signals tell TikTok's algorithm your content deserves wider distribution — triggering the viral snowball effect." },
-                  { icon: Radio, title: "FYP Signal Optimization", desc: "We optimize the key signals TikTok uses to rank content: watch time, shares, comments, and profile visits — all from real users." },
-                  { icon: Eye, title: "Discoverability Amplification", desc: "Increased profile authority and engagement velocity push your content into more For You Pages, search results, and suggested accounts." },
-                  { icon: BarChart3, title: "Real-Time Campaign Tracking", desc: "Monitor your growth metrics in real-time and watch your TikTok momentum build with transparent, honest analytics." },
+                  { icon: Flame, title: t("ttPage.feat1Title"), desc: t("ttPage.feat1Desc") },
+                  { icon: Radio, title: t("ttPage.feat2Title"), desc: t("ttPage.feat2Desc") },
+                  { icon: Eye, title: t("ttPage.feat3Title"), desc: t("ttPage.feat3Desc") },
+                  { icon: BarChart3, title: t("ttPage.feat4Title"), desc: t("ttPage.feat4Desc") },
                 ].map((item, i) => (
                   <motion.div
                     key={i}
@@ -340,10 +327,10 @@ export default function TikTokPage() {
             className="text-center mb-12"
           >
             <motion.h2 variants={v} custom={0} className="text-[clamp(1.4rem,3vw,2.2rem)] font-semibold text-white tracking-tight">
-              Trusted by Thousands of Creators
+              {t("ttPage.socialProofTitle")}
             </motion.h2>
             <motion.p variants={v} custom={1} className="mt-3 text-[14px] text-zinc-500 max-w-md mx-auto">
-              Real results from real accounts using our AI-powered TikTok growth platform.
+              {t("ttPage.socialProofDesc")}
             </motion.p>
           </motion.div>
 
@@ -377,10 +364,10 @@ export default function TikTokPage() {
             className="text-center mb-14"
           >
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              FAQ
+              {t("ttPage.faqLabel")}
             </motion.p>
             <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Frequently Asked Questions
+              {t("ttPage.faqTitle")}
             </motion.h2>
           </motion.div>
 
@@ -401,21 +388,21 @@ export default function TikTokPage() {
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
             <motion.h2 variants={v} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Ready to Go Viral on <span className="text-gradient-tt">TikTok?</span>
+              {t("ttPage.ctaTitle")} <span className="text-gradient-tt">{t("ttPage.ctaTitleHighlight")}</span>
             </motion.h2>
             <motion.p variants={v} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
-              Scroll up and pick your volume — activation takes 60 seconds.
+              {t("ttPage.ctaSubtitle")}
             </motion.p>
             <motion.div variants={v} custom={2} className="mt-10">
               <Link href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 className="shine inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-[#ee1d52] text-white text-[14px] font-semibold hover:bg-[#d91845] transition-colors"
               >
-                Choose a Package
+                {t("ttPage.ctaButton")}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
             <motion.p variants={v} custom={3} className="mt-5 text-[11px] text-zinc-600">
-              Stripe secured · Results guaranteed
+              {t("ttPage.ctaSecured")}
             </motion.p>
           </motion.div>
         </div>

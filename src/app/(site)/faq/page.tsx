@@ -9,41 +9,25 @@ import { useState } from "react";
 import { ChevronDown, MessageCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/context/TranslationContext";
 
 interface FaqItem {
   question: string;
   answer: string;
 }
 
-const faqData: FaqItem[] = [
-  {
-    question: "Do I need to share my password?",
-    answer: "Absolutely not. We never ask for your password. Our AI only needs your public username to analyze your profile and deliver targeted growth. Your account security is our top priority, and we use industry-standard encryption for all data processing.",
-  },
-  {
-    question: "Is there any risk of my account getting banned?",
-    answer: "Zero risk. We use 100% organic growth methods that fully comply with Instagram and TikTok's terms of service. Unlike spammy bots, our AI targets real, active users in your niche through authentic engagement patterns. Your account stays safe and grows naturally.",
-  },
-  {
-    question: "How long does it take to see results?",
-    answer: "Your campaign activates in under 60 seconds after payment. First results typically appear within 1-12 hours depending on your pack size. Larger campaigns may take up to 24-48 hours for full delivery as we prioritize quality and organic pacing to keep your account safe.",
-  },
-  {
-    question: "Are these real accounts interacting with my profile?",
-    answer: "Yes, 100% real and active accounts. Our AI-powered audience engine identifies profiles that match your niche, interests, and demographics. These are genuine users who are likely to engage with your content long-term, not fake bots or inactive accounts.",
-  },
-  {
-    question: "Is it a one-time payment or a subscription?",
-    answer: "One-time payment only. No hidden subscriptions, no automatic renewals, no surprise charges. You pay once for the growth pack you choose, and that's it. Want more growth later? Simply come back and purchase another campaign whenever you're ready.",
-  },
-  {
-    question: "Do you offer refunds?",
-    answer: "Yes, we offer a Results Guarantee. If your campaign doesn't deliver the promised reach within the specified timeframe, we'll issue a full refund—no questions asked. We're confident in our AI technology and stand behind every campaign we run.",
-  },
-];
-
 export default function FaqPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { t } = useTranslation();
+
+  const faqData: FaqItem[] = [
+    { question: t("faqPage.faq1Q"), answer: t("faqPage.faq1A") },
+    { question: t("faqPage.faq2Q"), answer: t("faqPage.faq2A") },
+    { question: t("faqPage.faq3Q"), answer: t("faqPage.faq3A") },
+    { question: t("faqPage.faq4Q"), answer: t("faqPage.faq4A") },
+    { question: t("faqPage.faq5Q"), answer: t("faqPage.faq5A") },
+    { question: t("faqPage.faq6Q"), answer: t("faqPage.faq6A") },
+  ];
 
   const toggleAccordion = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -82,16 +66,16 @@ export default function FaqPage() {
             >
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
                 <MessageCircle className="w-4 h-4 text-indigo-400" />
-                <span className="text-sm font-medium text-indigo-400">Support Center</span>
+                <span className="text-sm font-medium text-indigo-400">{t("faqPage.badge")}</span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-                Frequently Asked{" "}
+                {t("faqPage.title1")}{" "}
                 <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Questions
+                  {t("faqPage.title2")}
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto">
-                Everything you need to know about our AI-powered growth service for Instagram and TikTok.
+                {t("faqPage.subtitle")}
               </p>
             </motion.div>
           </div>
@@ -159,23 +143,23 @@ export default function FaqPage() {
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Still have questions?
+                {t("faqPage.ctaTitle")}
               </h2>
               <p className="text-base sm:text-lg text-zinc-400 mb-8 max-w-xl mx-auto">
-                Our support team is here to help. Or start your growth journey now and see the results for yourself.
+                {t("faqPage.ctaSubtitle")}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/pricing-social"
                   className="shine w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold text-base transition-all hover:opacity-90 active:scale-[0.97]"
                 >
-                  Calculate My Growth Potential
+                  {t("faqPage.ctaButton")}
                 </Link>
                 <Link
                   href="/contact"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-white/[0.15] bg-white/[0.05] text-white font-semibold text-base transition-all hover:bg-white/[0.08] active:scale-[0.97]"
                 >
-                  Contact Support
+                  {t("faqPage.ctaContact")}
                 </Link>
               </div>
             </div>

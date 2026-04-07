@@ -6,16 +6,18 @@ import { useState, useEffect } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CurrencySelector from "@/components/ui/CurrencySelector";
-
-const navLinks = [
-  { label: "Pricing", href: "/pricing-socials" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-];
+import { useTranslation } from "@/context/TranslationContext";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useTranslation();
+
+  const navLinks = [
+    { label: t("nav.pricing"), href: "/pricing-socials" },
+    { label: t("nav.about"), href: "/about" },
+    { label: t("nav.contact"), href: "/contact" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -64,7 +66,7 @@ export default function Navbar() {
               href="/pricing-socials"
               className="shine inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-[13px] font-semibold hover:bg-zinc-100 transition-colors"
             >
-              Start Growth
+              {t("nav.startGrowth")}
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -103,7 +105,7 @@ export default function Navbar() {
               ))}
               <div className="pt-4 mt-2 border-t border-white/[0.06] space-y-3">
                 <div className="flex items-center justify-between px-4">
-                  <span className="text-[13px] text-zinc-500">Currency</span>
+                  <span className="text-[13px] text-zinc-500">{t("nav.currency")}</span>
                   <CurrencySelector />
                 </div>
                 <Link
@@ -111,7 +113,7 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="shine block w-full text-center px-5 py-3.5 rounded-2xl bg-white text-black text-sm font-semibold"
                 >
-                  Start Growth
+                  {t("nav.startGrowth")}
                 </Link>
               </div>
             </div>

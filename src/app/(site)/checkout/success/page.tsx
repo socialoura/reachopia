@@ -5,8 +5,10 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 function SuccessContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -82,7 +84,7 @@ function SuccessContent() {
             className="text-center"
           >
             <Loader2 className="w-10 h-10 text-zinc-500 animate-spin mx-auto mb-4" />
-            <p className="text-[15px] text-zinc-400">Confirming your payment…</p>
+            <p className="text-[15px] text-zinc-400">{t("checkoutSuccess.confirming")}</p>
           </motion.div>
         )}
 
@@ -104,16 +106,16 @@ function SuccessContent() {
             </div>
 
             <h1 className="text-[24px] font-semibold text-white mb-2 tracking-tight">
-              Payment Successful!
+              {t("checkoutSuccess.title")}
             </h1>
             <p className="text-[14px] text-zinc-400 mb-1">
-              Your {platformLabel} {orderData.volume} AI Reach campaign is now active for
+              {t("checkoutSuccess.campaignActive", { platform: platformLabel, volume: orderData.volume })}
             </p>
             <p className="text-[17px] font-semibold text-white mb-1">
               @{orderData.username}
             </p>
             <p className="text-[12px] text-zinc-600 mb-8">
-              A confirmation email has been sent to {orderData.email}
+              {t("checkoutSuccess.emailSent", { email: orderData.email })}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -122,14 +124,14 @@ function SuccessContent() {
                 className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-[14px] font-semibold text-white transition-colors"
                 style={{ backgroundColor: accentColor }}
               >
-                Back to {platformLabel}
+                {t("checkoutSuccess.backTo", { platform: platformLabel })}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/"
                 className="flex-1 inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[14px] font-medium text-white hover:bg-white/[0.1] transition-colors"
               >
-                Home
+                {t("checkoutSuccess.home")}
               </Link>
             </div>
           </motion.div>
@@ -142,17 +144,16 @@ function SuccessContent() {
             className="rounded-3xl border border-white/[0.08] bg-zinc-950 p-8 sm:p-10 text-center"
           >
             <h1 className="text-[22px] font-semibold text-white mb-3">
-              Something went wrong
+              {t("checkoutSuccess.errorTitle")}
             </h1>
             <p className="text-[14px] text-zinc-400 mb-6">
-              Your payment may have been processed. Please check your email for confirmation
-              or contact our support team.
+              {t("checkoutSuccess.errorDesc")}
             </p>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[14px] font-semibold text-white hover:bg-white/[0.1] transition-colors"
             >
-              Contact Support
+              {t("checkoutSuccess.contactSupport")}
             </Link>
           </motion.div>
         )}

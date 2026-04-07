@@ -17,6 +17,7 @@ import {
   Globe,
   BarChart3,
 } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ─── Animation Variants ─── */
 const fadeUp = {
@@ -60,12 +61,6 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 }
 
 /* ─── FAQ Accordion ─── */
-const faqs = [
-  { q: "Is Reachopia safe and compliant?", a: "Yes. Our growth methodology is 100% platform-compliant. We never request passwords or access tokens. All campaigns operate through organic audience targeting via our proprietary network — your account is never at risk." },
-  { q: "How long has Reachopia been operating?", a: "Reachopia has been engineering social media growth solutions for over 5 years, serving thousands of creators, brands, and agencies worldwide with AI-driven campaign technology." },
-  { q: "What is your guarantee policy?", a: "Every campaign includes a performance guarantee. If we fail to deliver the agreed-upon reach metrics, you receive a full refund. We also offer a 30-day retention commitment on all growth tiers." },
-  { q: "Which platforms does your AI support?", a: "Our algorithm currently supports Instagram and TikTok growth campaigns. We are actively expanding our audience network to additional platforms." },
-];
 
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -86,6 +81,15 @@ function FAQItem({ q, a }: { q: string; a: string }) {
    ABOUT PAGE — Premium Dark Design
    ═══════════════════════════════════════════════════════════════ */
 export default function AboutPage() {
+  const { t } = useTranslation();
+
+  const faqs = [
+    { q: t("about.faq1Q"), a: t("about.faq1A") },
+    { q: t("about.faq2Q"), a: t("about.faq2A") },
+    { q: t("about.faq3Q"), a: t("about.faq3A") },
+    { q: t("about.faq4Q"), a: t("about.faq4A") },
+  ];
+
   return (
     <>
       {/* ───────────── HERO ───────────── */}
@@ -95,7 +99,7 @@ export default function AboutPage() {
         </div>
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-5">
-            About Reachopia
+            {t("about.badge")}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -103,10 +107,10 @@ export default function AboutPage() {
             transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] as const }}
             className="text-[clamp(2rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.08]"
           >
-            Engineering Social
+            {t("about.heroTitle1")}
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400">
-              Growth.
+              {t("about.heroTitle2")}
             </span>
           </motion.h1>
           <motion.p
@@ -115,9 +119,7 @@ export default function AboutPage() {
             transition={{ delay: 0.25 }}
             className="mt-6 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-xl mx-auto"
           >
-            We use artificial intelligence to connect creators and brands
-            with premium, niche-relevant audiences — driving real discovery
-            and lasting algorithmic momentum.
+            {t("about.heroSubtitle")}
           </motion.p>
         </div>
       </section>
@@ -127,10 +129,10 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-indigo-400 mb-4">
-              Our Technology
+              {t("about.techLabel")}
             </motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Three Pillars of Safe Growth
+              {t("about.techTitle")}
             </motion.h2>
           </motion.div>
 
@@ -139,20 +141,20 @@ export default function AboutPage() {
             {[
               {
                 icon: Brain,
-                title: "AI Audience Targeting",
-                desc: "Our proprietary algorithm analyzes content categories, hashtag ecosystems, and engagement patterns to identify the highest-intent users within your exact niche.",
+                title: t("about.tech1Title"),
+                desc: t("about.tech1Desc"),
                 accent: "from-indigo-500 to-cyan-500",
               },
               {
                 icon: Globe,
-                title: "Organic Network Amplification",
-                desc: "Your profile is deployed across our premium audience network with gradual, algorithm-friendly delivery patterns that mimic natural organic discovery.",
+                title: t("about.tech2Title"),
+                desc: t("about.tech2Desc"),
                 accent: "from-emerald-500 to-cyan-500",
               },
               {
                 icon: Shield,
-                title: "100% Policy Compliant",
-                desc: "We never request passwords or credentials. Every campaign operates within platform guidelines using organic audience targeting exclusively. Zero risk to your account.",
+                title: t("about.tech3Title"),
+                desc: t("about.tech3Desc"),
                 accent: "from-amber-500 to-orange-500",
               },
             ].map((item, i) => (
@@ -178,8 +180,8 @@ export default function AboutPage() {
           {/* Extra detail cards — 2 cols */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mt-4 md:mt-5">
             {[
-              { icon: BarChart3, title: "Real-Time Campaign Analytics", desc: "Monitor every metric in real-time — engagement velocity, profile visits, follower growth rate, and audience demographics — with full transparency." },
-              { icon: Zap, title: "Algorithm-Safe Delivery", desc: "Our deployment engine uses variable-speed delivery patterns calibrated to each platform's detection thresholds, ensuring maximum safety and organic appearance." },
+              { icon: BarChart3, title: t("about.tech4Title"), desc: t("about.tech4Desc") },
+              { icon: Zap, title: t("about.tech5Title"), desc: t("about.tech5Desc") },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -206,19 +208,19 @@ export default function AboutPage() {
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              By the Numbers
+              {t("about.statsLabel")}
             </motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Trusted at Scale
+              {t("about.statsTitle")}
             </motion.h2>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
             {[
-              { value: 10, suffix: "M+", label: "AI Interactions Managed" },
-              { value: 99.9, suffix: "%", label: "Platform Uptime" },
-              { value: 5000, suffix: "+", label: "Active Creators" },
-              { value: 150, suffix: "+", label: "Countries Served" },
+              { value: 10, suffix: "M+", label: t("about.stat1Label") },
+              { value: 99.9, suffix: "%", label: t("about.stat2Label") },
+              { value: 5000, suffix: "+", label: t("about.stat3Label") },
+              { value: 150, suffix: "+", label: t("about.stat4Label") },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -243,20 +245,20 @@ export default function AboutPage() {
       <section className="py-24 md:py-32 bg-zinc-950">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">Our Team</motion.p>
+            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">{t("about.teamLabel")}</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              The People Behind the Algorithm
+              {t("about.teamTitle")}
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="mt-3 text-[14px] text-zinc-500 max-w-lg mx-auto">
-              Engineers, data scientists, and growth strategists at the intersection of AI and social media.
+              {t("about.teamSubtitle")}
             </motion.p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
             {[
-              { name: "Sarah Mitchell", role: "CEO & Co-Founder" },
-              { name: "David Park", role: "Head of AI & Engineering" },
-              { name: "Lisa Thompson", role: "VP of Growth Operations" },
+              { name: t("about.team1Name"), role: t("about.team1Role") },
+              { name: t("about.team2Name"), role: t("about.team2Role") },
+              { name: t("about.team3Name"), role: t("about.team3Role") },
             ].map((member, i) => (
               <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
                 className="rounded-2xl p-8 border border-white/[0.06] bg-white/[0.02] text-center hover:bg-white/[0.04] transition-all duration-500 group"
@@ -278,16 +280,16 @@ export default function AboutPage() {
       <section className="py-24 md:py-32 bg-black">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">Growth Solutions</motion.p>
+            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">{t("about.solutionsLabel")}</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Platform-Specific AI Campaigns
+              {t("about.solutionsTitle")}
             </motion.h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             {[
-              { platform: "Instagram", services: ["Audience Network Expansion", "Engagement Amplification", "Reach Optimization", "Reels Distribution", "Explore Page Boost"], accent: "#dd2a7b", gradient: "from-[#f58529] via-[#dd2a7b] to-[#8134af]", href: "/instagram" },
-              { platform: "TikTok", services: ["FYP Visibility Boost", "Engagement Velocity", "Audience Amplification", "Content Distribution", "Profile Momentum"], accent: "#69C9D0", gradient: "from-[#69C9D0] to-[#ee1d52]", href: "/tiktok" },
+              { platform: "Instagram", services: (t("about.igServices") as unknown as string[]) || [], accent: "#dd2a7b", gradient: "from-[#f58529] via-[#dd2a7b] to-[#8134af]", href: "/instagram" },
+              { platform: "TikTok", services: (t("about.ttServices") as unknown as string[]) || [], accent: "#69C9D0", gradient: "from-[#69C9D0] to-[#ee1d52]", href: "/tiktok" },
             ].map((item, i) => (
               <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
                 className="rounded-2xl p-7 sm:p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
@@ -307,7 +309,7 @@ export default function AboutPage() {
                 <Link href={item.href}
                   className="inline-flex items-center gap-2 text-[13px] font-semibold text-white hover:text-zinc-300 transition-colors"
                 >
-                  Launch Campaign
+                  {t("about.launchCampaign")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </motion.div>
@@ -320,9 +322,9 @@ export default function AboutPage() {
       <section className="py-24 md:py-32 bg-zinc-950">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
-            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">FAQ</motion.p>
+            <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">{t("about.faqLabel")}</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Frequently Asked Questions
+              {t("about.faqTitle")}
             </motion.h2>
           </motion.div>
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.06] px-6 sm:px-8">
@@ -341,27 +343,27 @@ export default function AboutPage() {
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
             <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Ready to Unlock Your Growth?
+              {t("about.ctaTitle")}
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
-              Join thousands of creators using our AI to build unstoppable social momentum.
+              {t("about.ctaSubtitle")}
             </motion.p>
             <motion.div variants={fadeUp} custom={2} className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/instagram"
                 className="shine inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white text-[14px] font-semibold hover:opacity-90 transition-opacity"
               >
-                Instagram Growth
+                {t("about.ctaInstagram")}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link href="/tiktok"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-[14px] font-medium hover:bg-white/[0.1] transition-colors"
               >
-                TikTok Growth
+                {t("about.ctaTiktok")}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
             <motion.p variants={fadeUp} custom={3} className="mt-5 text-[11px] text-zinc-600">
-              Stripe secured · Results guaranteed
+              {t("about.ctaSecured")}
             </motion.p>
           </motion.div>
         </div>

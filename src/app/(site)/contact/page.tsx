@@ -13,6 +13,7 @@ import {
   Headphones,
   ArrowRight,
 } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ─── Animation Variants ─── */
 const fadeUp = {
@@ -30,6 +31,7 @@ const ACCENT = "#6366f1";
    CONTACT PAGE — Premium Dark Design (Apple Support Style)
    ═══════════════════════════════════════════════════════════════ */
 export default function ContactPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -84,7 +86,7 @@ export default function ContactPage() {
         </div>
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-5">
-            Support Center
+            {t("contact.badge")}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -92,10 +94,10 @@ export default function ContactPage() {
             transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] as const }}
             className="text-[clamp(2rem,5vw,3.5rem)] font-semibold text-white tracking-tight leading-[1.08]"
           >
-            How can we
+            {t("contact.heroTitle1")}
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
-              help you?
+              {t("contact.heroTitle2")}
             </span>
           </motion.h1>
           <motion.p
@@ -104,8 +106,7 @@ export default function ContactPage() {
             transition={{ delay: 0.25 }}
             className="mt-6 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-xl mx-auto"
           >
-            Our specialist team is available to assist you with campaign inquiries,
-            order tracking, and technical support.
+            {t("contact.heroSubtitle")}
           </motion.p>
         </div>
       </section>
@@ -128,13 +129,12 @@ export default function ContactPage() {
                     <Clock className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-medium text-white">Average Response</p>
+                    <p className="text-[13px] font-medium text-white">{t("contact.avgResponse")}</p>
                     <p className="text-[24px] font-semibold text-emerald-400 leading-tight">&lt; 15 min</p>
                   </div>
                 </div>
                 <p className="text-[13px] text-zinc-500 leading-relaxed">
-                  Our support team responds to all inquiries within minutes during business hours.
-                  Complex issues are escalated within 1 hour.
+                  {t("contact.avgResponseDesc")}
                 </p>
               </motion.div>
 
@@ -145,15 +145,14 @@ export default function ContactPage() {
                     <Mail className="w-5 h-5 text-indigo-400" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-medium text-white">Email Support</p>
+                    <p className="text-[13px] font-medium text-white">{t("contact.emailSupport")}</p>
                     <a href="mailto:reachopia@gmail.com" className="text-[14px] text-indigo-400 hover:text-indigo-300 transition-colors">
                       reachopia@gmail.com
                     </a>
                   </div>
                 </div>
                 <p className="text-[13px] text-zinc-500 leading-relaxed">
-                  For detailed inquiries, order issues, or account questions — email us directly and
-                  we&apos;ll respond with a full resolution.
+                  {t("contact.emailDesc")}
                 </p>
               </motion.div>
 
@@ -164,17 +163,17 @@ export default function ContactPage() {
                     <Headphones className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-medium text-white">Business Hours</p>
-                    <p className="text-[14px] text-zinc-300">Mon – Fri, 9 AM – 9 PM EST</p>
+                    <p className="text-[13px] font-medium text-white">{t("contact.businessHours")}</p>
+                    <p className="text-[14px] text-zinc-300">{t("contact.businessHoursValue")}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-[13px]">
-                    <span className="text-zinc-500">Weekend Support</span>
-                    <span className="text-zinc-300">10 AM – 6 PM EST</span>
+                    <span className="text-zinc-500">{t("contact.weekendSupport")}</span>
+                    <span className="text-zinc-300">{t("contact.weekendHours")}</span>
                   </div>
                   <div className="flex items-center justify-between text-[13px]">
-                    <span className="text-zinc-500">Emergency / Priority</span>
+                    <span className="text-zinc-500">{t("contact.emergencyPriority")}</span>
                     <span className="text-emerald-400 font-medium">24/7</span>
                   </div>
                 </div>
@@ -184,7 +183,7 @@ export default function ContactPage() {
               <motion.div variants={fadeUp} custom={3} className="rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/[0.04]">
                 <div className="flex items-center gap-3">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[13px] font-medium text-emerald-400">All systems operational</span>
+                  <span className="text-[13px] font-medium text-emerald-400">{t("contact.allSystemsOp")}</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -199,10 +198,10 @@ export default function ContactPage() {
             >
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
                 <h2 className="text-[20px] font-semibold text-white mb-1.5 tracking-tight">
-                  Send us a message
+                  {t("contact.sendMessage")}
                 </h2>
                 <p className="text-[13px] text-zinc-500 mb-7">
-                  Describe your issue and we&apos;ll get back to you as soon as possible.
+                  {t("contact.sendMessageDesc")}
                 </p>
 
                 {status === "success" ? (
@@ -214,15 +213,15 @@ export default function ContactPage() {
                     <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
                       <CheckCircle2 className="w-7 h-7 text-emerald-400" />
                     </div>
-                    <h3 className="text-[18px] font-semibold text-white mb-1.5">Message Sent!</h3>
+                    <h3 className="text-[18px] font-semibold text-white mb-1.5">{t("contact.messageSent")}</h3>
                     <p className="text-[13px] text-zinc-400 mb-6">
-                      We&apos;ll respond within 15 minutes during business hours.
+                      {t("contact.messageSentDesc")}
                     </p>
                     <button
                       onClick={() => setStatus("idle")}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[13px] font-semibold text-white hover:bg-white/[0.1] transition-colors"
                     >
-                      Send Another Message
+                      {t("contact.sendAnother")}
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </motion.div>
@@ -231,18 +230,18 @@ export default function ContactPage() {
                     {/* Name + Email row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[12px] font-medium text-zinc-400 mb-2">Name</label>
+                        <label className="block text-[12px] font-medium text-zinc-400 mb-2">{t("contact.labelName")}</label>
                         <input
                           type="text"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="Your name"
+                          placeholder={t("contact.placeholderName")}
                           className={inputClass}
                         />
                       </div>
                       <div>
                         <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                          Email <span className="text-red-400">*</span>
+                          {t("contact.labelEmail")} <span className="text-red-400">*</span>
                         </label>
                         <input
                           type="email"
@@ -258,7 +257,7 @@ export default function ContactPage() {
                     {/* Order ID */}
                     <div>
                       <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                        Order ID <span className="text-zinc-600">(optional)</span>
+                        {t("contact.labelOrderId")} <span className="text-zinc-600">{t("contact.labelOrderIdOptional")}</span>
                       </label>
                       <input
                         type="text"
@@ -272,14 +271,14 @@ export default function ContactPage() {
                     {/* Message */}
                     <div>
                       <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                        Message <span className="text-red-400">*</span>
+                        {t("contact.labelMessage")} <span className="text-red-400">*</span>
                       </label>
                       <textarea
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         required
                         rows={5}
-                        placeholder="Describe your issue or question..."
+                        placeholder={t("contact.placeholderMessage")}
                         className={`${inputClass} resize-none`}
                       />
                     </div>
@@ -301,7 +300,7 @@ export default function ContactPage() {
                       ) : (
                         <>
                           <Send className="w-4 h-4" />
-                          Send Message
+                          {t("contact.sendButton")}
                         </>
                       )}
                     </button>
@@ -310,7 +309,7 @@ export default function ContactPage() {
                     <div className="flex items-center justify-center gap-2 pt-1">
                       <Shield className="w-3 h-3 text-zinc-600" />
                       <span className="text-[11px] text-zinc-600">
-                        Encrypted &amp; routed to our support team via Discord
+                        {t("contact.trustLine")}
                       </span>
                     </div>
                   </form>
@@ -326,18 +325,18 @@ export default function ContactPage() {
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              Why Reach Out?
+              {t("contact.whyLabel")}
             </motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.4rem,3vw,2.4rem)] font-semibold text-white tracking-tight mb-12">
-              Premium Support, Always
+              {t("contact.whyTitle")}
             </motion.h2>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { icon: MessageCircle, title: "Campaign Questions", desc: "Need help choosing the right growth tier or understanding how our AI targeting works? We walk you through it." },
-              { icon: Shield, title: "Order Support", desc: "Track your campaign progress, request status updates, or resolve delivery questions — we handle everything." },
-              { icon: Headphones, title: "Technical Assistance", desc: "Having issues with payment, account setup, or campaign metrics? Our team resolves technical problems fast." },
+              { icon: MessageCircle, title: t("contact.why1Title"), desc: t("contact.why1Desc") },
+              { icon: Shield, title: t("contact.why2Title"), desc: t("contact.why2Desc") },
+              { icon: Headphones, title: t("contact.why3Title"), desc: t("contact.why3Desc") },
             ].map((item, i) => (
               <motion.div
                 key={i}

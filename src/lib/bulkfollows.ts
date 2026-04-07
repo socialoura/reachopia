@@ -8,7 +8,7 @@ function getApiKey(): string {
 
 // TikTok service IDs on BulkFollows
 export const BF_SERVICES = {
-  tiktok_followers: 13296,
+  tiktok_followers: 14270,
   tiktok_likes: 14256,
   tiktok_views: 640,
 } as const;

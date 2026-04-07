@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Eye,
 } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ─── Wrapper: renders <motion.div> on desktop, plain <div> on mobile ─── */
 function M({ mobile, children, className, ...motionProps }: { mobile: boolean; children: React.ReactNode; className?: string; [key: string]: any }) {
@@ -53,36 +54,6 @@ const noAnim = {
   visible: () => ({ opacity: 1, y: 0, transition: { duration: 0 } }),
 };
 
-/* ─── Data ─── */
-const faqs = [
-  {
-    q: "How does your AI-powered growth technology work?",
-    a: "Our proprietary algorithm analyzes your profile, content niche, and target demographics to deploy your account across our premium audience network. This drives qualified, active users to discover your profile organically — resulting in genuine engagement and sustainable growth.",
-  },
-  {
-    q: "How quickly will I see results from my campaign?",
-    a: "Most campaigns begin delivering measurable profile momentum within minutes of activation. Full network amplification completes within 24-72 hours depending on your selected growth tier.",
-  },
-  {
-    q: "Is my account safe with Reachopia?",
-    a: "Absolutely. We never request your password or login credentials. Our system only requires your public username. All growth methods are 100% compliant with platform guidelines.",
-  },
-  {
-    q: "What payment methods are accepted?",
-    a: "We accept all major credit cards, PayPal, and cryptocurrency. Every transaction is secured with 256-bit SSL encryption.",
-  },
-  {
-    q: "What is your performance guarantee?",
-    a: "Every campaign is backed by our Results Guarantee. If we cannot deliver the agreed-upon reach metrics, you receive a full refund plus a 30-day retention commitment.",
-  },
-];
-
-const stats = [
-  { value: 50000, suffix: "+", label: "Active Campaigns" },
-  { value: 4.9, decimals: 1, suffix: "/5", label: "Client Rating" },
-  { value: 98, suffix: "%", label: "Retention Rate" },
-  { value: 24, suffix: "/7", label: "Support Available" },
-];
 
 /* ─── FAQ Accordion Item ─── */
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -127,6 +98,22 @@ function TikTokIcon({ className }: { className?: string }) {
 export default function Home() {
   const isMobile = useIsMobile();
   const v = isMobile ? noAnim : fadeUp;
+  const { t } = useTranslation();
+
+  const faqs = [
+    { q: t("home.faq1Q"), a: t("home.faq1A") },
+    { q: t("home.faq2Q"), a: t("home.faq2A") },
+    { q: t("home.faq3Q"), a: t("home.faq3A") },
+    { q: t("home.faq4Q"), a: t("home.faq4A") },
+    { q: t("home.faq5Q"), a: t("home.faq5A") },
+  ];
+
+  const stats = [
+    { value: 50000, suffix: "+", label: t("home.stat1Label") },
+    { value: 4.9, decimals: 1, suffix: "/5", label: t("home.stat2Label") },
+    { value: 98, suffix: "%", label: t("home.stat3Label") },
+    { value: 24, suffix: "/7", label: t("home.stat4Label") },
+  ];
 
   return (
     <>
@@ -148,21 +135,20 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] mb-8">
                 <div className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${isMobile ? '' : 'animate-glow'}`} />
                 <span className="text-[12px] font-medium text-zinc-300">
-                  Trusted by 50,000+ creators & brands
+                  {t("home.badge")}
                 </span>
               </div>
 
               {/* H1 */}
               <h1 className="text-[clamp(2rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.05]">
-                AI-Powered Growth
+                {t("home.heroTitle1")}
                 <br />
-                <span className="text-gradient-white">for Social Media</span>
+                <span className="text-gradient-white">{t("home.heroTitle2")}</span>
               </h1>
 
               {/* Subtitle */}
               <p className="mt-6 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-lg">
-                Our proprietary algorithm connects your profile to a network of active,
-                niche-relevant users — delivering guaranteed reach and organic momentum.
+                {t("home.heroSubtitle")}
               </p>
 
               {/* CTAs */}
@@ -172,24 +158,24 @@ export default function Home() {
                   className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white text-black text-[14px] font-semibold hover:bg-zinc-100 transition-colors"
                 >
                   <InstagramIcon className="w-4 h-4" />
-                  Instagram Growth
+                  {t("home.ctaInstagram")}
                 </Link>
                 <Link
                   href="/pricing-socials"
                   className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white/[0.08] border border-white/[0.1] text-white text-[14px] font-semibold hover:bg-white/[0.12] transition-colors"
                 >
                   <TikTokIcon className="w-4 h-4" />
-                  TikTok Growth
+                  {t("home.ctaTiktok")}
                 </Link>
               </div>
 
               {/* Micro trust */}
               <div className="mt-8 flex flex-wrap gap-5 text-[11px] text-zinc-600">
                 <span className="flex items-center gap-1.5">
-                  <Shield className="w-3 h-3" /> 100% platform safe
+                  <Shield className="w-3 h-3" /> {t("home.trustSafe")}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Zap className="w-3 h-3" /> Instant activation
+                  <Zap className="w-3 h-3" /> {t("home.trustInstant")}
                 </span>
               </div>
             </div>
@@ -213,7 +199,7 @@ export default function Home() {
       <section className="py-10 bg-zinc-950 border-y border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <p className="text-center text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-600 mb-6">
-            As featured in
+            {t("home.featuredIn")}
           </p>
           <div className="flex items-center justify-center opacity-50 grayscale brightness-200">
             <Image
@@ -232,10 +218,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-16">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              Choose Your Platform
+              {t("home.platformSectionLabel")}
             </p>
             <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Where do you want to grow?
+              {t("home.platformSectionTitle")}
             </h2>
           </div>
 
@@ -250,12 +236,10 @@ export default function Home() {
                       <InstagramIcon className="w-7 h-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-semibold text-white tracking-tight mb-2">
-                      Instagram Growth
+                      {t("home.instagramCardTitle")}
                     </h3>
                     <p className="text-[14px] text-zinc-400 leading-relaxed mb-8">
-                      AI-powered audience targeting optimized for the Instagram
-                      algorithm. Reach real users in your niche and build
-                      lasting organic momentum.
+                      {t("home.instagramCardDesc")}
                     </p>
                     <div className="relative h-[200px] rounded-2xl overflow-hidden border border-white/[0.06]">
                       <Image
@@ -267,7 +251,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent" />
                     </div>
                     <div className="mt-6 flex items-center gap-2 text-[13px] font-medium text-zinc-400 group-hover:text-white transition-colors">
-                      Explore Instagram packages
+                      {t("home.instagramCardCta")}
                       <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
@@ -285,12 +269,10 @@ export default function Home() {
                       <TikTokIcon className="w-7 h-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-semibold text-white tracking-tight mb-2">
-                      TikTok Growth
+                      {t("home.tiktokCardTitle")}
                     </h3>
                     <p className="text-[14px] text-zinc-400 leading-relaxed mb-8">
-                      Viral amplification engine built for TikTok&apos;s
-                      recommendation algorithm. Maximize discoverability
-                      and scale your audience fast.
+                      {t("home.tiktokCardDesc")}
                     </p>
                     <div className="relative h-[200px] rounded-2xl overflow-hidden border border-white/[0.06]">
                       <Image
@@ -302,7 +284,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent" />
                     </div>
                     <div className="mt-6 flex items-center gap-2 text-[13px] font-medium text-zinc-400 group-hover:text-white transition-colors">
-                      Explore TikTok packages
+                      {t("home.tiktokCardCta")}
                       <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
@@ -318,10 +300,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-16">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              3-step process
+              {t("home.howItWorksLabel")}
             </p>
             <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              How It Works
+              {t("home.howItWorksTitle")}
             </h2>
           </div>
 
@@ -330,20 +312,20 @@ export default function Home() {
               {
                 step: "01",
                 icon: Users,
-                title: "Submit Your Username",
-                desc: "Enter your public profile handle. We never ask for your password or login credentials.",
+                title: t("home.step1Title"),
+                desc: t("home.step1Desc"),
               },
               {
                 step: "02",
                 icon: Brain,
-                title: "AI Analyzes Your Niche",
-                desc: "Our algorithm maps your content category, audience demographics, and optimal growth vectors.",
+                title: t("home.step2Title"),
+                desc: t("home.step2Desc"),
               },
               {
                 step: "03",
                 icon: TrendingUp,
-                title: "Campaign Goes Live",
-                desc: "Your profile is deployed across our premium audience network. Measurable results begin within minutes.",
+                title: t("home.step3Title"),
+                desc: t("home.step3Desc"),
               },
             ].map((item, i) => (
               <M
@@ -375,21 +357,21 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-16">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              Our Technology
+              {t("home.techLabel")}
             </p>
             <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Built for Results
+              {t("home.techTitle")}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {[
-              { icon: Shield, title: "100% Platform Compliant", desc: "Fully aligned with platform guidelines. Zero account risk — ever." },
-              { icon: Target, title: "Premium Audience Network", desc: "Every campaign targets real, active users within your niche matched by our AI." },
-              { icon: Zap, title: "Rapid Deployment", desc: "See measurable momentum within minutes. Our system activates instantly upon order." },
-              { icon: BarChart3, title: "Guaranteed Results", desc: "Every tier includes a results guarantee and 30-day retention commitment." },
-              { icon: Brain, title: "AI-Powered Targeting", desc: "Our algorithm continuously optimizes campaign targeting for maximum growth velocity." },
-              { icon: Eye, title: "Transparent Analytics", desc: "Real-time visibility into your campaign performance with clear, honest metrics." },
+              { icon: Shield, title: t("home.feat1Title"), desc: t("home.feat1Desc") },
+              { icon: Target, title: t("home.feat2Title"), desc: t("home.feat2Desc") },
+              { icon: Zap, title: t("home.feat3Title"), desc: t("home.feat3Desc") },
+              { icon: BarChart3, title: t("home.feat4Title"), desc: t("home.feat4Desc") },
+              { icon: Brain, title: t("home.feat5Title"), desc: t("home.feat5Desc") },
+              { icon: Eye, title: t("home.feat6Title"), desc: t("home.feat6Desc") },
             ].map((item, i) => (
               <div
                 key={i}
@@ -437,10 +419,10 @@ export default function Home() {
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              FAQ
+              {t("home.faqLabel")}
             </p>
             <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Frequently Asked Questions
+              {t("home.faqTitle")}
             </h2>
           </div>
 
@@ -461,25 +443,24 @@ export default function Home() {
         )}
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <h2 className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-            Ready to Accelerate
+            {t("home.ctaTitle1")}
             <br />
-            Your Growth?
+            {t("home.ctaTitle2")}
           </h2>
           <p className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
-            Join 50,000+ creators and brands using Reachopia&apos;s AI engine
-            to build unstoppable social momentum.
+            {t("home.ctaSubtitle")}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/pricing-socials"
               className="shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-white text-black text-[14px] font-semibold hover:bg-zinc-100 transition-colors"
             >
-              Start Growth
+              {t("home.ctaButton")}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           <p className="mt-5 text-[11px] text-zinc-600">
-            Stripe secured · Results guaranteed
+            {t("home.ctaSecured")}
           </p>
         </div>
       </section>

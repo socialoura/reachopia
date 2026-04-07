@@ -5,8 +5,10 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { XCircle, ArrowRight, Loader2 } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 function CancelContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const platform = searchParams.get("platform") || "instagram";
   const platformLabel = platform === "tiktok" ? "TikTok" : "Instagram";
@@ -24,12 +26,12 @@ function CancelContent() {
         </div>
 
         <h1 className="text-[22px] font-semibold text-white mb-2 tracking-tight">
-          Payment Cancelled
+          {t("checkoutCancel.title")}
         </h1>
         <p className="text-[14px] text-zinc-400 mb-8 leading-relaxed">
-          No worries — your account was not charged.
+          {t("checkoutCancel.desc")}
           <br />
-          You can try again whenever you&apos;re ready.
+          {t("checkoutCancel.desc2")}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -37,14 +39,14 @@ function CancelContent() {
             href={`/${platform}`}
             className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[14px] font-semibold text-white hover:bg-white/[0.1] transition-colors"
           >
-            Back to {platformLabel}
+            {t("checkoutCancel.backTo", { platform: platformLabel })}
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/"
             className="flex-1 inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[14px] font-medium text-zinc-400 hover:bg-white/[0.1] transition-colors"
           >
-            Home
+            {t("checkoutCancel.home")}
           </Link>
         </div>
       </motion.div>

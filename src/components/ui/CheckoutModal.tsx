@@ -8,6 +8,7 @@ import { X, Lock, Shield, Loader2, CheckCircle2 } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { trackGoogleAdsPurchase } from "@/lib/track-google-ads";
 import { formatCurrency } from "@/lib/currency";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ═══════════════════════════════════════════════════════════════
    TYPES
@@ -61,6 +62,7 @@ function PaymentForm({
   email: string;
   onEmailError: () => void;
 }) {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -137,7 +139,7 @@ function PaymentForm({
       {/* Divider */}
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-white/[0.06]" />
-        <span className="text-[11px] text-zinc-600 font-medium">or pay with card</span>
+        <span className="text-[11px] text-zinc-600 font-medium">{t("modal.orPayWithCard")}</span>
         <div className="flex-1 h-px bg-white/[0.06]" />
       </div>
 
@@ -196,6 +198,7 @@ export default function CheckoutModal({
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+  const { t } = useTranslation();
   const posthog = usePostHog();
   const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
 
@@ -310,7 +313,7 @@ export default function CheckoutModal({
   // Card payment success - requires email from form
   const handleCardPaymentSuccess = async () => {
     if (!email.trim()) {
-      setError("Please enter your email address");
+      setError(t("modal.pleaseEnterEmail"));
       return;
     }
     await processPaymentSuccess(email.trim());
@@ -362,7 +365,7 @@ export default function CheckoutModal({
             {/* ── Header ── */}
             <div className="px-5 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 border-b border-white/[0.06]">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-500">
-                {step === 2 ? "Order confirmed" : "Complete your purchase"}
+                {step === 2 ? t("modal.orderConfirmed") : t("modal.completePurchase")}
               </p>
               <div className="mt-3 flex items-baseline gap-3">
                 <span className="text-[28px] font-semibold text-white tracking-tight">
@@ -378,7 +381,7 @@ export default function CheckoutModal({
                   style={{ backgroundColor: accentColor }}
                 />
                 <span className="text-[13px] text-zinc-400">
-                  {platformLabel} {tier.volume} Followers
+                  {platformLabel} {tier.volume} {t("modal.followers")}
                 </span>
               </div>
             </div>
@@ -391,7 +394,7 @@ export default function CheckoutModal({
                   {/* Username display */}
                   {username && (
                     <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-                      <span className="text-[12px] font-medium text-zinc-500">Account</span>
+                      <span className="text-[12px] font-medium text-zinc-500">{t("modal.account")}</span>
                       <span className="text-[14px] font-semibold text-white">@{username}</span>
                     </div>
                   )}
@@ -399,7 +402,7 @@ export default function CheckoutModal({
                   {/* Email input */}
                   <div>
                     <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                      Email (for receipt &amp; order tracking)
+                      {t("modal.emailLabel")}
                     </label>
                     <input
                       type="email"
@@ -485,7 +488,7 @@ export default function CheckoutModal({
                         price={tier.price}
                         currency={currency}
                         email={email}
-                        onEmailError={() => setError("Please enter your email address")}
+                        onEmailError={() => setError(t("modal.pleaseEnterEmail"))}
                       />
                     </Elements>
                   ) : (
@@ -510,22 +513,22 @@ export default function CheckoutModal({
                     <CheckCircle2 className="w-7 h-7" style={{ color: accentColor }} />
                   </div>
                   <h4 className="text-[20px] font-semibold text-white mb-1.5">
-                    Payment Successful!
+                    {t("modal.paymentSuccess")}
                   </h4>
                   <p className="text-[13px] text-zinc-400 mb-1">
-                    {platformLabel} {tier.volume} Followers campaign is now active for
+                    {t("modal.campaignActive", { platform: platformLabel, volume: tier.volume })}
                   </p>
                   <p className="text-[15px] font-semibold text-white mb-1">
                     @{username}
                   </p>
                   <p className="text-[11px] text-zinc-600 mb-6">
-                    Confirmation sent to {email}
+                    {t("modal.confirmSent", { email })}
                   </p>
                   <button
                     onClick={resetAndClose}
                     className="px-8 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white text-[13px] font-semibold hover:bg-white/[0.1] transition-colors"
                   >
-                    Done
+                    {t("modal.done")}
                   </button>
                 </motion.div>
               )}
@@ -536,7 +539,7 @@ export default function CheckoutModal({
               <div className="px-6 pb-6 pt-2">
                 <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-600">
                   <Shield className="w-3 h-3" />
-                  <span>Encrypted &amp; Secure</span>
+                  <span>{t("modal.encryptedSecure")}</span>
                   <span className="mx-1.5 text-zinc-800">·</span>
                   <img
                     src="/badges_paiement.png"
