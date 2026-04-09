@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { ArrowRight, ArrowLeft, Check, Heart, Eye } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { useTranslation } from "@/context/TranslationContext";
 import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
 import { formatQty } from "@/config/tiktok-services";
 import type { VideoAssignment } from "@/types/tiktok";
@@ -18,10 +20,11 @@ interface VideoSelectorProps {
 
 export default function VideoSelector({ mode, totalQty, onBack, onContinue }: VideoSelectorProps) {
   const posthog = usePostHog();
+  const { t } = useTranslation();
   const { profile, setLikesAssignments, setViewsAssignments } = useTiktokUpsellStore();
   const posts = profile?.posts ?? [];
 
-  const label = mode === "likes" ? "likes" : "views";
+  const label = mode === "likes" ? t("pricing.likes") : t("pricing.views");
   const color = mode === "likes" ? "#ec4899" : "#69C9D0";
   const IconComponent = mode === "likes" ? Heart : Eye;
 
@@ -62,12 +65,18 @@ export default function VideoSelector({ mode, totalQty, onBack, onContinue }: Vi
   };
 
   const handleContinue = () => {
-    const selectedPosts = posts.filter((p) => selected.has(p.id));
-    const videoAssignments: VideoAssignment[] = selectedPosts.map((p, i) => ({
+    // If no videos selected, auto-select all
+    const effectivePosts = selectedCount === 0
+      ? posts.slice(0, 12)
+      : posts.filter((p) => selected.has(p.id));
+    const effectiveCount = effectivePosts.length;
+    const pv = effectiveCount > 0 ? Math.floor(totalQty / effectiveCount) : 0;
+    const rem = effectiveCount > 0 ? totalQty - pv * effectiveCount : 0;
+    const videoAssignments: VideoAssignment[] = effectivePosts.map((p, i) => ({
       postId: p.id,
       imageUrl: p.imageUrl,
       caption: p.caption,
-      quantity: perVideo + (i < remainder ? 1 : 0),
+      quantity: pv + (i < rem ? 1 : 0),
     }));
 
     posthog?.capture(`tiktok_${mode}_assigned`, {
@@ -84,16 +93,48 @@ export default function VideoSelector({ mode, totalQty, onBack, onContinue }: Vi
     onContinue();
   };
 
+  if (posts.length === 0) {
+    return (
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="text-[clamp(1.2rem,3vw,1.8rem)] font-semibold text-white tracking-tight">
+            {t("pricing.selectVideosFor")}{" "}
+            <span style={{ color }}>{formatQty(totalQty)} {label}</span>
+          </h2>
+          <p className="mt-2 text-[12px] sm:text-[13px] text-zinc-400 px-2 sm:px-0">
+            {t("pricing.loadingPosts")}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-xl overflow-hidden border border-white/[0.06] bg-white/[0.03]">
+              <div className="aspect-[9/16] animate-pulse bg-white/[0.04]" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-start">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-1.5 px-3 sm:px-5 py-3 rounded-xl text-[12px] sm:text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            {t("pricing.back")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-[clamp(1.2rem,3vw,1.8rem)] font-semibold text-white tracking-tight">
-          Select videos for your{" "}
+          {t("pricing.selectVideosFor")}{" "}
           <span style={{ color }}>{formatQty(totalQty)} {label}</span>
         </h2>
         <p className="mt-2 text-[12px] sm:text-[13px] text-zinc-400 px-2 sm:px-0">
-          Tap the videos you want to boost. {label.charAt(0).toUpperCase() + label.slice(1)} are split evenly across selected videos.
+          {t("pricing.tapToBoost", { service: label })}
         </p>
       </div>
 
@@ -124,28 +165,28 @@ export default function VideoSelector({ mode, totalQty, onBack, onContinue }: Vi
         }}
         className="w-full mb-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-all text-center"
       >
-        <span className="text-[13px] text-zinc-300 font-medium">Auto-distribute across all videos</span>
-        <span className="block text-[11px] text-zinc-500 mt-0.5">~{formatQty(Math.floor(totalQty / Math.min(posts.length, 12)))} {label} per video</span>
+        <span className="text-[13px] text-zinc-300 font-medium">{t("pricing.autoDistribute")}</span>
+        <span className="block text-[11px] text-zinc-500 mt-0.5">~{formatQty(Math.floor(totalQty / Math.min(posts.length, 12)))} {label} / {t("pricing.video")}</span>
       </button>
 
       {/* Status bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-5 px-1">
         <div className="flex items-center gap-3">
           <span className="text-[13px] text-zinc-400">
-            <span className="font-semibold text-white">{selectedCount}</span> / {Math.min(posts.length, 12)} videos selected
+            <span className="font-semibold text-white">{selectedCount}</span> / {Math.min(posts.length, 12)} {Math.min(posts.length, 12) <= 1 ? t("pricing.video") : t("pricing.videos")} {t("pricing.selected")}
           </span>
           {selectedCount > 0 && (
             <span className="inline-flex items-center gap-1 text-[12px] text-zinc-500">
-              ~{formatQty(perVideo)} {label} each
+              ~{formatQty(perVideo)} {label}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
           <button onClick={selectAll} className="text-[11px] text-zinc-500 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.06]">
-            Select all
+            {t("pricing.selectAll")}
           </button>
           <button onClick={clearAll} className="text-[11px] text-zinc-500 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.06]">
-            Clear
+            {t("pricing.clear")}
           </button>
         </div>
       </div>
@@ -216,25 +257,52 @@ export default function VideoSelector({ mode, totalQty, onBack, onContinue }: Vi
         })}
       </div>
 
-      {/* Navigation */}
-      <div className="mt-6 sm:mt-8 flex items-center justify-between gap-3">
+      {/* Desktop navigation */}
+      <div className="hidden sm:flex mt-6 sm:mt-8 items-center justify-between gap-3">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 rounded-xl text-[12px] sm:text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
         >
-          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          Back
+          <ArrowLeft className="w-4 h-4" />
+          {t("pricing.back")}
         </button>
         <button
           onClick={handleContinue}
-          disabled={selectedCount === 0}
-          className="shine inline-flex items-center gap-1.5 sm:gap-2 px-5 sm:px-8 py-3 sm:py-3.5 rounded-2xl text-white text-[13px] sm:text-[14px] font-semibold transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed"
+          className="shine inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl text-white text-[14px] font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
           style={{ background: TT_GRADIENT }}
         >
-          Continue with {selectedCount} video{selectedCount !== 1 ? "s" : ""}
-          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          {(() => { const c = selectedCount > 0 ? selectedCount : Math.min(posts.length, 12); return `${t("pricing.continue")} (${c} ${c <= 1 ? t("pricing.video") : t("pricing.videos")})`; })()}
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Mobile sticky spacer */}
+      <div className="sm:hidden h-[72px]" />
+
+      {/* Mobile sticky bottom bar */}
+      {typeof document !== 'undefined' && createPortal(
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[9999] safe-area-bottom">
+          <div className="bg-zinc-950 border-t border-white/[0.06] px-4 py-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onBack}
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-3 rounded-xl text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleContinue}
+                className="shine flex-1 inline-flex items-center justify-center gap-2 py-3.5 rounded-xl text-white text-[14px] font-bold tracking-tight transition-all active:scale-[0.96]"
+                style={{ background: TT_GRADIENT, boxShadow: '0 4px 20px -4px rgba(238,29,82,0.4)' }}
+              >
+                {(() => { const c = selectedCount > 0 ? selectedCount : Math.min(posts.length, 12); return `${t("pricing.continue")} (${c} ${c <= 1 ? t("pricing.video") : t("pricing.videos")})`; })()}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

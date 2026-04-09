@@ -23,6 +23,7 @@ import CheckoutModal from "@/components/ui/CheckoutModal";
 import type { CheckoutTier } from "@/components/ui/CheckoutModal";
 import { toCheckoutTiers } from "@/lib/pricing-utils";
 import { useCurrency } from "@/context/CurrencyContext";
+import { formatCurrency } from "@/lib/currency";
 import { usePostHog } from "posthog-js/react";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useTranslation } from "@/context/TranslationContext";
@@ -201,10 +202,10 @@ export default function InstagramPage() {
                   {t("igPage.aiReach")}
                 </span>
                 <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">
-                  {currencySymbol}{tier.price.toFixed(2)}
+                  {formatCurrency(tier.price, currency)}
                 </span>
                 <span className="block text-[11px] text-zinc-600 line-through">
-                  {currencySymbol}{tier.originalPrice.toFixed(2)}
+                  {formatCurrency(tier.originalPrice, currency)}
                 </span>
               </button>
             ))}

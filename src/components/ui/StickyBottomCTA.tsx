@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Lock, Shield } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 export default function StickyBottomCTA() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const pathname = usePathname();
 
@@ -17,7 +19,7 @@ export default function StickyBottomCTA() {
   }, []);
 
   const isProductPage = pathname === "/instagram" || pathname === "/tiktok";
-  const label = pathname === "/tiktok" ? "Choose a Package" : pathname === "/instagram" ? "Choose a Package" : "Start Growth";
+  const label = isProductPage ? t("stickyCta.choosePackage") : t("stickyCta.startGrowth");
 
   const handleClick = (e: React.MouseEvent) => {
     if (isProductPage) {
@@ -38,7 +40,7 @@ export default function StickyBottomCTA() {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="fixed bottom-0 left-0 right-0 z-40 md:hidden"
         >
-          <div className="bg-black/70 backdrop-blur-2xl border-t border-white/[0.08] px-4 py-3 safe-area-bottom">
+          <div className="bg-black border-t border-white/[0.08] px-4 py-3 safe-area-bottom">
             <Link
               href={href}
               onClick={handleClick}
@@ -50,7 +52,7 @@ export default function StickyBottomCTA() {
             <div className="flex items-center justify-center gap-5 mt-2.5">
               <span className="flex items-center gap-1 text-[10px] text-zinc-500">
                 <Shield className="w-3 h-3" />
-                Stripe Secured
+                {t("stickyCta.stripeSecured")}
               </span>
             </div>
           </div>

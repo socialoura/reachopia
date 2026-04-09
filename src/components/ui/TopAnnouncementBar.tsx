@@ -85,7 +85,7 @@ export default function TopAnnouncementBar() {
               {/* Close button */}
               <button
                 onClick={handleClose}
-                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/[0.08] transition-colors text-zinc-400 hover:text-zinc-200"
+                className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-white/[0.08] transition-colors text-zinc-400 hover:text-zinc-200"
                 aria-label="Close announcement"
               >
                 <X className="w-4 h-4" />

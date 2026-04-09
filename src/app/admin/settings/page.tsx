@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
-import { Loader2, Save, Eye, EyeOff } from "lucide-react";
+import { Loader2, Save, Eye, EyeOff, Zap } from "lucide-react";
 
 interface AnnouncementBarSettings {
   enabled: boolean;
@@ -10,6 +10,15 @@ interface AnnouncementBarSettings {
   highlightText: string;
   ctaText: string;
   ctaLink: string;
+}
+
+interface BFServiceIds {
+  tiktok_followers: number;
+  tiktok_likes: number;
+  tiktok_views: number;
+  instagram_followers: number;
+  instagram_likes: number;
+  instagram_views: number;
 }
 
 export default function AdminSettingsPage() {
@@ -20,9 +29,19 @@ export default function AdminSettingsPage() {
     ctaText: "Claim offer →",
     ctaLink: "/pricing",
   });
+  const [bfIds, setBfIds] = useState<BFServiceIds>({
+    tiktok_followers: 14270,
+    tiktok_likes: 14256,
+    tiktok_views: 640,
+    instagram_followers: 14004,
+    instagram_likes: 14217,
+    instagram_views: 4996,
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingBf, setSavingBf] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [bfMessage, setBfMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -30,12 +49,17 @@ export default function AdminSettingsPage() {
       if (!token) return;
 
       try {
-        const res = await fetch("/api/admin/announcement-bar", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
+        const [annRes, bfRes] = await Promise.all([
+          fetch("/api/admin/announcement-bar", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("/api/admin/bf-services", { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        if (annRes.ok) {
+          const data = await annRes.json();
           setSettings(data);
+        }
+        if (bfRes.ok) {
+          const data = await bfRes.json();
+          setBfIds(data);
         }
       } catch (err) {
         console.error("Failed to fetch settings:", err);
@@ -74,6 +98,37 @@ export default function AdminSettingsPage() {
       setMessage({ type: "error", text: "Failed to save settings" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveBf = async () => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+
+    setSavingBf(true);
+    setBfMessage(null);
+
+    try {
+      const res = await fetch("/api/admin/bf-services", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(bfIds),
+      });
+
+      if (res.ok) {
+        setBfMessage({ type: "success", text: "BulkFollows service IDs saved!" });
+      } else {
+        const data = await res.json();
+        setBfMessage({ type: "error", text: data.error || "Failed to save" });
+      }
+    } catch (err) {
+      console.error("Failed to save BF IDs:", err);
+      setBfMessage({ type: "error", text: "Failed to save BF service IDs" });
+    } finally {
+      setSavingBf(false);
     }
   };
 
@@ -194,7 +249,7 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Save Button */}
+            {/* Save Announcement Button */}
             <div className="flex items-center justify-between">
               {message && (
                 <p
@@ -217,6 +272,88 @@ export default function AdminSettingsPage() {
                 )}
                 Save Changes
               </button>
+            </div>
+
+            {/* BulkFollows Service IDs Section */}
+            <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">BulkFollows Service IDs</h2>
+                  <p className="text-sm text-gray-400 mt-0.5">
+                    Configure the service IDs used when placing orders on BulkFollows
+                  </p>
+                </div>
+              </div>
+
+              {/* TikTok */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#ee1d52]" />
+                  TikTok
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {(["tiktok_followers", "tiktok_likes", "tiktok_views"] as const).map((key) => (
+                    <div key={key}>
+                      <label className="block text-xs font-medium text-gray-400 mb-1.5 capitalize">
+                        {key.replace("tiktok_", "")}
+                      </label>
+                      <input
+                        type="number"
+                        value={bfIds[key]}
+                        onChange={(e) => setBfIds({ ...bfIds, [key]: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-sm placeholder:text-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Instagram */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#dd2a7b]" />
+                  Instagram
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {(["instagram_followers", "instagram_likes", "instagram_views"] as const).map((key) => (
+                    <div key={key}>
+                      <label className="block text-xs font-medium text-gray-400 mb-1.5 capitalize">
+                        {key.replace("instagram_", "")}
+                      </label>
+                      <input
+                        type="number"
+                        value={bfIds[key]}
+                        onChange={(e) => setBfIds({ ...bfIds, [key]: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-sm placeholder:text-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save BF Button */}
+              <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                {bfMessage && (
+                  <p className={`text-sm ${bfMessage.type === "success" ? "text-green-400" : "text-red-400"}`}>
+                    {bfMessage.text}
+                  </p>
+                )}
+                <button
+                  onClick={handleSaveBf}
+                  disabled={savingBf}
+                  className="ml-auto flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold transition-all disabled:opacity-50"
+                >
+                  {savingBf ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Save Service IDs
+                </button>
+              </div>
             </div>
           </div>
         )}

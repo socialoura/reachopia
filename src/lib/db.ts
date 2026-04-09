@@ -214,6 +214,64 @@ export async function updateProviderOrders(orderId: string, providerOrders: unkn
   `;
 }
 
+/**
+ * Link a BulkFollows order ID to a specific provider sub-order (by type + index).
+ * If no provider_orders exist yet for this type, create one.
+ */
+export async function linkProviderBfOrderId(
+  orderId: string,
+  subType: string,
+  subIndex: number,
+  bfOrderId: number
+): Promise<void> {
+  await ensureDbReady();
+  // Fetch current provider_orders
+  const rows = await sql`SELECT provider_orders FROM orders WHERE order_id = ${orderId}`;
+  if (rows.length === 0) throw new Error("Order not found");
+
+  const providerOrders: Array<{
+    type: string;
+    serviceId: number;
+    bfOrderId: number | null;
+    link: string;
+    quantity: number;
+    error?: string;
+    status?: string;
+  }> = rows[0].provider_orders || [];
+
+  // Find matching sub-orders of this type
+  let typeIdx = 0;
+  let found = false;
+  for (let i = 0; i < providerOrders.length; i++) {
+    if (providerOrders[i].type === subType) {
+      if (typeIdx === subIndex) {
+        providerOrders[i].bfOrderId = bfOrderId;
+        providerOrders[i].error = undefined;
+        found = true;
+        break;
+      }
+      typeIdx++;
+    }
+  }
+
+  // If not found as an existing sub-order, append a new one
+  if (!found) {
+    providerOrders.push({
+      type: subType,
+      serviceId: 0,
+      bfOrderId,
+      link: "",
+      quantity: 0,
+    });
+  }
+
+  const json = JSON.stringify(providerOrders);
+  await sql`
+    UPDATE orders SET provider_orders = ${json}::jsonb, updated_at = NOW()
+    WHERE order_id = ${orderId}
+  `;
+}
+
 export async function getAllOrders(): Promise<DBOrder[]> {
   await ensureDbReady();
   const result = await sql`
@@ -560,6 +618,34 @@ export async function getAnnouncementBarSettings(): Promise<AnnouncementBarSetti
 
 export async function setAnnouncementBarSettings(settings: AnnouncementBarSettings): Promise<void> {
   return setSetting("announcement_bar", settings);
+}
+
+// ─── BulkFollows Service IDs ─────────────────────────────
+
+export interface BFServiceIds {
+  tiktok_followers: number;
+  tiktok_likes: number;
+  tiktok_views: number;
+  instagram_followers: number;
+  instagram_likes: number;
+  instagram_views: number;
+}
+
+const DEFAULT_BF_SERVICE_IDS: BFServiceIds = {
+  tiktok_followers: 14270,
+  tiktok_likes: 14256,
+  tiktok_views: 640,
+  instagram_followers: 14004,
+  instagram_likes: 14217,
+  instagram_views: 4996,
+};
+
+export async function getBFServiceIds(): Promise<BFServiceIds> {
+  return getSetting("bf_service_ids", DEFAULT_BF_SERVICE_IDS);
+}
+
+export async function setBFServiceIds(ids: BFServiceIds): Promise<void> {
+  return setSetting("bf_service_ids", ids);
 }
 
 // ─── Admin Auth ──────────────────────────────────────────

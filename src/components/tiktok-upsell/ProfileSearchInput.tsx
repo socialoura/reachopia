@@ -1,33 +1,43 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Flame, Loader2, Search } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
 import { extractUsername } from "@/lib/extract-username";
+import { usePricingTiers } from "@/hooks/usePricingTiers";
+import { useCurrency } from "@/context/CurrencyContext";
+import { formatCurrency } from "@/lib/currency";
+import { useTranslation } from "@/context/TranslationContext";
 import type { TiktokProfile } from "@/types/tiktok";
 
 const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
 const IG_GRADIENT = "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)";
 
-const SCAN_MESSAGES_TT = [
-  "Connecting to TikTok…",
-  "Scanning profile data…",
-  "Fetching recent videos…",
-  "Analyzing engagement…",
-];
-
-const SCAN_MESSAGES_IG = [
-  "Connecting to Instagram…",
-  "Scanning profile data…",
-  "Fetching recent posts…",
-  "Analyzing engagement…",
-];
+function useScanMessages(t: (key: string) => string) {
+  return {
+    tiktok: [
+      t("pricing.scanTTConnect"),
+      t("pricing.scanTTProfile"),
+      t("pricing.scanTTVideos"),
+      t("pricing.scanTTEngagement"),
+    ],
+    instagram: [
+      t("pricing.scanIGConnect"),
+      t("pricing.scanIGProfile"),
+      t("pricing.scanIGPosts"),
+      t("pricing.scanIGEngagement"),
+    ],
+  };
+}
 
 export default function ProfileSearchInput() {
   const posthog = usePostHog();
   const inputRef = useRef<HTMLInputElement>(null);
   const [localUsername, setLocalUsername] = useState("");
+  const { currency } = useCurrency();
+  const { t } = useTranslation();
+  const { resolved: pricingTiers } = usePricingTiers(currency);
 
   const {
     step,
@@ -41,7 +51,8 @@ export default function ProfileSearchInput() {
   } = useTiktokUpsellStore();
 
   const isIG = platform === "instagram";
-  const scanMessages = isIG ? SCAN_MESSAGES_IG : SCAN_MESSAGES_TT;
+  const scanMsgs = useScanMessages(t);
+  const scanMessages = isIG ? scanMsgs.instagram : scanMsgs.tiktok;
   const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
   const accentColor = isIG ? "#dd2a7b" : "#ee1d52";
   const accentColor2 = isIG ? "#8134af" : "#69C9D0";
@@ -90,13 +101,13 @@ export default function ProfileSearchInput() {
       clearInterval(interval);
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: "We couldn't find this profile. Check the spelling or make sure the account is public." }));
+        const data = await res.json().catch(() => ({ error: t("pricing.profileNotFound") }));
         posthog?.capture("profile_not_found", { username: clean, platform, has_suggestion: !!data.suggestion });
         if (data.suggestion) {
           setSuggestion(data.suggestion);
-          setProfileError(data.error || "We couldn't find this profile. Check the spelling or make sure the account is public.");
+          setProfileError(data.error || t("pricing.profileNotFound"));
         } else {
-          setProfileError(data.error || "We couldn't find this profile. Check the spelling or make sure the account is public.");
+          setProfileError(data.error || t("pricing.profileNotFound"));
         }
         setStep("search");
         setProfileLoading(false);
@@ -115,7 +126,7 @@ export default function ProfileSearchInput() {
       setStep("bundle");
     } catch {
       clearInterval(interval);
-      setProfileError("Failed to fetch profile. Please try again.");
+      setProfileError(t("pricing.fetchFailed"));
       setStep("search");
     } finally {
       setProfileLoading(false);
@@ -139,7 +150,7 @@ export default function ProfileSearchInput() {
         </div>
         <div className="text-center">
           <p className="text-[13px] text-zinc-500 mb-2">
-            Analyzing <span className="text-white font-medium">@{localUsername.replace(/^@/, "").trim()}</span>
+            {t("pricing.analyzing")} <span className="text-white font-medium">@{localUsername.replace(/^@/, "").trim()}</span>
           </p>
           <p className="text-[15px] sm:text-[17px] font-medium text-white">{scanMsg}</p>
         </div>
@@ -158,7 +169,7 @@ export default function ProfileSearchInput() {
     <div className="w-full max-w-lg mx-auto">
       <p className="flex items-center gap-1.5 text-[12px] text-zinc-500 mb-2">
         <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/[0.06] border border-white/[0.08] text-[9px] font-bold text-zinc-400 flex-shrink-0">i</span>
-        Make sure your account is set to public
+        {t("pricing.accountPublic")}
       </p>
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <div className="relative w-full">
@@ -170,7 +181,7 @@ export default function ProfileSearchInput() {
             onChange={(e) => setLocalUsername(e.target.value)}
             onFocus={() => posthog?.capture("input_focused", { platform })}
             onKeyDown={handleKeyDown}
-            placeholder={isIG ? "Enter Instagram username" : "Enter TikTok username"}
+            placeholder={isIG ? t("pricing.enterInstagramUsername") : t("pricing.enterTikTokUsername")}
             className="w-full pl-9 pr-4 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[16px] sm:text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
             autoComplete="off"
             spellCheck={false}
@@ -180,15 +191,20 @@ export default function ProfileSearchInput() {
         <button
           onClick={() => handleSearch()}
           disabled={profileLoading}
-          className="shine cta-pulse w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-white text-[15px] font-semibold transition-all duration-300 hover:opacity-90 active:scale-[0.97] disabled:opacity-50 disabled:animate-none"
-          style={{ background: gradient }}
+          className="shine cta-pulse w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-white text-[15px] font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-50 disabled:animate-none"
+          style={{ background: gradient, boxShadow: `0 0 30px -6px ${accentColor}50` }}
         >
           {profileLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <>
-              <Search className="w-4 h-4" />
-              {isIG ? "Boost my Instagram" : "Boost my TikTok"}
+              <Flame className="w-4 h-4" />
+              {(() => {
+                const tiers = isIG ? pricingTiers.instagram : pricingTiers.tiktok;
+                const first = tiers?.[0];
+                if (!first) return isIG ? t("pricing.boostInstagram") : t("pricing.boostTiktok");
+                return t("pricing.ctaFromPrice", { price: formatCurrency(first.price, currency) });
+              })()}
             </>
           )}
         </button>
@@ -214,7 +230,7 @@ export default function ProfileSearchInput() {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-[13px] text-zinc-400">
-              Did you mean?
+              {t("pricing.didYouMean")}
             </p>
             <p className="text-[15px] font-semibold text-white truncate">
               @{suggestion.username}
@@ -226,7 +242,7 @@ export default function ProfileSearchInput() {
             </p>
           </div>
           <div className="flex-shrink-0 px-3 py-1.5 rounded-xl text-[12px] font-medium text-white" style={{ background: gradient }}>
-            Search
+            {t("pricing.searchBtn")}
           </div>
         </button>
       )}

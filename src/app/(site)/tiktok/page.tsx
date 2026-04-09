@@ -24,6 +24,7 @@ import CheckoutModal from "@/components/ui/CheckoutModal";
 import type { CheckoutTier } from "@/components/ui/CheckoutModal";
 import { toCheckoutTiers } from "@/lib/pricing-utils";
 import { useCurrency } from "@/context/CurrencyContext";
+import { formatCurrency } from "@/lib/currency";
 import { usePostHog } from "posthog-js/react";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useTranslation } from "@/context/TranslationContext";
@@ -176,8 +177,8 @@ export default function TikTokPage() {
                 )}
                 <span className="block text-[20px] sm:text-[22px] font-semibold text-white tracking-tight group-hover:text-white/90 transition-colors">{tier.label}</span>
                 <span className="block mt-0.5 text-[10px] font-medium text-[#69C9D0]/70 group-hover:text-[#69C9D0] transition-colors">{t("ttPage.aiReach")}</span>
-                <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">{currencySymbol}{tier.price.toFixed(2)}</span>
-                <span className="block text-[11px] text-zinc-600 line-through">{currencySymbol}{tier.originalPrice.toFixed(2)}</span>
+                <span className="block mt-2 text-[15px] font-semibold text-zinc-300 group-hover:text-white transition-colors">{formatCurrency(tier.price, currency)}</span>
+                <span className="block text-[11px] text-zinc-600 line-through">{formatCurrency(tier.originalPrice, currency)}</span>
               </button>
             ))}
           </motion.div>
@@ -186,6 +187,7 @@ export default function TikTokPage() {
             <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> {t("ttPage.stripeSecured")}</span>
             <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> {t("ttPage.instantActivation")}</span>
           </motion.div>
+
         </div>
       </section>
 

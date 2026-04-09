@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import OrderConfirmationEmail from "@/emails/OrderConfirmation";
 import { sendDiscordNotification, sendBulkFollowsAlert, sendUsernameNotFoundAlert, sendOrderQueuedAlert } from "@/lib/discord";
 import { createOrder, updateProviderOrders, hasActiveBulkFollowsOrder } from "@/lib/db";
-import { submitTikTokOrder, verifyTikTokUsername, type ProviderOrder } from "@/lib/bulkfollows";
+import { submitTikTokOrder, submitInstagramOrder, verifyTikTokUsername, type ProviderOrder } from "@/lib/bulkfollows";
 import { getCountryName } from "@/lib/country-names";
 import type { OrderPayload } from "@/lib/types";
 import { extractUsername } from "@/lib/extract-username";
@@ -82,9 +82,12 @@ export async function POST(req: NextRequest) {
     const lQty = likesQty ?? 0;
     const vQty = viewsQty ?? 0;
     let providerOrders: ProviderOrder[] = [];
-    if (platform === "tiktok") {
-      // First verify the username actually exists
-      const usernameExists = await verifyTikTokUsername(username);
+    if (platform === "tiktok" || platform === "instagram") {
+      // First verify the username actually exists (TikTok only for now)
+      let usernameExists = true;
+      if (platform === "tiktok") {
+        usernameExists = await verifyTikTokUsername(username);
+      }
 
       if (!usernameExists) {
         console.warn(`[BulkFollows] Username @${username} not found — skipping auto-order for ${orderId}`);
@@ -107,7 +110,8 @@ export async function POST(req: NextRequest) {
           });
         } else {
           try {
-            providerOrders = await submitTikTokOrder({
+            const submitFn = platform === "instagram" ? submitInstagramOrder : submitTikTokOrder;
+            providerOrders = await submitFn({
               username,
               followersQty: fQty,
               likesQty: lQty,

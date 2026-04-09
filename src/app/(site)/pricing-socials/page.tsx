@@ -23,6 +23,7 @@ import {
   BarChart3,
   Globe,
   Lock,
+  Check,
 } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -66,6 +67,55 @@ const IG_ACCENT = "#dd2a7b";
 const IG_GRADIENT = "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)";
 
 
+/* ─── Review Data ─── */
+const REVIEW_AUTHORS = [
+  { name: "Léa",     img: "/reviews/user1.webp", key: "reviews.r1" },
+  { name: "Julien",  img: "/reviews/user2.webp", key: "reviews.r2" },
+  { name: "Chloé",   img: "/reviews/user3.webp", key: "reviews.r3" },
+  { name: "Lucas",   img: "/reviews/user4.webp", key: "reviews.r4" },
+  { name: "Camille", img: "/reviews/user5.webp", key: "reviews.r5" },
+  { name: "Antoine", img: "/reviews/user6.webp", key: "reviews.r6" },
+];
+
+function HeroReviews() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center">
+      <div className="flex items-center -space-x-2.5">
+        {REVIEW_AUTHORS.map((r, i) => (
+          <div key={r.name} className="group relative" style={{ zIndex: REVIEW_AUTHORS.length - i }}>
+            <Image
+              src={r.img}
+              alt={r.name}
+              width={40}
+              height={40}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover ring-[2.5px] ring-black cursor-pointer transition-transform duration-200 group-hover:scale-110 group-hover:!z-50"
+            />
+          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50">
+            <div className="bg-zinc-900 border border-white/[0.08] rounded-xl p-4 shadow-2xl shadow-black/60">
+              <Image src="/reviews/stars.svg" alt="5 stars" width={80} height={16} className="h-3.5 w-auto mb-2" />
+              <p className="text-[12px] text-zinc-300 leading-relaxed mb-3">{t(r.key)}</p>
+              <div className="flex items-center gap-2">
+                <Image src={r.img} alt={r.name} width={20} height={20} className="w-5 h-5 rounded-full object-cover" />
+                <span className="text-[11px] font-semibold text-white">{r.name}</span>
+                <span className="text-[10px] text-zinc-600">{t("reviews.verifiedBuyer")}</span>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-2.5 h-2.5 bg-zinc-900 border-r border-b border-white/[0.08] rotate-45 -mt-[5px]" />
+            </div>
+          </div>
+          </div>
+        ))}
+      </div>
+      <div className="ml-3 flex flex-col">
+        <Image src="/reviews/stars.svg" alt="5 stars" width={88} height={18} className="h-[18px] w-auto" />
+        <span className="text-[11px] text-zinc-500 font-medium mt-0.5">4.9/5 (2,847+)</span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Animated counter ─── */
 function AnimCounter({ target, duration = 2000 }: { target: number; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -87,6 +137,66 @@ function AnimCounter({ target, duration = 2000 }: { target: number; duration?: n
   }, [target, duration]);
 
   return <span ref={ref}>{count.toLocaleString()}</span>;
+}
+
+/* ─── Live Delivery Ticker ─── */
+const TICKER_ITEMS = [
+  { qty: "5,000", type: "views", ago: 13 },
+  { qty: "300", type: "followers", ago: 21 },
+  { qty: "1,000", type: "likes", ago: 6 },
+  { qty: "5,000", type: "followers", ago: 32 },
+  { qty: "500", type: "followers", ago: 5 },
+  { qty: "1,000", type: "followers", ago: 16 },
+  { qty: "250", type: "likes", ago: 3 },
+  { qty: "100", type: "followers", ago: 20 },
+];
+
+function LiveDeliveryTicker() {
+  const { t } = useTranslation();
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % TICKER_ITEMS.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const typeLabel = (type: string) => {
+    if (type === "followers") return t("pricing.followers");
+    if (type === "likes") return t("pricing.likes");
+    return t("pricing.views");
+  };
+
+  return (
+    <div className="px-3 sm:px-4 h-[54px] overflow-hidden rounded-xl w-full max-w-[300px] sm:max-w-[330px] md:w-[360px] md:max-w-[360px] flex items-center space-x-2 bg-emerald-500/[0.08] border border-emerald-500/20">
+      <div
+        className="w-full h-full"
+        style={{ transition: "transform 0.5s ease", transform: `translateY(-${index * 54}px)` }}
+      >
+        {TICKER_ITEMS.map((item, i) => (
+          <div key={i} className="text-sm h-[54px] font-medium items-center flex w-full">
+            <span className="relative flex mr-2 h-2.5 w-2.5 flex-shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+            </span>
+            <div className="flex items-center justify-between w-full font-normal text-[13px] md:text-sm text-emerald-300">
+              <div className="text-nowrap">
+                <span className="font-semibold text-emerald-200">{item.qty} {typeLabel(item.type)}</span>{" "}
+                <span>{t("pricing.tickerDelivered")}</span>
+              </div>
+              <div className="ml-auto flex items-center space-x-1.5">
+                <div className="rounded-full w-[19px] h-[19px] p-[3px] bg-white/10 shadow-md">
+                  <Check className="w-full h-full text-green-400" strokeWidth={4.5} />
+                </div>
+                <div className="text-emerald-400/70 text-[12px]">{item.ago} min</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 /* ─── FAQ Accordion Item ─── */
@@ -228,7 +338,7 @@ export default function PricingSocialsPage() {
   const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
 
   const { t } = useTranslation();
-  const { getTierPrice: getPrice } = usePricingTiers(currency);
+  const { getTierPrice: getPrice, resolved: pricingTiers } = usePricingTiers(currency);
 
   const faqs = [
     { q: t("pricing.faq1Q"), a: t("pricing.faq1A") },
@@ -240,6 +350,14 @@ export default function PricingSocialsPage() {
   ];
   const searchParams = useSearchParams();
   const { setDiscountPct } = useTiktokUpsellStore();
+
+  /* Read platform from URL param (e.g. ?platform=instagram) */
+  useEffect(() => {
+    const p = searchParams.get("platform");
+    if (p === "instagram" || p === "tiktok") {
+      setPlatform(p);
+    }
+  }, [searchParams, setPlatform]);
 
   /* Read discount from URL param (e.g. ?discount=20) */
   useEffect(() => {
@@ -331,10 +449,10 @@ export default function PricingSocialsPage() {
     return () => { cancelled = true; };
   }, [profile?.username, isIG]);
 
-  /* Scroll to flow section on step change + track */
+  /* Scroll to bundle content on step change + track */
   useEffect(() => {
     if (step !== "search" && step !== "scanning") {
-      document.getElementById("flow-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("bundle-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     posthog?.capture("step_changed", { step, platform, variant: "pricing-socials" });
   }, [step]);
@@ -348,146 +466,196 @@ export default function PricingSocialsPage() {
       {/* ───────────── SEARCH PHASE: Full-width split hero ───────────── */}
       {isSearchPhase && (
         <div className="relative z-10 min-h-[100dvh] flex flex-col">
-          {/* Subtle gradient mesh background */}
+          {/* Multi-layer gradient mesh background */}
           <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full">
-              <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] rounded-full blur-[150px] opacity-[0.07] transition-colors duration-700" style={{ backgroundColor: accent }} />
-              <div className="absolute bottom-[20%] right-[10%] w-[400px] h-[400px] rounded-full blur-[130px] opacity-[0.05]" style={{ backgroundColor: isIG ? "#8134af" : "#69C9D0" }} />
-            </div>
+            <div className="absolute top-[5%] left-[10%] w-[600px] h-[600px] rounded-full blur-[180px] opacity-[0.08] transition-colors duration-700" style={{ backgroundColor: accent }} />
+            <div className="absolute top-[40%] right-[5%] w-[500px] h-[500px] rounded-full blur-[160px] opacity-[0.05]" style={{ backgroundColor: isIG ? "#8134af" : "#69C9D0" }} />
+            <div className="absolute bottom-[10%] left-[30%] w-[400px] h-[400px] rounded-full blur-[140px] opacity-[0.04]" style={{ backgroundColor: isIG ? "#f58529" : "#ee1d52" }} />
+            {/* Subtle grid pattern */}
+            <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
           </div>
 
           {/* Main split hero */}
           <div className="relative z-10 flex-1 flex items-center">
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-16 md:py-0">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center">
-
-                {/* LEFT — Copy + Social Proof */}
-                <div className="order-1 lg:order-1">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-12 md:py-0">
+              <div className="max-w-2xl mx-auto">
                   {/* Platform switcher — pill tabs */}
-                  <div className="inline-flex items-center rounded-lg bg-white/[0.04] border border-white/[0.08] p-0.5 mb-5 sm:mb-8">
-                    {(["tiktok", "instagram"] as const).map((p) => {
-                      const active = platform === p;
-                      return (
-                        <button
-                          key={p}
-                          onClick={() => { if (!active) { posthog?.capture("platform_switched", { from: platform, to: p, variant: "pricing-socials" }); reset(); setPlatform(p); } }}
-                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-[12px] font-semibold tracking-wide uppercase transition-all duration-300 ${
-                            active ? "text-white bg-white/[0.1]" : "text-zinc-500 hover:text-zinc-300"
-                          }`}
-                        >
-                          {p === "tiktok" ? <TikTokIcon className="w-3.5 h-3.5" /> : <InstagramIcon className="w-3.5 h-3.5" />}
-                          {p === "tiktok" ? "TikTok" : "Instagram"}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    <div className="inline-flex items-center rounded-xl bg-white/[0.04] border border-white/[0.08] p-1 mb-6 sm:mb-8">
+                      {(["tiktok", "instagram"] as const).map((p) => {
+                        const active = platform === p;
+                        return (
+                          <button
+                            key={p}
+                            onClick={() => { if (!active) { posthog?.capture("platform_switched", { from: platform, to: p, variant: "pricing-socials" }); reset(); setPlatform(p); } }}
+                            className={`relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-semibold tracking-wide uppercase transition-all duration-300 ${
+                              active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                            }`}
+                          >
+                            {active && <motion.div layoutId="platform-pill" className="absolute inset-0 rounded-lg bg-white/[0.1]" transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />}
+                            <span className="relative z-10 flex items-center gap-2">
+                              {p === "tiktok" ? <TikTokIcon className="w-3.5 h-3.5" /> : <InstagramIcon className="w-3.5 h-3.5" />}
+                              {p === "tiktok" ? "TikTok" : "Instagram"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
 
-                  <h1 className="text-[clamp(1.6rem,4.5vw,3.8rem)] font-bold text-white tracking-tight leading-[1.1] mb-4 sm:mb-6">
+                  {/* H1 */}
+                  <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="text-[clamp(1.75rem,5.5vw,4rem)] font-extrabold text-white tracking-tight leading-[1.08] mb-4 sm:mb-6">
                     {t("pricing.heroTitle")}{" "}
                     <span className="relative inline-block">
-                      <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] to-[#ee1d52]"} bg-clip-text text-transparent`}>
+                      <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] via-[#9BE8EC] to-[#ee1d52]"} bg-clip-text text-transparent`}>
                         {isIG ? "Instagram" : "TikTok"}
                       </span>
-                      <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full" style={{ background: gradient, opacity: 0.4 }} />
+                      <span className={`absolute -bottom-1 left-0 w-full h-[3px] rounded-full bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] via-[#9BE8EC] to-[#ee1d52]"}`} />
                     </span>
                     <span className="hidden sm:inline"><br /></span>{" "}
                     {t("pricing.heroTitleEnd")}
-                  </h1>
+                  </motion.h1>
 
-                  {/* Social proof counters */}
-                  {mounted && (
-                    <div data-nosnippet="" className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-8 mb-6 sm:mb-10">
+                  {/* Live Delivery Ticker */}
+                  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="mb-8 flex justify-center lg:justify-start">
+                    <LiveDeliveryTicker />
+                  </motion.div>
+
+                  {/* Search Card (CTA) */}
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="mb-8 sm:mb-10">
+                    <div className="relative max-w-md sm:max-w-lg">
+                      <div className="absolute -inset-1 rounded-[28px] opacity-[0.15] blur-xl" style={{ background: gradient }} />
+                      <div id="search-card" className="relative rounded-2xl sm:rounded-3xl bg-white/[0.04] border border-white/[0.1] p-4 sm:p-6 md:p-8 backdrop-blur-md shadow-2xl shadow-black/40">
+                        <div className="flex items-center gap-3 mb-6">
+                          {isIG ? <InstagramIcon className="w-8 h-8 text-white flex-shrink-0" /> : <TikTokIcon className="w-8 h-8 text-white flex-shrink-0" />}
+                          <h2 className="text-[18px] sm:text-[20px] font-bold text-white tracking-tight">
+                            {(() => {
+                              const platformName = isIG ? "Instagram" : "TikTok";
+                              const full = t("pricing.enterYourUsername", { platform: platformName });
+                              const idx = full.indexOf(platformName);
+                              if (idx === -1) return full;
+                              return (
+                                <>
+                                  {full.slice(0, idx)}
+                                  <span className="bg-clip-text text-transparent" style={{ backgroundImage: isIG ? "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)" : "linear-gradient(135deg, #69C9D0, #ee1d52)" }}>{platformName}</span>
+                                  {full.slice(idx + platformName.length)}
+                                </>
+                              );
+                            })()}
+                          </h2>
+                        </div>
+
+                        <ProfileSearchInput />
+
+                        {profileError && (
+                          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 text-[13px] text-red-400">
+                            {profileError}
+                          </motion.p>
+                        )}
+
+                        <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-4 sm:gap-6">
+                          {[
+                            { icon: Shield, text: t("pricing.guaranteeNoLogin") },
+                            { icon: Lock, text: t("pricing.oneTimePayment") },
+                            { icon: Zap, text: t("pricing.guaranteeFast") },
+                          ].map((item, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                              <item.icon className="w-3 h-3 text-zinc-600" />
+                              <span className="text-[10px] text-zinc-500 font-medium hidden sm:inline">{item.text}</span>
+                            </div>
+                          ))}
+                          <span className="sm:hidden flex items-center gap-1.5">
+                            <Shield className="w-3 h-3" style={{ color: accent }} />
+                            <span className="text-[10px] text-zinc-500 font-medium">{t("pricing.oneTimePayment")}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Social proof: stats + reviews + stars */}
+                  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+                    <div className="flex flex-wrap gap-6 sm:gap-8 mb-6">
                       {[
-                        { value: 12847, label: t("pricing.statCampaigns"), icon: BarChart3 },
-                        { value: 4200, label: t("pricing.statCreators"), icon: Users },
-                        { value: 98, suffix: "%", label: t("pricing.statSatisfaction"), icon: Star },
+                        { value: "12 847+", label: t("pricing.statCampaigns"), icon: BarChart3 },
+                        { value: "4 200+", label: t("pricing.statCreators"), icon: Users },
+                        { value: "98%", label: t("pricing.statSatisfaction"), icon: Star },
                       ].map((stat, i) => (
-                        <div key={i} className="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.08]">
-                            <stat.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400" />
+                        <div key={i} className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/[0.04] border border-white/[0.06]">
+                            <stat.icon className="w-4 h-4" style={{ color: accent }} />
                           </div>
-                          <div className="text-center sm:text-left">
-                            <p className="text-[15px] sm:text-[18px] font-bold text-white leading-none">
-                              <AnimCounter target={stat.value} />
-                              {stat.suffix ?? "+"}
-                            </p>
-                            <p className="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5">{stat.label}</p>
+                          <div>
+                            <p className="text-[17px] font-bold text-white leading-none">{stat.value}</p>
+                            <p className="text-[10px] text-zinc-500 mt-0.5">{stat.label}</p>
                           </div>
                         </div>
                       ))}
                     </div>
-                  )}
+                    <HeroReviews />
+                  </motion.div>
 
-                </div>
-
-                {/* RIGHT — Search Card */}
-                <div className="order-2 lg:order-2">
-                  <div className="relative rounded-3xl bg-white/[0.03] border border-white/[0.08] p-5 sm:p-8 backdrop-blur-sm">
-                    {/* Card header */}
-                    <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: gradient }}>
-                        {isIG ? <InstagramIcon className="w-5 h-5 text-white" /> : <TikTokIcon className="w-5 h-5 text-white" />}
-                      </div>
-                      <div>
-                        <h2 className="text-[16px] font-semibold text-white">{t("pricing.startCampaign")}</h2>
-                        <p className="text-[12px] text-zinc-500">{t("pricing.enterUsername")}</p>
-                      </div>
-                    </div>
-
-                    <ProfileSearchInput />
-
-                    {profileError && (
-                      <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 text-[13px] text-red-400">
-                        {profileError}
-                      </motion.p>
-                    )}
-
-                    {/* Compact trust strip — visible on mobile */}
-                    <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center justify-center sm:hidden">
-                      <div className="flex items-center gap-1.5">
-                        <Shield className="w-3 h-3" style={{ color: accent }} />
-                        <span className="text-[10px] text-zinc-500 font-medium">{t("pricing.oneTimePayment")}</span>
-                      </div>
-                    </div>
-
-                    {/* Mini how-it-works inside card — desktop only */}
-                    {mounted && (
-                      <div data-nosnippet="" className="hidden sm:block mt-8 pt-6 border-t border-white/[0.06]">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-4">{t("pricing.howItWorks")}</p>
-                        <div className="space-y-3">
-                          {[
-                            { n: "1", text: t("pricing.step1") },
-                            { n: "2", text: t("pricing.step2") },
-                            { n: "3", text: t("pricing.step3") },
-                            { n: "4", text: t("pricing.step4") },
-                          ].map((s) => (
-                            <div key={s.n} className="flex items-center gap-3">
-                              <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-zinc-500 flex-shrink-0">
-                                {s.n}
-                              </div>
-                              <span className="text-[13px] text-zinc-400">{s.text}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
           {/* ───────────── BELOW THE FOLD — Social proof + FAQ (search phase only) ───────────── */}
           {mounted && <div data-nosnippet="">
+
+            {/* ── 3 Easy Steps ── */}
+            <section className="relative z-10 py-12 sm:py-16 md:py-24 border-t border-white/[0.04]">
+              <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12">
+                <div className="text-center mb-8 sm:mb-12 md:mb-14">
+                  <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">
+                    {t("pricing.easyStepsTitle")}{" "}
+                    <br />
+                    <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] to-[#ee1d52]"} bg-clip-text text-transparent`}>
+                      {t("pricing.easyStepsHighlight")}
+                    </span>
+                  </h2>
+                  <p className="text-[14px] text-zinc-400 mt-3 max-w-md mx-auto">{t("pricing.easyStepsSubtitle")}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+                  {[
+                    { n: "1", icon: Sparkles, title: t("pricing.easyStep1Title"), desc: t("pricing.easyStep1Desc") },
+                    { n: "2", icon: Search,   title: t("pricing.easyStep2Title"), desc: t("pricing.easyStep2Desc") },
+                    { n: "3", icon: TrendingUp, title: t("pricing.easyStep3Title"), desc: t("pricing.easyStep3Desc") },
+                  ].map((step, i) => (
+                    <div key={step.n} className="relative text-center group">
+                      {/* Step number */}
+                      <div
+                        className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center border border-white/[0.08] bg-white/[0.03] group-hover:border-white/[0.15] transition-all duration-300"
+                        style={{ boxShadow: `0 0 30px -10px ${accent}30` }}
+                      >
+                        <step.icon className="w-6 h-6" style={{ color: accent }} />
+                      </div>
+
+                      {/* Connector line (between steps) */}
+                      {i < 2 && (
+                        <div className="hidden md:block absolute top-7 left-[calc(50%+40px)] w-[calc(100%-80px)] h-px bg-gradient-to-r from-white/[0.08] to-transparent" />
+                      )}
+
+                      <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/[0.06] text-[11px] font-bold text-zinc-500 mb-3">
+                        {step.n}
+                      </div>
+                      <h3 className="text-[16px] font-semibold text-white mb-2">{step.title}</h3>
+                      <p className="text-[13px] text-zinc-500 leading-relaxed max-w-xs mx-auto">{step.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
             {/* Testimonials / Social proof band */}
-            <section ref={trackSection("testimonials")} className="relative z-10 py-16 md:py-24 border-t border-white/[0.04]">
+            <section ref={trackSection("testimonials")} className="relative z-10 py-12 sm:py-16 md:py-24 border-t border-white/[0.04]">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12">
-                <div className="text-center mb-12">
+                <div className="text-center mb-8 sm:mb-12">
                   <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-3">{t("pricing.trustLabel")}</p>
                   <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">{t("pricing.trustTitle")}</h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
                   {[
                     {
                       quote: t("pricing.testimonial1Quote"),
@@ -531,9 +699,9 @@ export default function PricingSocialsPage() {
             </section>
 
             {/* Guarantees — horizontal strip */}
-            <section ref={trackSection("guarantees")} className="relative z-10 py-12 md:py-16 border-t border-white/[0.04]">
+            <section ref={trackSection("guarantees")} className="relative z-10 py-10 sm:py-12 md:py-16 border-t border-white/[0.04]">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {[
                     { icon: Shield, title: t("pricing.guarantee1Title"), desc: t("pricing.guarantee1Desc") },
                     { icon: Clock, title: t("pricing.guarantee2Title"), desc: t("pricing.guarantee2Desc") },
@@ -555,9 +723,9 @@ export default function PricingSocialsPage() {
             </section>
 
             {/* FAQ */}
-            <section ref={trackSection("faq")} className="relative z-10 py-16 md:py-24 border-t border-white/[0.04]">
+            <section ref={trackSection("faq")} className="relative z-10 py-12 sm:py-16 md:py-24 border-t border-white/[0.04]">
               <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
-                <div className="text-center mb-12">
+                <div className="text-center mb-8 sm:mb-12">
                   <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-3">{t("pricing.faqLabel")}</p>
                   <h2 className="text-[clamp(1.4rem,3.5vw,2.4rem)] font-bold text-white tracking-tight">{t("pricing.faqTitle")}</h2>
                 </div>
@@ -570,23 +738,62 @@ export default function PricingSocialsPage() {
             </section>
 
             {/* CTA bottom */}
-            <section ref={trackSection("cta_bottom")} className="relative z-10 py-16 md:py-20 border-t border-white/[0.04]">
-              <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
-                <h2 className="text-[clamp(1.5rem,3.5vw,2.6rem)] font-bold text-white tracking-tight mb-4">
-                  {t("pricing.ctaBottomTitle")}
-                </h2>
-                <p className="text-[15px] text-zinc-400 mb-8">
-                  {t("pricing.ctaBottomSubtitle")}
-                </p>
-                <button
-                  onClick={() => { posthog?.capture("cta_bottom_clicked", { variant: "pricing-socials", platform }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                  className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-white text-[15px] font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
-                  style={{ background: gradient }}
-                >
-                  {isIG ? <InstagramIcon className="w-5 h-5" /> : <TikTokIcon className="w-5 h-5" />}
-                  {t("pricing.ctaBottomButton")}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+            <section ref={trackSection("cta_bottom")} className="relative z-10 py-14 sm:py-20 md:py-28 lg:py-32 overflow-hidden">
+              {/* Multi-glow background */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full opacity-[0.08]" style={{ background: gradient, filter: "blur(150px)" }} />
+                <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] rounded-full opacity-[0.04]" style={{ backgroundColor: isIG ? "#f58529" : "#69C9D0", filter: "blur(100px)" }} />
+              </div>
+
+              <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
+                {/* CTA Card */}
+                <div className="relative rounded-3xl p-[1px]" style={{ background: `linear-gradient(135deg, ${accent}30, transparent 50%, ${accent}15)` }}>
+                  <div className="rounded-2xl sm:rounded-3xl bg-zinc-950/80 backdrop-blur-xl px-5 sm:px-10 md:px-14 py-10 sm:py-14 md:py-16 text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400 mb-6">
+                      <Sparkles className="w-3 h-3" style={{ color: accent }} />
+                      {t("pricing.ctaBottomTitle")}
+                    </div>
+
+                    <h2 className="text-[clamp(1.6rem,4vw,2.8rem)] font-extrabold text-white tracking-tight mb-4 leading-tight">
+                      {t("pricing.heroTitle")}{" "}
+                      <span className={`bg-gradient-to-r ${isIG ? "from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "from-[#69C9D0] to-[#ee1d52]"} bg-clip-text text-transparent`}>
+                        {isIG ? "Instagram" : "TikTok"}
+                      </span>
+                    </h2>
+                    <p className="text-[15px] text-zinc-400 mb-8 max-w-md mx-auto leading-relaxed">
+                      {t("pricing.ctaBottomSubtitle")}
+                    </p>
+
+                    <button
+                      onClick={() => { posthog?.capture("cta_bottom_clicked", { variant: "pricing-socials", platform }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-5 min-h-[48px] rounded-2xl text-white text-[15px] sm:text-[16px] font-bold transition-all duration-300 hover:scale-[1.04] active:scale-[0.97]"
+                      style={{ background: gradient, boxShadow: `0 0 60px -10px ${accent}50, 0 0 20px -5px ${accent}30` }}
+                    >
+                      {isIG ? <InstagramIcon className="w-5 h-5" /> : <TikTokIcon className="w-5 h-5" />}
+                      <span className="flex flex-col items-start leading-tight">
+                        <span>{t("pricing.ctaBottomButton")}</span>
+                        {(() => {
+                          const tiers = isIG ? pricingTiers.instagram : pricingTiers.tiktok;
+                          const first = tiers?.[0];
+                          if (!first) return null;
+                          return (
+                            <span className="text-[11px] font-normal text-white/60">
+                              {t("pricing.ctaFromPrice", { price: formatCurrency(first.price, currency) })}
+                            </span>
+                          );
+                        })()}
+                      </span>
+                      <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+
+                    <div className="mt-8 flex flex-wrap items-center justify-center gap-5 sm:gap-6 text-[11px] text-zinc-500">
+                      <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-zinc-600" /> {t("pricing.guaranteeNoLogin")}</span>
+                      <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-zinc-600" /> {t("pricing.oneTimePayment")}</span>
+                      <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-zinc-600" /> {t("pricing.guaranteeFast")}</span>
+                    </div>
+
+                  </div>
+                </div>
               </div>
             </section>
           </div>}
@@ -595,7 +802,7 @@ export default function PricingSocialsPage() {
 
       {/* ───────────── CONFIG PHASE: Split layout (desktop) ───────────── */}
       {isConfigPhase && (
-        <div id="flow-section" className="relative z-10 min-h-[100dvh]">
+        <div id="flow-section" className="relative min-h-[100dvh]">
           {/* Subtle background */}
           <div className="pointer-events-none fixed inset-0 z-0">
             <div className="absolute top-[30%] left-[20%] w-[500px] h-[500px] rounded-full blur-[160px] opacity-[0.06] transition-colors duration-700" style={{ backgroundColor: accent }} />
@@ -658,7 +865,7 @@ export default function PricingSocialsPage() {
               </div>
 
               {/* RIGHT — Main content area */}
-              <div className="lg:col-span-7 xl:col-span-8 min-w-0">
+              <div id="bundle-content" className="lg:col-span-7 xl:col-span-8 min-w-0">
                 <AnimatePresence mode="wait">
                   {/* ══════════ BUNDLE ══════════ */}
                   {step === "bundle" && profile && (
@@ -687,11 +894,8 @@ export default function PricingSocialsPage() {
                         totalQty={likesQty}
                         onBack={() => setStep("bundle")}
                         onContinue={() => {
-                          if (viewsQty > 0 && hasPosts) {
+                          if (viewsQty > 0) {
                             setStep("assignViews");
-                          } else if (computedTotal < SKIP_RECAP_THRESHOLD) {
-                            setStep("checkout");
-                            setCheckoutOpen(true);
                           } else {
                             setStep("recap");
                           }
@@ -713,19 +917,14 @@ export default function PricingSocialsPage() {
                         mode="views"
                         totalQty={viewsQty}
                         onBack={() => {
-                          if (likesQty > 0 && hasPosts) {
+                          if (likesQty > 0) {
                             setStep("assignLikes");
                           } else {
                             setStep("bundle");
                           }
                         }}
                         onContinue={() => {
-                          if (computedTotal < SKIP_RECAP_THRESHOLD) {
-                            setStep("checkout");
-                            setCheckoutOpen(true);
-                          } else {
-                            setStep("recap");
-                          }
+                          setStep("recap");
                         }}
                       />
                     </motion.div>
@@ -742,9 +941,9 @@ export default function PricingSocialsPage() {
                     >
                       <OrderRecap
                         onBack={() => {
-                          if (viewsQty > 0 && hasPosts) {
+                          if (viewsQty > 0) {
                             setStep("assignViews");
-                          } else if (likesQty > 0 && hasPosts) {
+                          } else if (likesQty > 0) {
                             setStep("assignLikes");
                           } else {
                             setStep("bundle");

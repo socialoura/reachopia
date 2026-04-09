@@ -18,12 +18,14 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   background: #000;
   color: #fafafa;
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
 }
 
 /* ── Scrollbar ── */

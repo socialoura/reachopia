@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
 import { Heart, CheckCircle2, Users, Video, TrendingUp, ArrowRight } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
@@ -10,20 +11,18 @@ function formatCount(n: number): string {
   return n.toString();
 }
 
-/**
- * Returns a "People like you" recommendation based on follower count.
- */
-function getPeopleLikeYouNudge(followers: number, isIG: boolean): string {
+function getPeopleLikeYouNudge(followers: number, isIG: boolean, t: (key: string, vars?: Record<string, string>) => string): string {
   const platform = isIG ? "accounts" : "creators";
-  if (followers < 500) return `Now is the perfect time to grow — a strong follower boost can help you gain visibility and attract organic growth fast.`;
-  if (followers < 2_000) return `You're building momentum! A bigger follower package helps you stand out and reach new audiences faster.`;
-  if (followers < 10_000) return `${platform.charAt(0).toUpperCase() + platform.slice(1)} with ${formatCount(followers)} followers typically add 2,500+ followers to unlock brand deals.`;
-  if (followers < 50_000) return `${platform.charAt(0).toUpperCase() + platform.slice(1)} your size usually boost with 5K-10K followers to enter the top tier.`;
-  return `Top ${platform} like you invest in 10K+ followers to maintain competitive positioning.`;
+  if (followers < 500) return t("pricing.nudgeNew");
+  if (followers < 2_000) return t("pricing.nudgeSmall");
+  if (followers < 10_000) return t("pricing.nudgeMedium", { platform: platform.charAt(0).toUpperCase() + platform.slice(1), count: formatCount(followers) });
+  if (followers < 50_000) return t("pricing.nudgeLarge", { platform: platform.charAt(0).toUpperCase() + platform.slice(1) });
+  return t("pricing.nudgeTop", { platform });
 }
 
 export default function ProfileCard() {
   const { platform, profile, followersQty, likesQty, viewsQty } = useTiktokUpsellStore();
+  const { t } = useTranslation();
   if (!profile) return null;
 
   const isIG = platform === "instagram";
@@ -34,7 +33,7 @@ export default function ProfileCard() {
     likes: profile.likesCount + likesQty,
   }), [profile.followersCount, profile.likesCount, followersQty, likesQty]);
 
-  const nudge = getPeopleLikeYouNudge(profile.followersCount, isIG);
+  const nudge = getPeopleLikeYouNudge(profile.followersCount, isIG, t);
 
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -82,7 +81,7 @@ export default function ProfileCard() {
                   <span className="font-semibold text-emerald-400">{formatCount(projected.followers)}</span>
                 </>
               )}
-              <span className="text-zinc-500">followers</span>
+              <span className="text-zinc-500">{t("pricing.followers")}</span>
             </div>
             {!isIG && (
               <div className="flex items-center gap-1.5 text-sm">
@@ -94,13 +93,13 @@ export default function ProfileCard() {
                     <span className="font-semibold text-emerald-400">{formatCount(projected.likes)}</span>
                   </>
                 )}
-                <span className="text-zinc-500">likes</span>
+                <span className="text-zinc-500">{t("pricing.likes")}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 text-sm">
               <Video className="w-3.5 h-3.5" style={{ color: isIG ? "#8134af" : "#69C9D0" }} />
               <span className="font-semibold text-white">{profile.videoCount}</span>
-              <span className="text-zinc-500">{isIG ? "posts" : "videos"}</span>
+              <span className="text-zinc-500">{isIG ? t("pricing.posts") : t("pricing.videos")}</span>
             </div>
           </div>
         </div>

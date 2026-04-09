@@ -3,6 +3,7 @@ import {
   updateOrderStatus,
   updateOrderNotes,
   updateOrderCost,
+  linkProviderBfOrderId,
   verifyAdminToken,
   extractToken,
 } from "@/lib/db";
@@ -13,7 +14,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { orderId, orderStatus, notes, cost } = await req.json();
+    const { orderId, orderStatus, notes, cost, providerLink } = await req.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -46,6 +47,17 @@ export async function PUT(req: NextRequest) {
         );
       }
       await updateOrderCost(orderId, parsed);
+    }
+
+    if (providerLink) {
+      const { subType, subIndex, bfOrderId } = providerLink;
+      if (!subType || typeof subIndex !== "number" || !bfOrderId) {
+        return NextResponse.json(
+          { error: "providerLink requires subType, subIndex, and bfOrderId" },
+          { status: 400 }
+        );
+      }
+      await linkProviderBfOrderId(orderId, subType, subIndex, Number(bfOrderId));
     }
 
     return NextResponse.json({ success: true });

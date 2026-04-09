@@ -79,6 +79,11 @@ export default function AdminOrdersPage() {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState<number | null>(null);
   const [tempNotes, setTempNotes] = useState("");
+  const [editingBfId, setEditingBfId] = useState<{ orderId: string; dbId: number; subType: string; subIndex: number } | null>(null);
+  const [tempBfId, setTempBfId] = useState("");
+  const [addingBfType, setAddingBfType] = useState<{ orderId: string; dbId: number } | null>(null);
+  const [newBfType, setNewBfType] = useState("followers");
+  const [newBfId, setNewBfId] = useState("");
 
   const getToken = () => localStorage.getItem("adminToken");
 
@@ -150,6 +155,36 @@ export default function AdminOrdersPage() {
       console.error("Failed to save notes:", err);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleSaveBfId = async (orderIdStr: string, dbId: number, subType: string, subIndex: number, bfId: string) => {
+    const parsed = parseInt(bfId, 10);
+    if (!parsed || parsed <= 0) return;
+    setUpdatingId(dbId);
+    try {
+      const res = await fetch("/api/admin/orders/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          orderId: dbId,
+          providerLink: { subType, subIndex, bfOrderId: parsed },
+        }),
+      });
+      if (res.ok) {
+        await fetchOrders();
+      }
+    } catch (err) {
+      console.error("Failed to link BF ID:", err);
+    } finally {
+      setUpdatingId(null);
+      setEditingBfId(null);
+      setAddingBfType(null);
+      setTempBfId("");
+      setNewBfId("");
     }
   };
 
@@ -487,27 +522,121 @@ export default function AdminOrdersPage() {
                         <td className="px-5 py-4">
                           {order.provider_orders && order.provider_orders.length > 0 ? (
                             <div className="space-y-1.5">
-                              {order.provider_orders.map((po, idx) => (
-                                <div key={idx}>
-                                  <div className="flex items-center gap-1.5">
-                                    <Zap className={`w-3 h-3 flex-shrink-0 ${po.bfOrderId ? 'text-emerald-400' : 'text-red-400'}`} />
-                                    <span className="text-[10px] text-gray-400">{po.type}</span>
-                                    {po.bfOrderId ? (
-                                      <span className="text-[10px] font-mono text-emerald-400">#{po.bfOrderId}</span>
-                                    ) : (
-                                      <span className="text-[10px] font-semibold text-red-400">FAILED</span>
+                              {order.provider_orders.map((po, idx) => {
+                                const typeIndex = order.provider_orders!
+                                  .slice(0, idx)
+                                  .filter((p) => p.type === po.type).length;
+                                const isEditing =
+                                  editingBfId?.orderId === order.order_id &&
+                                  editingBfId?.subType === po.type &&
+                                  editingBfId?.subIndex === typeIndex;
+
+                                return (
+                                  <div key={idx}>
+                                    <div className="flex items-center gap-1.5">
+                                      <Zap className={`w-3 h-3 flex-shrink-0 ${po.bfOrderId ? 'text-emerald-400' : 'text-red-400'}`} />
+                                      <span className="text-[10px] text-gray-400">{po.type}</span>
+                                      {isEditing ? (
+                                        <div className="flex items-center gap-1">
+                                          <input
+                                            type="text"
+                                            value={tempBfId}
+                                            onChange={(e) => setTempBfId(e.target.value)}
+                                            placeholder="BF ID"
+                                            className="w-20 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white text-[10px] font-mono focus:outline-none focus:border-indigo-500"
+                                            autoFocus
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter") handleSaveBfId(order.order_id, order.id, po.type, typeIndex, tempBfId);
+                                              if (e.key === "Escape") setEditingBfId(null);
+                                            }}
+                                          />
+                                          <button
+                                            onClick={() => handleSaveBfId(order.order_id, order.id, po.type, typeIndex, tempBfId)}
+                                            className="p-0.5 hover:bg-white/10 rounded"
+                                          >
+                                            <Save className="w-2.5 h-2.5 text-green-400" />
+                                          </button>
+                                        </div>
+                                      ) : po.bfOrderId ? (
+                                        <button
+                                          onClick={() => {
+                                            setEditingBfId({ orderId: order.order_id, dbId: order.id, subType: po.type, subIndex: typeIndex });
+                                            setTempBfId(String(po.bfOrderId));
+                                          }}
+                                          className="text-[10px] font-mono text-emerald-400 hover:underline cursor-pointer"
+                                          title="Click to edit BF ID"
+                                        >
+                                          #{po.bfOrderId}
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={() => {
+                                            setEditingBfId({ orderId: order.order_id, dbId: order.id, subType: po.type, subIndex: typeIndex });
+                                            setTempBfId("");
+                                          }}
+                                          className="text-[10px] font-semibold text-red-400 hover:text-red-300 cursor-pointer"
+                                          title="Click to add BF ID manually"
+                                        >
+                                          FAILED → Link
+                                        </button>
+                                      )}
+                                    </div>
+                                    {po.error && !po.bfOrderId && !isEditing && (
+                                      <p className="ml-[18px] text-[9px] text-red-400/70 max-w-[150px] truncate" title={po.error}>
+                                        {po.error}
+                                      </p>
                                     )}
                                   </div>
-                                  {po.error && !po.bfOrderId && (
-                                    <p className="ml-[18px] text-[9px] text-red-400/70 max-w-[150px] truncate" title={po.error}>
-                                      {po.error}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           ) : (
-                            <span className="text-[10px] text-gray-600">—</span>
+                            <div>
+                              {addingBfType?.orderId === order.order_id ? (
+                                <div className="space-y-1">
+                                  <select
+                                    value={newBfType}
+                                    onChange={(e) => setNewBfType(e.target.value)}
+                                    className="w-full px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white text-[10px] focus:outline-none focus:border-indigo-500 appearance-none"
+                                  >
+                                    <option value="followers" className="bg-gray-900">followers</option>
+                                    <option value="likes" className="bg-gray-900">likes</option>
+                                    <option value="views" className="bg-gray-900">views</option>
+                                  </select>
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="text"
+                                      value={newBfId}
+                                      onChange={(e) => setNewBfId(e.target.value)}
+                                      placeholder="BF ID"
+                                      className="w-20 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white text-[10px] font-mono focus:outline-none focus:border-indigo-500"
+                                      autoFocus
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") handleSaveBfId(order.order_id, order.id, newBfType, 0, newBfId);
+                                        if (e.key === "Escape") setAddingBfType(null);
+                                      }}
+                                    />
+                                    <button
+                                      onClick={() => handleSaveBfId(order.order_id, order.id, newBfType, 0, newBfId)}
+                                      className="p-0.5 hover:bg-white/10 rounded"
+                                    >
+                                      <Save className="w-2.5 h-2.5 text-green-400" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setAddingBfType({ orderId: order.order_id, dbId: order.id });
+                                    setNewBfType("followers");
+                                    setNewBfId("");
+                                  }}
+                                  className="text-[10px] text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                                >
+                                  + Add BF ID
+                                </button>
+                              )}
+                            </div>
                           )}
                         </td>
                         <td className="px-5 py-4">

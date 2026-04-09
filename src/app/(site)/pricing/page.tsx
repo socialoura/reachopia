@@ -359,7 +359,7 @@ export default function GrowthAnalyzerPage() {
                     className="shine w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-white text-[14px] font-semibold transition-all duration-300 hover:opacity-90 active:scale-[0.97]"
                     style={{ background: accent.gradient }}
                   >
-                    <Search className="w-4 h-4" />
+                    <Flame className="w-4 h-4" />
                     {platform === "tiktok" ? "Boost Now!" : "Analyze Account"}
                   </button>
                 </div>

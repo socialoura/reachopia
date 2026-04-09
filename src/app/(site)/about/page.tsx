@@ -93,19 +93,19 @@ export default function AboutPage() {
   return (
     <>
       {/* ───────────── HERO ───────────── */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-black">
+      <section className="relative pt-24 pb-14 sm:pt-28 sm:pb-18 md:pt-40 md:pb-28 overflow-hidden bg-black">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-indigo-500/8 blur-[120px]" />
         </div>
-        <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-5">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4 sm:mb-5">
             {t("about.badge")}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] as const }}
-            className="text-[clamp(2rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.08]"
+            className="text-[clamp(1.75rem,5vw,4rem)] font-semibold text-white tracking-tight leading-[1.08]"
           >
             {t("about.heroTitle1")}
             <br />
@@ -125,9 +125,9 @@ export default function AboutPage() {
       </section>
 
       {/* ───────────── OUR TECHNOLOGY — Bento Grid ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
+      <section className="py-14 sm:py-20 md:py-28 lg:py-32 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-10 sm:mb-14 md:mb-16">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-indigo-400 mb-4">
               {t("about.techLabel")}
             </motion.p>
@@ -204,9 +204,9 @@ export default function AboutPage() {
       </section>
 
       {/* ───────────── STATS ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
+      <section className="py-14 sm:py-20 md:py-28 lg:py-32 bg-black">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-10 sm:mb-14 md:mb-16">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               {t("about.statsLabel")}
             </motion.p>
@@ -242,9 +242,9 @@ export default function AboutPage() {
       </section>
 
       {/* ───────────── TEAM ───────────── */}
-      <section className="py-24 md:py-32 bg-zinc-950">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
+      <section className="py-14 sm:py-20 md:py-28 lg:py-32 bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-10 sm:mb-14 md:mb-16">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">{t("about.teamLabel")}</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               {t("about.teamTitle")}
@@ -277,9 +277,9 @@ export default function AboutPage() {
       </section>
 
       {/* ───────────── GROWTH SOLUTIONS ───────────── */}
-      <section className="py-24 md:py-32 bg-black">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
+      <section className="py-14 sm:py-20 md:py-28 lg:py-32 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-10 sm:mb-14 md:mb-16">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">{t("about.solutionsLabel")}</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               {t("about.solutionsTitle")}
@@ -288,8 +288,8 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             {[
-              { platform: "Instagram", services: (t("about.igServices") as unknown as string[]) || [], accent: "#dd2a7b", gradient: "from-[#f58529] via-[#dd2a7b] to-[#8134af]", href: "/instagram" },
-              { platform: "TikTok", services: (t("about.ttServices") as unknown as string[]) || [], accent: "#69C9D0", gradient: "from-[#69C9D0] to-[#ee1d52]", href: "/tiktok" },
+              { platform: "Instagram", services: [t("about.igService1"), t("about.igService2"), t("about.igService3"), t("about.igService4"), t("about.igService5")], accent: "#dd2a7b", gradient: "from-[#f58529] via-[#dd2a7b] to-[#8134af]", href: "/instagram" },
+              { platform: "TikTok", services: [t("about.ttService1"), t("about.ttService2"), t("about.ttService3"), t("about.ttService4"), t("about.ttService5")], accent: "#69C9D0", gradient: "from-[#69C9D0] to-[#ee1d52]", href: "/tiktok" },
             ].map((item, i) => (
               <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
                 className="rounded-2xl p-7 sm:p-8 border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-500 group"
@@ -319,9 +319,9 @@ export default function AboutPage() {
       </section>
 
       {/* ───────────── FAQ ───────────── */}
-      <section className="py-24 md:py-32 bg-zinc-950">
-        <div className="max-w-3xl mx-auto px-5 sm:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
+      <section className="py-14 sm:py-20 md:py-28 lg:py-32 bg-zinc-950">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-10 sm:mb-14">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">{t("about.faqLabel")}</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
               {t("about.faqTitle")}
@@ -336,27 +336,27 @@ export default function AboutPage() {
       </section>
 
       {/* ───────────── FINAL CTA ───────────── */}
-      <section className="relative py-28 md:py-36 bg-black overflow-hidden">
+      <section className="relative py-16 sm:py-24 md:py-32 lg:py-36 bg-black overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-indigo-500/8 blur-[120px]" />
         </div>
-        <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}>
-            <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
+            <motion.h2 variants={fadeUp} custom={0} className="text-[clamp(1.5rem,4vw,3rem)] font-semibold text-white tracking-tight">
               {t("about.ctaTitle")}
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="mt-5 text-[15px] text-zinc-400 max-w-md mx-auto leading-relaxed">
               {t("about.ctaSubtitle")}
             </motion.p>
-            <motion.div variants={fadeUp} custom={2} className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+            <motion.div variants={fadeUp} custom={2} className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/instagram"
-                className="shine inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white text-[14px] font-semibold hover:opacity-90 transition-opacity"
+                className="shine inline-flex items-center justify-center gap-2 px-8 py-4 min-h-[48px] rounded-full bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white text-[14px] font-semibold hover:opacity-90 transition-opacity"
               >
                 {t("about.ctaInstagram")}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link href="/tiktok"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-[14px] font-medium hover:bg-white/[0.1] transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 min-h-[48px] rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-[14px] font-medium hover:bg-white/[0.1] transition-colors"
               >
                 {t("about.ctaTiktok")}
                 <ArrowRight className="w-4 h-4" />

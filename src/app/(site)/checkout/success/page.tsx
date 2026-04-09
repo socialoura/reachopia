@@ -134,6 +134,13 @@ function SuccessContent() {
                 {t("checkoutSuccess.home")}
               </Link>
             </div>
+            <Link
+              href={`/dashboard?email=${encodeURIComponent(orderData.email)}`}
+              className="mt-4 inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[13px] font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+            >
+              {t("checkoutSuccess.trackOrder")}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </motion.div>
         )}
 

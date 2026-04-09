@@ -1,3 +1,5 @@
+import { getBFServiceIds, type BFServiceIds } from "@/lib/db";
+
 const API_URL = "https://bulkfollows.com/api/v2";
 
 function getApiKey(): string {
@@ -6,12 +8,33 @@ function getApiKey(): string {
   return key;
 }
 
-// TikTok service IDs on BulkFollows
-export const BF_SERVICES = {
+// Hardcoded fallbacks (used if DB is unreachable)
+const DEFAULT_BF_SERVICES: BFServiceIds = {
   tiktok_followers: 14270,
   tiktok_likes: 14256,
   tiktok_views: 640,
-} as const;
+  instagram_followers: 14004,
+  instagram_likes: 14217,
+  instagram_views: 4996,
+};
+
+// Cache service IDs for 60s to avoid hitting DB on every order
+let _bfCache: { ids: BFServiceIds; ts: number } | null = null;
+const BF_CACHE_TTL = 60_000;
+
+export async function getBFServices(): Promise<BFServiceIds> {
+  if (_bfCache && Date.now() - _bfCache.ts < BF_CACHE_TTL) return _bfCache.ids;
+  try {
+    const ids = await getBFServiceIds();
+    _bfCache = { ids, ts: Date.now() };
+    return ids;
+  } catch {
+    return DEFAULT_BF_SERVICES;
+  }
+}
+
+// Keep a sync export for backward compat (fallback values only)
+export const BF_SERVICES = DEFAULT_BF_SERVICES;
 
 interface BFOrderResult {
   order?: number;
@@ -165,6 +188,7 @@ export async function submitTikTokOrder(params: {
     views?: Array<{ postId: string; quantity: number }>;
   };
 }): Promise<ProviderOrder[]> {
+  const svc = await getBFServices();
   const results: ProviderOrder[] = [];
   const profileUrl = `https://www.tiktok.com/@${params.username}`;
 
@@ -172,13 +196,13 @@ export async function submitTikTokOrder(params: {
   if (params.followersQty > 0) {
     try {
       const res = await placeOrder({
-        serviceId: BF_SERVICES.tiktok_followers,
+        serviceId: svc.tiktok_followers,
         link: profileUrl,
         quantity: params.followersQty,
       });
       results.push({
         type: "followers",
-        serviceId: BF_SERVICES.tiktok_followers,
+        serviceId: svc.tiktok_followers,
         bfOrderId: res.order ?? null,
         link: profileUrl,
         quantity: params.followersQty,
@@ -187,7 +211,7 @@ export async function submitTikTokOrder(params: {
     } catch (err) {
       results.push({
         type: "followers",
-        serviceId: BF_SERVICES.tiktok_followers,
+        serviceId: svc.tiktok_followers,
         bfOrderId: null,
         link: profileUrl,
         quantity: params.followersQty,
@@ -202,13 +226,13 @@ export async function submitTikTokOrder(params: {
       const videoUrl = `https://www.tiktok.com/@${params.username}/video/${a.postId}`;
       try {
         const res = await placeOrder({
-          serviceId: BF_SERVICES.tiktok_likes,
+          serviceId: svc.tiktok_likes,
           link: videoUrl,
           quantity: a.quantity,
         });
         results.push({
           type: "likes",
-          serviceId: BF_SERVICES.tiktok_likes,
+          serviceId: svc.tiktok_likes,
           bfOrderId: res.order ?? null,
           link: videoUrl,
           quantity: a.quantity,
@@ -217,7 +241,7 @@ export async function submitTikTokOrder(params: {
       } catch (err) {
         results.push({
           type: "likes",
-          serviceId: BF_SERVICES.tiktok_likes,
+          serviceId: svc.tiktok_likes,
           bfOrderId: null,
           link: videoUrl,
           quantity: a.quantity,
@@ -233,13 +257,13 @@ export async function submitTikTokOrder(params: {
       const videoUrl = `https://www.tiktok.com/@${params.username}/video/${a.postId}`;
       try {
         const res = await placeOrder({
-          serviceId: BF_SERVICES.tiktok_views,
+          serviceId: svc.tiktok_views,
           link: videoUrl,
           quantity: a.quantity,
         });
         results.push({
           type: "views",
-          serviceId: BF_SERVICES.tiktok_views,
+          serviceId: svc.tiktok_views,
           bfOrderId: res.order ?? null,
           link: videoUrl,
           quantity: a.quantity,
@@ -248,9 +272,120 @@ export async function submitTikTokOrder(params: {
       } catch (err) {
         results.push({
           type: "views",
-          serviceId: BF_SERVICES.tiktok_views,
+          serviceId: svc.tiktok_views,
           bfOrderId: null,
           link: videoUrl,
+          quantity: a.quantity,
+          error: String(err),
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Submit all Instagram sub-orders for a ViewPlex order.
+ * Returns an array of provider order results to store in DB.
+ */
+export async function submitInstagramOrder(params: {
+  username: string;
+  followersQty: number;
+  likesQty: number;
+  viewsQty: number;
+  assignments?: {
+    likes?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+    views?: Array<{ postId: string; quantity: number; imageUrl?: string }>;
+  };
+}): Promise<ProviderOrder[]> {
+  const svc = await getBFServices();
+  const results: ProviderOrder[] = [];
+  const profileUrl = `https://www.instagram.com/${params.username}/`;
+
+  // 1. Followers — single order to profile
+  if (params.followersQty > 0) {
+    try {
+      const res = await placeOrder({
+        serviceId: svc.instagram_followers,
+        link: profileUrl,
+        quantity: params.followersQty,
+      });
+      results.push({
+        type: "followers",
+        serviceId: svc.instagram_followers,
+        bfOrderId: res.order ?? null,
+        link: profileUrl,
+        quantity: params.followersQty,
+        error: res.error,
+      });
+    } catch (err) {
+      results.push({
+        type: "followers",
+        serviceId: svc.instagram_followers,
+        bfOrderId: null,
+        link: profileUrl,
+        quantity: params.followersQty,
+        error: String(err),
+      });
+    }
+  }
+
+  // 2. Likes — one order per post
+  if (params.likesQty > 0 && params.assignments?.likes) {
+    for (const a of params.assignments.likes) {
+      const postUrl = `https://www.instagram.com/p/${a.postId}/`;
+      try {
+        const res = await placeOrder({
+          serviceId: svc.instagram_likes,
+          link: postUrl,
+          quantity: a.quantity,
+        });
+        results.push({
+          type: "likes",
+          serviceId: svc.instagram_likes,
+          bfOrderId: res.order ?? null,
+          link: postUrl,
+          quantity: a.quantity,
+          error: res.error,
+        });
+      } catch (err) {
+        results.push({
+          type: "likes",
+          serviceId: svc.instagram_likes,
+          bfOrderId: null,
+          link: postUrl,
+          quantity: a.quantity,
+          error: String(err),
+        });
+      }
+    }
+  }
+
+  // 3. Views — one order per post
+  if (params.viewsQty > 0 && params.assignments?.views) {
+    for (const a of params.assignments.views) {
+      const postUrl = `https://www.instagram.com/p/${a.postId}/`;
+      try {
+        const res = await placeOrder({
+          serviceId: svc.instagram_views,
+          link: postUrl,
+          quantity: a.quantity,
+        });
+        results.push({
+          type: "views",
+          serviceId: svc.instagram_views,
+          bfOrderId: res.order ?? null,
+          link: postUrl,
+          quantity: a.quantity,
+          error: res.error,
+        });
+      } catch (err) {
+        results.push({
+          type: "views",
+          serviceId: svc.instagram_views,
+          bfOrderId: null,
+          link: postUrl,
           quantity: a.quantity,
           error: String(err),
         });

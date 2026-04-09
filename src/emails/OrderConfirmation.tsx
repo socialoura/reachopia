@@ -164,6 +164,21 @@ export default function OrderConfirmationEmail({
 
           <Hr style={divider} />
 
+          {/* Track Order CTA */}
+          <Section style={ctaSection}>
+            <Text style={ctaText}>
+              Want to follow the progress of your campaign in real time?
+            </Text>
+            <Link
+              href={`https://reachopia.com/dashboard?email=${encodeURIComponent(order.email || "")}`}
+              style={trackButton}
+            >
+              Track Your Order →
+            </Link>
+          </Section>
+
+          <Hr style={divider} />
+
           {/* Support CTA */}
           <Section style={ctaSection}>
             <Text style={ctaText}>
@@ -372,6 +387,17 @@ const ctaButton: React.CSSProperties = {
   color: "#ffffff",
   fontSize: "14px",
   fontWeight: "600",
+  borderRadius: "999px",
+  textDecoration: "none",
+};
+
+const trackButton: React.CSSProperties = {
+  display: "inline-block",
+  padding: "14px 36px",
+  backgroundColor: "#2563eb",
+  color: "#ffffff",
+  fontSize: "14px",
+  fontWeight: "700",
   borderRadius: "999px",
   textDecoration: "none",
 };

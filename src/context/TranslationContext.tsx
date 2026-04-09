@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useCurrency } from "@/context/CurrencyContext";
 import en from "@/locales/en.json";
 import fr from "@/locales/fr.json";
 import de from "@/locales/de.json";
@@ -20,18 +21,6 @@ function isLocale(v: string | null): v is Locale {
 
 const LS_KEY = "vpx_lang";
 
-interface TranslationContextValue {
-  locale: Locale;
-  setLocale: (l: Locale) => void;
-  t: (key: string, replacements?: Record<string, string | number>) => string;
-}
-
-const TranslationContext = createContext<TranslationContextValue>({
-  locale: "en",
-  setLocale: () => {},
-  t: (key) => key,
-});
-
 /**
  * Resolve a dot-notation key like "home.heroTitle1" from a nested JSON object.
  */
@@ -45,31 +34,58 @@ function resolve(obj: Record<string, unknown>, path: string): string {
   return typeof current === "string" ? current : path;
 }
 
+interface TranslationContextValue {
+  locale: Locale;
+  setLocale: (l: Locale) => void;
+  t: (key: string, replacements?: Record<string, string | number>) => string;
+}
+
+const TranslationContext = createContext<TranslationContextValue>({
+  locale: "en",
+  setLocale: () => {},
+  t: (key, replacements) => {
+    let value = resolve(en as unknown as Record<string, unknown>, key);
+    if (replacements) {
+      for (const [k, v] of Object.entries(replacements)) {
+        value = value.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+      }
+    }
+    return value;
+  },
+});
+
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Determine initial locale: URL param > localStorage > default "en"
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === "undefined") return "en";
-    const urlLang = new URLSearchParams(window.location.search).get("lang");
-    if (isLocale(urlLang)) return urlLang;
-    try {
-      const stored = localStorage.getItem(LS_KEY);
-      if (isLocale(stored)) return stored;
-    } catch {}
-    return "en";
-  });
+  // Always start with "en" to match SSR — real locale is resolved in useEffect
+  const [locale, setLocaleState] = useState<Locale>("en");
 
-  // Sync from URL param changes
+  // Resolve real locale on mount + sync from URL param changes
   useEffect(() => {
     const urlLang = searchParams.get("lang");
     if (isLocale(urlLang)) {
       setLocaleState(urlLang);
       try { localStorage.setItem(LS_KEY, urlLang); } catch {}
+      return;
     }
+    try {
+      const stored = localStorage.getItem(LS_KEY);
+      if (isLocale(stored)) {
+        setLocaleState(stored);
+        return;
+      }
+    } catch {}
   }, [searchParams]);
+
+  // Auto-switch currency to EUR for fr/de/es locales
+  const { setCurrency } = useCurrency();
+  useEffect(() => {
+    if (locale === "fr" || locale === "de" || locale === "es") {
+      setCurrency("EUR");
+    }
+  }, [locale, setCurrency]);
 
   // Update <html lang="..."> attribute
   useEffect(() => {

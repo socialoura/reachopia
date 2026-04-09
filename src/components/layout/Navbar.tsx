@@ -15,6 +15,7 @@ export default function Navbar() {
 
   const navLinks = [
     { label: t("nav.pricing"), href: "/pricing-socials" },
+    { label: t("nav.tracking"), href: "/dashboard" },
     { label: t("nav.about"), href: "/about" },
     { label: t("nav.contact"), href: "/contact" },
   ];
@@ -73,7 +74,7 @@ export default function Navbar() {
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden p-2 -mr-2 text-zinc-400"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2 text-zinc-400"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >

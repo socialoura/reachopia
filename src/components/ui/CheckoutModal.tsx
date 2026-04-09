@@ -93,7 +93,7 @@ function PaymentForm({
     });
 
     if (submitError) {
-      setError(submitError.message || "Payment failed. Please try again.");
+      setError(submitError.message || t("checkoutModal.paymentFailed"));
       setLoading(false);
     } else {
       setLoading(false);
@@ -116,7 +116,7 @@ function PaymentForm({
     });
 
     if (confirmError) {
-      setError(confirmError.message || "Payment failed. Please try again.");
+      setError(confirmError.message || t("checkoutModal.paymentFailed"));
     } else {
       onExpressSuccess();
     }
@@ -164,7 +164,7 @@ function PaymentForm({
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <>
-              Pay {formatCurrency(price, currency || 'USD')}
+              {t("checkoutModal.payPrice", { price: formatCurrency(price, currency || 'USD') })}
               <Lock className="w-3.5 h-3.5" />
             </>
           )}
@@ -543,7 +543,7 @@ export default function CheckoutModal({
                   <span className="mx-1.5 text-zinc-800">·</span>
                   <img
                     src="/badges_paiement.png"
-                    alt="Payment methods: Visa, Mastercard, Apple Pay, Google Pay"
+                    alt={t("checkoutModal.altPaymentMethods")}
                     className="h-4 w-auto opacity-60"
                   />
                 </div>

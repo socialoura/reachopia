@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, ExpressCheckoutElement, useStripe, useElements } from "@stripe/react-stripe-js";
@@ -12,6 +13,7 @@ import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
 import { formatQty } from "@/config/tiktok-services";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePricingTiers } from "@/hooks/usePricingTiers";
+import { useTranslation } from "@/context/TranslationContext";
 
 const TT_ACCENT = "#ee1d52";
 const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
@@ -99,6 +101,7 @@ function PaymentForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { platform } = useTiktokUpsellStore();
+  const { t } = useTranslation();
   const payGradient = platform === "instagram" ? IG_GRADIENT : TT_GRADIENT;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,7 +120,7 @@ function PaymentForm({
     });
 
     if (submitError) {
-      setError(submitError.message || "Payment failed. Please try again.");
+      setError(submitError.message || t("checkoutModal.paymentFailed"));
       setLoading(false);
     } else {
       setLoading(false);
@@ -136,7 +139,7 @@ function PaymentForm({
       redirect: "if_required",
     });
     if (confirmError) {
-      setError(confirmError.message || "Payment failed. Please try again.");
+      setError(confirmError.message || t("checkoutModal.paymentFailed"));
     } else {
       onExpressSuccess();
     }
@@ -150,7 +153,7 @@ function PaymentForm({
       />
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-white/[0.06]" />
-        <span className="text-[11px] text-zinc-600 font-medium">or pay with card</span>
+        <span className="text-[11px] text-zinc-600 font-medium">{t("pricing.orPayWithCard")}</span>
         <div className="flex-1 h-px bg-white/[0.06]" />
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,7 +170,7 @@ function PaymentForm({
           ) : (
             <>
               <Lock className="w-3.5 h-3.5" />
-              Pay {formatCurrency(price, currency || "USD")} Securely
+              {t("pricing.paySecurely", { price: formatCurrency(price, currency || "USD") })}
             </>
           )}
         </button>
@@ -180,6 +183,7 @@ function PaymentForm({
 export default function BundleCheckoutModal() {
   const posthog = usePostHog();
   const { currency } = useCurrency();
+  const { t } = useTranslation();
   const {
     platform,
     checkoutOpen,
@@ -331,13 +335,22 @@ export default function BundleCheckoutModal() {
     }
   };
 
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
   const handleCardSuccess = async () => {
-    await processPaymentSuccess(email.trim() || `card-${Date.now()}@checkout.pay`);
+    if (!isValidEmail(email.trim())) {
+      setError(t("pricing.emailRequired"));
+      return;
+    }
+    await processPaymentSuccess(email.trim());
   };
 
   const handleExpressSuccess = async () => {
-    const customerEmail = email.trim() || `express-${Date.now()}@wallet.pay`;
-    await processPaymentSuccess(customerEmail);
+    if (!isValidEmail(email.trim())) {
+      setError(t("pricing.emailRequired"));
+      return;
+    }
+    await processPaymentSuccess(email.trim());
   };
 
   return (
@@ -378,7 +391,7 @@ export default function BundleCheckoutModal() {
             {/* Header */}
             <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5 border-b border-white/[0.06]">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-500">
-                {step === 2 ? "Order confirmed" : "Complete your purchase"}
+                {step === 2 ? t("pricing.orderConfirmed") : t("pricing.completeYourPurchase")}
               </p>
               <div className="mt-3 flex items-baseline gap-2 sm:gap-3">
                 <span className="text-[22px] sm:text-[28px] font-semibold text-white tracking-tight">
@@ -390,30 +403,30 @@ export default function BundleCheckoutModal() {
               </div>
               {/* What you get */}
               <div className="mt-3 space-y-1.5">
-                <p className="text-[11px] text-zinc-500 font-medium">Your @{username} will gain:</p>
+                <p className="text-[11px] text-zinc-500 font-medium">{t("pricing.yourAccountWillGain", { username })}</p>
                 {followersQty > 0 && (
                   <p className="flex items-center gap-2 text-[12px]">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-white font-medium">{formatQty(followersQty)} New Followers</span>
+                    <span className="text-white font-medium">{formatQty(followersQty)} {t("pricing.newFollowers")}</span>
                   </p>
                 )}
                 {likesQty > 0 && (
                   <p className="flex items-center gap-2 text-[12px]">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-white font-medium">{formatQty(likesQty)} Likes</span>
-                    {likesAssignments.length > 0 && <span className="text-zinc-500">across {likesAssignments.length} videos</span>}
+                    <span className="text-white font-medium">{formatQty(likesQty)} {t("pricing.likes").charAt(0).toUpperCase() + t("pricing.likes").slice(1)}</span>
+                    {likesAssignments.length > 0 && <span className="text-zinc-500">{t("pricing.across", { count: String(likesAssignments.length), type: t("pricing.videos").slice(0, -1), s: likesAssignments.length !== 1 ? "s" : "" })}</span>}
                   </p>
                 )}
                 {viewsQty > 0 && (
                   <p className="flex items-center gap-2 text-[12px]">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-white font-medium">{formatQty(viewsQty)} Views</span>
-                    {viewsAssignments.length > 0 && <span className="text-zinc-500">across {viewsAssignments.length} videos</span>}
+                    <span className="text-white font-medium">{formatQty(viewsQty)} {t("pricing.views").charAt(0).toUpperCase() + t("pricing.views").slice(1)}</span>
+                    {viewsAssignments.length > 0 && <span className="text-zinc-500">{t("pricing.across", { count: String(viewsAssignments.length), type: t("pricing.videos").slice(0, -1), s: viewsAssignments.length !== 1 ? "s" : "" })}</span>}
                   </p>
                 )}
                 <p className="flex items-center gap-2 text-[12px] text-zinc-500">
                   <Loader2 className="w-3.5 h-3.5 text-zinc-600" />
-                  Delivery starts within 5 minutes
+                  {t("pricing.deliveryStarts5min")}
                 </p>
               </div>
             </div>
@@ -422,10 +435,10 @@ export default function BundleCheckoutModal() {
             <div className="px-4 sm:px-6 py-4 sm:py-6">
               {step === 1 && (
                 <div className="space-y-5">
-                  {/* Email — optional with hint */}
+                  {/* Email — required */}
                   <div>
                     <label className="block text-[12px] font-medium text-zinc-400 mb-2">
-                      Email <span className="text-zinc-600">(optional &mdash; we&apos;ll send your receipt here)</span>
+                      {t("pricing.emailLabel")} <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="email"
@@ -440,6 +453,7 @@ export default function BundleCheckoutModal() {
                         }
                       }}
                       placeholder="your@email.com"
+                      required
                       className="w-full px-4 py-4 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[16px] sm:text-[14px] text-white placeholder:text-zinc-600 focus:border-white/[0.2] focus:ring-2 focus:outline-none transition-all"
                       style={{ ["--tw-ring-color" as string]: `${accent}30` } as React.CSSProperties}
                     />
@@ -489,7 +503,7 @@ export default function BundleCheckoutModal() {
                         price={totalPrice}
                         currency={currency}
                         email={email}
-                        onEmailError={() => setError("Please enter your email address")}
+                        onEmailError={() => setError(t("pricing.emailLabel"))}
                       />
                     </Elements>
                   ) : (
@@ -510,19 +524,19 @@ export default function BundleCheckoutModal() {
                   <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: `${accent}33` }}>
                     <CheckCircle2 className="w-7 h-7" style={{ color: accent }} />
                   </div>
-                  <h4 className="text-[20px] font-semibold text-white mb-1.5">Payment Successful!</h4>
+                  <h4 className="text-[20px] font-semibold text-white mb-1.5">{t("pricing.paymentSuccessful")}</h4>
                   <p className="text-[13px] text-zinc-400 mb-1">
                     {packageDesc} for <span className="text-white font-medium">@{username}</span>
                   </p>
                   {email && (
                     <p className="text-[11px] text-zinc-600 mb-4">
-                      Confirmation sent to {email}
+                      {t("pricing.confirmationSentTo", { email })}
                     </p>
                   )}
 
                   {/* Post-purchase upsell */}
                   <div className="mt-4 mb-4 p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] text-left">
-                    <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium mb-2">Boost even more</p>
+                    <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium mb-2">{t("pricing.boostEvenMore")}</p>
                     <button
                       onClick={() => {
                         posthog?.capture("post_purchase_upsell_click", { platform });
@@ -537,8 +551,8 @@ export default function BundleCheckoutModal() {
                           <Users className="w-3.5 h-3.5 text-white" />
                         </div>
                         <div className="text-left">
-                          <p className="text-[12px] font-medium text-white">{isIG ? "Add more Instagram followers" : "Add more TikTok growth"}</p>
-                          <p className="text-[10px] text-zinc-500">Get 20% off your next order</p>
+                          <p className="text-[12px] font-medium text-white">{isIG ? t("pricing.addMoreIG") : t("pricing.addMoreTT")}</p>
+                          <p className="text-[10px] text-zinc-500">{t("pricing.get20off")}</p>
                         </div>
                       </div>
                       <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
@@ -563,8 +577,8 @@ export default function BundleCheckoutModal() {
                           )}
                         </div>
                         <div className="text-left">
-                          <p className="text-[12px] font-medium text-white">{isIG ? "Also on TikTok?" : "Also on Instagram?"}</p>
-                          <p className="text-[10px] text-zinc-500">Get 15% off your first boost</p>
+                          <p className="text-[12px] font-medium text-white">{isIG ? t("pricing.alsoOnTT") : t("pricing.alsoOnIG")}</p>
+                          <p className="text-[10px] text-zinc-500">{t("pricing.get15off")}</p>
                         </div>
                       </div>
                       <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
@@ -575,7 +589,7 @@ export default function BundleCheckoutModal() {
                     onClick={() => { resetAndClose(); reset(); }}
                     className="px-8 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white text-[13px] font-semibold hover:bg-white/[0.1] transition-colors"
                   >
-                    Done
+                    {t("pricing.done")}
                   </button>
                 </motion.div>
               )}
@@ -585,15 +599,15 @@ export default function BundleCheckoutModal() {
             {step === 1 && (
               <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-2">
                 <div className="flex items-center justify-center gap-4 text-[10px] text-zinc-600 flex-wrap">
-                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Money-back guarantee</span>
-                  <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Encrypted &amp; Secure</span>
-                  <img src="/badges_paiement.png" alt="Payment methods" className="h-4 w-auto opacity-60" />
+                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> {t("pricing.moneyBackGuaranteeFull")}</span>
+                  <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> {t("pricing.encryptedSecure")}</span>
+                  <Image src="/badges_paiement.png" alt={t("pricing.paymentMethods")} width={120} height={16} className="h-4 w-auto opacity-60" />
                 </div>
                 <div className="flex items-center justify-center gap-0.5 mt-2">
                   {[1,2,3,4,5].map(i => (
                     <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                   ))}
-                  <span className="text-[9px] text-zinc-600 ml-1">47,291 orders completed</span>
+                  <span className="text-[9px] text-zinc-600 ml-1">{t("pricing.ordersCompleted", { count: "47,291" })}</span>
                 </div>
               </div>
             )}

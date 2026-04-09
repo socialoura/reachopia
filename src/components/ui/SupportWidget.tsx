@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2, CheckCircle2 } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 type WidgetState = "idle" | "sending" | "success" | "error";
 
 export default function SupportWidget() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -31,12 +33,12 @@ export default function SupportWidget() {
     e.preventDefault();
 
     if (!email.trim() || !isValidEmail(email.trim())) {
-      setErrorMsg("Please enter a valid email address.");
+      setErrorMsg(t("supportWidget.errorInvalidEmail"));
       setState("error");
       return;
     }
     if (!message.trim()) {
-      setErrorMsg("Please enter your message.");
+      setErrorMsg(t("supportWidget.errorEmptyMessage"));
       setState("error");
       return;
     }
@@ -57,13 +59,13 @@ export default function SupportWidget() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to send message");
+        throw new Error(data.error || t("supportWidget.errorSendFailed"));
       }
 
       setState("success");
     } catch (err) {
       setErrorMsg(
-        err instanceof Error ? err.message : "Something went wrong"
+        err instanceof Error ? err.message : t("supportWidget.errorGeneric")
       );
       setState("error");
     }
@@ -81,7 +83,7 @@ export default function SupportWidget() {
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             onClick={() => setOpen(true)}
             className="fixed bottom-6 right-6 z-[90] w-14 h-14 rounded-full bg-gradient-to-r from-primary-dark to-secondary text-white shadow-[0px_8px_24px_rgba(193,53,132,0.4)] flex items-center justify-center hover:opacity-90 transition-opacity"
-            aria-label="Open support chat"
+            aria-label={t("supportWidget.ariaOpen")}
           >
             <MessageCircle className="w-6 h-6" />
           </motion.button>
@@ -102,19 +104,19 @@ export default function SupportWidget() {
             <div className="bg-gradient-to-r from-primary-dark to-secondary px-5 py-4 flex items-center justify-between">
               <div>
                 <h3 className="font-heading text-lg font-bold text-white">
-                  Contact Support
+                  {t("supportWidget.title")}
                 </h3>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                   <span className="font-body text-xs text-white/80">
-                    We typically reply within minutes
+                    {t("supportWidget.onlineStatus")}
                   </span>
                 </div>
               </div>
               <button
                 onClick={handleClose}
                 className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
-                aria-label="Close support chat"
+                aria-label={t("supportWidget.ariaClose")}
               >
                 <X className="w-4 h-4 text-white" />
               </button>
@@ -132,24 +134,24 @@ export default function SupportWidget() {
                     <CheckCircle2 className="w-7 h-7 text-green-600" />
                   </div>
                   <h4 className="font-heading text-xl font-bold text-dark mb-1">
-                    Message Sent!
+                    {t("supportWidget.successTitle")}
                   </h4>
                   <p className="font-body text-sm text-gray-text mb-4">
-                    We&apos;ll get back to you at{" "}
+                    {t("supportWidget.successDesc")}{" "}
                     <span className="font-medium text-dark">{email}</span>
                   </p>
                   <button
                     onClick={resetForm}
                     className="font-body text-sm text-primary hover:underline"
                   >
-                    Send another message
+                    {t("supportWidget.sendAnother")}
                   </button>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block font-body text-sm font-medium text-dark mb-1.5">
-                      Your Email
+                      {t("supportWidget.labelEmail")}
                     </label>
                     <input
                       type="email"
@@ -158,14 +160,14 @@ export default function SupportWidget() {
                         setEmail(e.target.value);
                         if (state === "error") setState("idle");
                       }}
-                      placeholder="you@example.com"
+                      placeholder={t("supportWidget.placeholderEmail")}
                       required
                       className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 font-body text-sm text-dark placeholder:text-gray-400 focus:border-primary focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
                     <label className="block font-body text-sm font-medium text-dark mb-1.5">
-                      Message
+                      {t("supportWidget.labelMessage")}
                     </label>
                     <textarea
                       value={message}
@@ -173,7 +175,7 @@ export default function SupportWidget() {
                         setMessage(e.target.value);
                         if (state === "error") setState("idle");
                       }}
-                      placeholder="How can we help you?"
+                      placeholder={t("supportWidget.placeholderMessage")}
                       required
                       rows={4}
                       className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 font-body text-sm text-dark placeholder:text-gray-400 focus:border-primary focus:outline-none transition-colors resize-none"
@@ -192,12 +194,12 @@ export default function SupportWidget() {
                     {state === "sending" ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Sending...
+                        {t("supportWidget.sending")}
                       </>
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Send Message
+                        {t("supportWidget.sendButton")}
                       </>
                     )}
                   </button>

@@ -8,6 +8,7 @@ import { formatQty } from "@/config/tiktok-services";
 import { formatCurrency } from "@/lib/currency";
 import { useCurrency } from "@/context/CurrencyContext";
 import { usePricingTiers } from "@/hooks/usePricingTiers";
+import { useTranslation } from "@/context/TranslationContext";
 
 const TT_GRADIENT = "linear-gradient(135deg, #69C9D0 0%, #ee1d52 100%)";
 const IG_GRADIENT = "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)";
@@ -17,6 +18,7 @@ const BUNDLE_DISCOUNT = 0.10;
 export default function OrderRecap({ onBack }: { onBack: () => void }) {
   const posthog = usePostHog();
   const { currency } = useCurrency();
+  const { t } = useTranslation();
   const {
     platform,
     profile,
@@ -83,10 +85,10 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-[clamp(1.3rem,3vw,2rem)] font-semibold text-white tracking-tight">
-          Order Summary
+          {t("pricing.orderSummary")}
         </h2>
         <p className="mt-2 text-[13px] text-zinc-400">
-          Review your bundle for <span className="text-white font-medium">@{profile?.username}</span>
+          {t("pricing.reviewBundle")} <span className="text-white font-medium">@{profile?.username}</span>
         </p>
       </div>
 
@@ -100,7 +102,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
         />
         <div>
           <p className="text-[14px] font-semibold text-white">@{profile?.username}</p>
-          <p className="text-[12px] text-zinc-500">{formatQty(profile?.followersCount ?? 0)} followers</p>
+          <p className="text-[12px] text-zinc-500">{formatQty(profile?.followersCount ?? 0)} {t("pricing.followers")}</p>
         </div>
       </div>
 
@@ -114,8 +116,8 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
                 <Users className="w-4 h-4" style={{ color: followerAccent }} />
               </div>
               <div>
-                <p className="text-[14px] font-medium text-white">{formatQty(followersQty)} Followers</p>
-                <p className="text-[11px] text-zinc-500">Delivered to your profile</p>
+                <p className="text-[14px] font-medium text-white">{formatQty(followersQty)} {t("pricing.followers").charAt(0).toUpperCase() + t("pricing.followers").slice(1)}</p>
+                <p className="text-[11px] text-zinc-500">{t("pricing.deliveredToProfile")}</p>
               </div>
             </div>
             <span className="text-[13px] sm:text-[15px] font-semibold text-white">{formatCurrency(followersPrice, currency)}</span>
@@ -131,8 +133,8 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
                   <Heart className="w-4 h-4 text-pink-400" />
                 </div>
                 <div>
-                  <p className="text-[14px] font-medium text-white">{formatQty(likesQty)} Likes</p>
-                  <p className="text-[11px] text-zinc-500">Across {likesAssignments.length} {isIG ? "post" : "video"}{likesAssignments.length !== 1 ? "s" : ""}</p>
+                  <p className="text-[14px] font-medium text-white">{formatQty(likesQty)} {t("pricing.likes").charAt(0).toUpperCase() + t("pricing.likes").slice(1)}</p>
+                  <p className="text-[11px] text-zinc-500">{t("pricing.across", { count: String(likesAssignments.length), type: isIG ? t("pricing.posts").slice(0, -1) : t("pricing.videos").slice(0, -1), s: likesAssignments.length !== 1 ? "s" : "" })}</p>
                 </div>
               </div>
               <span className="text-[13px] sm:text-[15px] font-semibold text-white">{formatCurrency(likesPrice, currency)}</span>
@@ -141,7 +143,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
               <div className="mt-3 ml-12 flex flex-wrap gap-2">
                 {likesAssignments.map((a) => (
                   <div key={a.postId} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
-                    <img src={a.imageUrl} alt="" className="w-6 h-8 rounded object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                    <img src={a.imageUrl} alt="" width={24} height={32} loading="lazy" decoding="async" className="w-6 h-8 rounded object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                     <span className="text-[11px] text-zinc-300">{formatQty(a.quantity)}</span>
                   </div>
                 ))}
@@ -159,8 +161,8 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
                   <Eye className="w-4 h-4" style={{ color: isIG ? "#8134af" : "#69C9D0" }} />
                 </div>
                 <div>
-                  <p className="text-[14px] font-medium text-white">{formatQty(viewsQty)} Views</p>
-                  <p className="text-[11px] text-zinc-500">Across {viewsAssignments.length} {isIG ? "post" : "video"}{viewsAssignments.length !== 1 ? "s" : ""}</p>
+                  <p className="text-[14px] font-medium text-white">{formatQty(viewsQty)} {t("pricing.views").charAt(0).toUpperCase() + t("pricing.views").slice(1)}</p>
+                  <p className="text-[11px] text-zinc-500">{t("pricing.across", { count: String(viewsAssignments.length), type: isIG ? t("pricing.posts").slice(0, -1) : t("pricing.videos").slice(0, -1), s: viewsAssignments.length !== 1 ? "s" : "" })}</p>
                 </div>
               </div>
               <span className="text-[13px] sm:text-[15px] font-semibold text-white">{formatCurrency(viewsPrice, currency)}</span>
@@ -169,7 +171,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
               <div className="mt-3 ml-12 flex flex-wrap gap-2">
                 {viewsAssignments.map((a) => (
                   <div key={a.postId} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
-                    <img src={a.imageUrl} alt="" className="w-6 h-8 rounded object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                    <img src={a.imageUrl} alt="" width={24} height={32} loading="lazy" decoding="async" className="w-6 h-8 rounded object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                     <span className="text-[11px] text-zinc-300">{formatQty(a.quantity)}</span>
                   </div>
                 ))}
@@ -186,8 +188,8 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
                 <Shield className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <p className="text-[14px] font-medium text-emerald-400">Bundle Discount</p>
-                <p className="text-[11px] text-zinc-500">{serviceCount} services combined</p>
+                <p className="text-[14px] font-medium text-emerald-400">{t("pricing.bundleDiscount")}</p>
+                <p className="text-[11px] text-zinc-500">{t("pricing.servicesCombined", { count: String(serviceCount) })}</p>
               </div>
             </div>
             <span className="text-[13px] sm:text-[15px] font-semibold text-emerald-400">-{formatCurrency(rawTotal - priceAfterBundle, currency)}</span>
@@ -202,8 +204,8 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
                 <Sparkles className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <p className="text-[14px] font-medium text-emerald-400">Loyalty Discount</p>
-                <p className="text-[11px] text-zinc-500">{discountPct}% off applied</p>
+                <p className="text-[14px] font-medium text-emerald-400">{t("pricing.loyaltyDiscount")}</p>
+                <p className="text-[11px] text-zinc-500">{t("pricing.loyaltyOff", { pct: String(discountPct) })}</p>
               </div>
             </div>
             <span className="text-[13px] sm:text-[15px] font-semibold text-emerald-400">-{formatCurrency(priceAfterBundle - totalPrice, currency)}</span>
@@ -213,7 +215,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
         {/* Total */}
         <div className="p-4 bg-white/[0.02]">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-zinc-400 uppercase tracking-wider">Total</span>
+            <span className="text-[13px] font-medium text-zinc-400 uppercase tracking-wider">{t("pricing.total")}</span>
             <div className="flex items-baseline gap-2">
               {totalOriginal > 0 && (
                 <span className="text-[14px] text-zinc-600 line-through">{formatCurrency(totalOriginal, currency)}</span>
@@ -223,7 +225,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
           </div>
           {totalSavings > 0 && (
             <p className="text-right text-[12px] font-semibold text-emerald-400 mt-1">
-              You save {totalSavings}%
+              {t("pricing.youSave", { pct: String(totalSavings) })}
             </p>
           )}
         </div>
@@ -232,13 +234,13 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
       {/* Trust signals */}
       <div className="mt-5 flex items-center justify-center gap-3 sm:gap-5 flex-wrap">
         <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
-          <Shield className="w-3.5 h-3.5" /> Refund if undelivered
+          <Shield className="w-3.5 h-3.5" /> {t("pricing.refundIfUndelivered")}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
-          <Lock className="w-3.5 h-3.5" /> Stripe secure checkout
+          <Lock className="w-3.5 h-3.5" /> {t("pricing.stripeSecureCheckout")}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
-          <Clock className="w-3.5 h-3.5" /> 24-72h delivery
+          <Clock className="w-3.5 h-3.5" /> {t("pricing.delivery24_72")}
         </span>
       </div>
 
@@ -250,7 +252,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
           className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 rounded-xl text-[12px] sm:text-[13px] text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          Back
+          {t("pricing.back")}
         </button>
         <button
           onClick={handleCheckout}
@@ -258,7 +260,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
           style={{ background: gradient }}
         >
           <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          Proceed to Checkout
+          {t("pricing.proceedToCheckout")}
           <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
       </div>

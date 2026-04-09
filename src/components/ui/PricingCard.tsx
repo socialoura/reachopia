@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { useTranslation } from "@/context/TranslationContext";
 
 export interface PricingTier {
   followers: string;
@@ -16,6 +17,7 @@ interface PricingCardProps {
 }
 
 export default function PricingCard({ tier, platform }: PricingCardProps) {
+  const { t } = useTranslation();
   const gradientClass =
     platform === "instagram"
       ? "from-primary-dark to-secondary"
@@ -33,7 +35,7 @@ export default function PricingCard({ tier, platform }: PricingCardProps) {
     >
       {tier.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs font-bold font-body px-4 py-1 rounded-full">
-          Most Popular
+          {t("pricingCard.mostPopular")}
         </div>
       )}
       <div className="text-center">
@@ -49,7 +51,7 @@ export default function PricingCard({ tier, platform }: PricingCardProps) {
             tier.popular ? "text-white/80" : "text-gray-text"
           }`}
         >
-          Audience Reach
+          {t("pricingCard.audienceReach")}
         </p>
         <div className="mt-4">
           {tier.originalPrice && (
@@ -79,7 +81,7 @@ export default function PricingCard({ tier, platform }: PricingCardProps) {
               " text-white hover:opacity-90"
         }`}
       >
-        Activate
+        {t("pricingCard.activate")}
       </button>
     </div>
   );

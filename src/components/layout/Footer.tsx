@@ -25,8 +25,8 @@ export default function Footer() {
   };
   return (
     <footer className="relative z-10 border-t border-white/[0.06]">
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 md:py-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 lg:gap-16">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-5">
@@ -51,12 +51,12 @@ export default function Footer() {
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-5">
               {t("footer.product")}
             </h4>
-            <nav className="flex flex-col gap-3">
+            <nav className="flex flex-col gap-1">
               {footerLinks.product.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-[13px] text-zinc-400 hover:text-white transition-colors duration-200"
+                  className="text-[13px] text-zinc-400 hover:text-white transition-colors duration-200 py-1.5"
                 >
                   {link.label}
                 </Link>
@@ -69,12 +69,12 @@ export default function Footer() {
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-5">
               {t("footer.company")}
             </h4>
-            <nav className="flex flex-col gap-3">
+            <nav className="flex flex-col gap-1">
               {footerLinks.company.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-[13px] text-zinc-400 hover:text-white transition-colors duration-200"
+                  className="text-[13px] text-zinc-400 hover:text-white transition-colors duration-200 py-1.5"
                 >
                   {link.label}
                 </Link>
@@ -87,12 +87,12 @@ export default function Footer() {
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-5">
               {t("footer.legal")}
             </h4>
-            <nav className="flex flex-col gap-3">
+            <nav className="flex flex-col gap-1">
               {footerLinks.legal.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-[13px] text-zinc-400 hover:text-white transition-colors duration-200"
+                  className="text-[13px] text-zinc-400 hover:text-white transition-colors duration-200 py-1.5"
                 >
                   {link.label}
                 </Link>

@@ -80,19 +80,19 @@ export default function ContactPage() {
   return (
     <>
       {/* ───────────── HERO ───────────── */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 overflow-hidden bg-black">
+      <section className="relative pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-40 md:pb-20 overflow-hidden bg-black">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-indigo-500/8 blur-[120px]" />
         </div>
-        <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-5">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4 sm:mb-5">
             {t("contact.badge")}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] as const }}
-            className="text-[clamp(2rem,5vw,3.5rem)] font-semibold text-white tracking-tight leading-[1.08]"
+            className="text-[clamp(1.75rem,5vw,3.5rem)] font-semibold text-white tracking-tight leading-[1.08]"
           >
             {t("contact.heroTitle1")}
             <br />
@@ -112,8 +112,8 @@ export default function ContactPage() {
       </section>
 
       {/* ───────────── MAIN — 2 Columns ───────────── */}
-      <section className="py-16 md:py-24 bg-zinc-950">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <section className="py-12 sm:py-16 md:py-24 bg-zinc-950">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
             {/* ── LEFT COLUMN: Support Info (2 cols) ── */}
             <motion.div
@@ -321,8 +321,8 @@ export default function ContactPage() {
       </section>
 
       {/* ───────────── TRUST SECTION ───────────── */}
-      <section className="py-20 md:py-28 bg-black">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+      <section className="py-14 sm:py-20 md:py-28 bg-black">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center">
             <motion.p variants={fadeUp} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
               {t("contact.whyLabel")}
