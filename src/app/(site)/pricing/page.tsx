@@ -27,6 +27,7 @@ import { usePostHog } from "posthog-js/react";
 import { formatCurrency } from "@/lib/currency";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { extractUsername } from "@/lib/extract-username";
+import { useTranslation } from "@/context/TranslationContext";
 
 /* ─── Custom Icons ─── */
 function InstagramIcon({ className }: { className?: string }) {
@@ -65,13 +66,7 @@ const noAnim = {
 /* ─── Platform type ─── */
 type Platform = "instagram" | "tiktok";
 
-/* ─── Scanning messages (no commercial keywords) ─── */
-const SCAN_MESSAGES = [
-  "Scanning audience signals…",
-  "Calculating AI reach potential…",
-  "Mapping growth vectors…",
-  "Generating personalized campaign…",
-];
+/* ─── Scanning messages — resolved at render time via t() ─── */
 
 /* ─── Accent helpers ─── */
 const IG_ACCENT = "#dd2a7b";
@@ -85,33 +80,7 @@ function getAccent(p: Platform) {
     : { primary: TT_ACCENT, gradient: TT_GRADIENT, tw: "from-[#69C9D0] to-[#ee1d52]" };
 }
 
-/* ─── FAQ Data ─── */
-const faqs = [
-  {
-    q: "How does the AI analysis work?",
-    a: "Our proprietary engine scans your public profile, content category, and audience signals to identify the optimal growth strategy for your niche. The entire process takes seconds and requires zero credentials.",
-  },
-  {
-    q: "Is my account safe?",
-    a: "Absolutely. We never ask for passwords or login credentials — only your public username. Our methods are 100% compliant with platform guidelines and use organic audience targeting exclusively.",
-  },
-  {
-    q: "Are there recurring charges?",
-    a: "No. Every campaign is a one-time payment. There are no hidden fees, subscriptions, or auto-renewals.",
-  },
-  {
-    q: "What payment methods do you accept?",
-    a: "We accept all major credit/debit cards (Visa, Mastercard, Amex), Apple Pay, and Google Pay — processed securely through Stripe with bank-grade encryption.",
-  },
-  {
-    q: "How fast will I see results?",
-    a: "Most campaigns begin delivering measurable momentum within minutes. Full deployment completes within 24-72 hours with gradual, algorithm-friendly delivery.",
-  },
-  {
-    q: "Do you offer refunds?",
-    a: "Yes. Every campaign is backed by our Results Guarantee. If we can't deliver, you receive a full refund — no questions asked.",
-  },
-];
+/* ─── FAQ Data — resolved via t() ─── */
 
 /* ─── FAQ Accordion ─── */
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -143,6 +112,24 @@ export default function GrowthAnalyzerPage() {
   const isMobile = useIsMobile();
   const v = isMobile ? noAnim : fadeUp;
   const { currency, symbol: currencySymbol } = useCurrency();
+  const { t } = useTranslation();
+
+  const SCAN_MESSAGES = [
+    t("pricingOld.scanMsg1"),
+    t("pricingOld.scanMsg2"),
+    t("pricingOld.scanMsg3"),
+    t("pricingOld.scanMsg4"),
+  ];
+
+  const faqs = [
+    { q: t("pricingOld.faq1Q"), a: t("pricingOld.faq1A") },
+    { q: t("pricingOld.faq2Q"), a: t("pricingOld.faq2A") },
+    { q: t("pricingOld.faq3Q"), a: t("pricingOld.faq3A") },
+    { q: t("pricingOld.faq4Q"), a: t("pricingOld.faq4A") },
+    { q: t("pricingOld.faq5Q"), a: t("pricingOld.faq5A") },
+    { q: t("pricingOld.faq6Q"), a: t("pricingOld.faq6A") },
+  ];
+
   /* ── Tunnel state: "input" → "scanning" → "results" ── */
   const [step, setStep] = useState<"input" | "scanning" | "results">("input");
   const [platform, setPlatform] = useState<Platform>("tiktok");
@@ -285,34 +272,30 @@ export default function GrowthAnalyzerPage() {
               >
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm mb-8">
                   <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-                  <span className="text-[12px] font-medium text-zinc-300">AI-Powered Growth Engine</span>
+                  <span className="text-[12px] font-medium text-zinc-300">{t("pricingOld.badge")}</span>
                 </div>
 
                 <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold text-white tracking-tight leading-[1.1]">
                   {platform === "tiktok" ? (
                     <>
-                      Grow your{" "}
+                      {t("pricingOld.heroTitleTT1")}
                       <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
-                        TikTok followers
+                        {t("pricingOld.heroTitleTT2")}
                       </span>
-                      {" "}now.
+                      {t("pricingOld.heroTitleTT3")}
                     </>
                   ) : (
                     <>
-                      Calculate Your{" "}
+                      {t("pricingOld.heroTitleIG1")}
                       <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
-                        AI Growth Potential
+                        {t("pricingOld.heroTitleIG2")}
                       </span>
                     </>
                   )}
                 </h1>
 
                 <p className="mt-5 text-[15px] sm:text-[17px] text-zinc-400 leading-relaxed max-w-md mx-auto">
-                  {platform === "tiktok" ? (
-                    "Supercharge your profile with our AI-powered engine. Attract real, targeted users and boost your TikTok followers instantly — all with zero effort on your part."
-                  ) : (
-                    "Enter your username and our AI will analyze your account to build a personalized growth strategy."
-                  )}
+                  {platform === "tiktok" ? t("pricingOld.heroDescTT") : t("pricingOld.heroDescIG")}
                 </p>
 
                 {/* Platform toggle */}
@@ -348,7 +331,7 @@ export default function GrowthAnalyzerPage() {
                       onChange={(e) => setUsername(e.target.value)}
                       onFocus={() => posthog?.capture("username_input_focused", { network: platform })}
                       onKeyDown={handleKeyDown}
-                      placeholder="Enter your username"
+                      placeholder={t("pricingOld.enterUsername")}
                       className="w-full pl-9 pr-4 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
                       autoComplete="off"
                       spellCheck={false}
@@ -360,7 +343,7 @@ export default function GrowthAnalyzerPage() {
                     style={{ background: accent.gradient }}
                   >
                     <Flame className="w-4 h-4" />
-                    {platform === "tiktok" ? "Boost Now!" : "Analyze Account"}
+                    {platform === "tiktok" ? t("pricingOld.boostNow") : t("pricingOld.analyzeAccount")}
                   </button>
                 </div>
 
@@ -382,8 +365,8 @@ export default function GrowthAnalyzerPage() {
                   </div>
                   {/* Other badges */}
                   <div className="flex items-center gap-5 text-[11px] text-zinc-600">
-                    <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> 100% secure</span>
-                    <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Instant delivery</span>
+                    <span className="flex items-center gap-1.5"><Shield className="w-3 h-3" /> {t("pricingOld.secure100")}</span>
+                    <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> {t("pricingOld.instantDelivery")}</span>
                   </div>
                 </div>
               </motion.div>
@@ -410,7 +393,7 @@ export default function GrowthAnalyzerPage() {
                 </div>
 
                 <div className="text-center">
-                  <p className="text-[13px] text-zinc-500 mb-2">Analyzing <span className="text-white font-medium">@{username}</span></p>
+                  <p className="text-[13px] text-zinc-500 mb-2">{t("pricingOld.analyzing")} <span className="text-white font-medium">@{username}</span></p>
                   <AnimatePresence mode="wait">
                     <motion.p
                       key={scanMsg}
@@ -467,18 +450,18 @@ export default function GrowthAnalyzerPage() {
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
             <motion.p variants={v} custom={0} className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 mb-4">
-              How It Works
+              {t("pricingOld.howItWorks")}
             </motion.p>
             <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              3 Simple Steps to Real Growth
+              {t("pricingOld.threeSteps")}
             </motion.h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {[
-              { step: "01", icon: Search, title: "Enter Your Username", desc: "Our AI scans your profile, audience, and niche to build an optimal growth strategy tailored to you." },
-              { step: "02", icon: Zap, title: "Choose Your Plan", desc: "Select a reach volume that fits your goals. Every plan includes AI-powered audience targeting and instant activation." },
-              { step: "03", icon: TrendingUp, title: "Watch Your Growth", desc: "Sit back while our algorithm drives real, organic reach to your profile. Results start within minutes." },
+              { step: "01", icon: Search, title: t("pricingOld.step01Title"), desc: t("pricingOld.step01Desc") },
+              { step: "02", icon: Zap, title: t("pricingOld.step02Title"), desc: t("pricingOld.step02Desc") },
+              { step: "03", icon: TrendingUp, title: t("pricingOld.step03Title"), desc: t("pricingOld.step03Desc") },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -515,7 +498,7 @@ export default function GrowthAnalyzerPage() {
               FAQ
             </motion.p>
             <motion.h2 variants={v} custom={1} className="text-[clamp(1.6rem,4vw,3rem)] font-semibold text-white tracking-tight">
-              Common Questions
+              {t("pricingOld.faqTitle")}
             </motion.h2>
           </motion.div>
 
@@ -580,6 +563,7 @@ function useSocialProof(platform: Platform) {
 
 function SocialProofBanner({ platform }: { platform: Platform }) {
   const { name, platform: platLabel, key } = useSocialProof(platform);
+  const { t } = useTranslation();
   return (
     <div className="flex justify-center mb-5">
       <div className="relative overflow-hidden h-7">
@@ -594,7 +578,7 @@ function SocialProofBanner({ platform }: { platform: Platform }) {
           >
             <Flame className="w-3 h-3 text-orange-400" />
             <span className="text-[11px] text-zinc-400">
-              <span className="font-semibold text-zinc-300">{name}</span> just activated a Growth campaign on {platLabel}
+              <span className="font-semibold text-zinc-300">{name}</span>{t("pricingOld.justActivated")}{platLabel}
             </span>
           </motion.div>
         </AnimatePresence>
@@ -625,13 +609,14 @@ function ResultsModal({
   platform: Platform;
   tiers: CheckoutTier[];
   accent: { primary: string; gradient: string; tw: string };
-  onSelectTier: (t: CheckoutTier, fromExitIntent?: boolean) => void;
+  onSelectTier: (tier: CheckoutTier, fromExitIntent?: boolean) => void;
   onClose: () => void;
   downsell: import("@/config/pricing").DownsellConfig;
   currencySymbol: string;
   currency: string;
 }) {
   const posthog = usePostHog();
+  const { t } = useTranslation();
   const [showDownsell, setShowDownsell] = useState(false);
   const downsellPrice = downsell.prices?.[currency] ?? downsell.price;
   const { profile } = useSocialProfile(username, platform);
@@ -736,15 +721,15 @@ function ResultsModal({
             >
               <div className="text-[40px] mb-4">⚡</div>
               <h2 className="text-[clamp(1.2rem,3.5vw,1.7rem)] font-semibold text-white tracking-tight">
-                Wait{" "}
+                {t("pricingOld.waitUsername")}
                 <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
                   @{username}
                 </span>
                 !
               </h2>
               <p className="mt-4 text-[15px] text-zinc-400 leading-relaxed max-w-sm mx-auto">
-                Test our followers package with a <span className="font-semibold text-white">Trial Pack</span>.{" "}
-                <span className="font-semibold text-white">+{downsell.reachAmount} Followers</span> for only{" "}
+                {t("pricingOld.trialPackDesc")}<span className="font-semibold text-white">{t("pricingOld.trialPack")}</span>.{" "}
+                <span className="font-semibold text-white">+{downsell.reachAmount}{t("pricingOld.followersFor")}</span>{t("pricingOld.forOnly")}
                 <span className="font-bold text-white">{formatCurrency(downsellPrice, currency)}</span>.
               </p>
 
@@ -768,7 +753,7 @@ function ResultsModal({
                 onClick={() => { setShowDownsell(false); onClose(); }}
                 className="mt-3 text-[12px] text-zinc-600 hover:text-zinc-400 transition-colors"
               >
-                No thanks, I don&apos;t want to grow
+                {t("pricingOld.noThanks")}
               </button>
             </motion.div>
           ) : (
@@ -785,7 +770,7 @@ function ResultsModal({
               <div className="flex-shrink-0 flex flex-col items-center px-4 pt-4 pb-3 sm:px-8 sm:pt-6 sm:pb-4 bg-zinc-950">
                 <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3 sm:mb-4">
                   <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] sm:text-[12px] font-medium text-emerald-400">Analysis Complete</span>
+                  <span className="text-[10px] sm:text-[12px] font-medium text-emerald-400">{t("pricingOld.analysisComplete")}</span>
                 </div>
 
                 {/* Live profile badge */}
@@ -796,14 +781,14 @@ function ResultsModal({
                 <h2 className="text-[1.1rem] sm:text-[1.5rem] lg:text-[2rem] font-semibold text-white tracking-tight text-center px-2">
                   {platform === "tiktok" ? (
                     <>
-                      Select your{" "}
+                      {t("pricingOld.selectTTPackage")}
                       <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
-                        TikTok Followers Package
+                        {t("pricingOld.ttPackageLabel")}
                       </span>
                     </>
                   ) : (
                     <>
-                      Great news for{" "}
+                      {t("pricingOld.greatNewsFor")}
                       <span className="bg-gradient-to-r bg-clip-text text-transparent" style={{ backgroundImage: accent.gradient }}>
                         @{username}
                       </span>
@@ -812,11 +797,7 @@ function ResultsModal({
                   )}
                 </h2>
                 <p className="mt-2 sm:mt-3 text-[12px] sm:text-[14px] lg:text-[15px] text-zinc-400 max-w-md mx-auto text-center px-2">
-                  {platform === "tiktok" ? (
-                    "Choose your followers package and watch your TikTok grow."
-                  ) : (
-                    `Our AI is ready to amplify your ${platform === "instagram" ? "Instagram" : "TikTok"} followers. Choose your campaign budget below.`
-                  )}
+                  {platform === "tiktok" ? t("pricingOld.chooseTTDesc") : t("pricingOld.chooseIGDesc", { platform: platform === "instagram" ? "Instagram" : "TikTok" })}
                 </p>
               </div>
 
@@ -824,7 +805,7 @@ function ResultsModal({
               {/* Tier cards - scrollable area */}
               <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-8 sm:py-4" onScroll={handleResultsScroll}>
                 {tiers.length === 0 ? (
-                  <p className="text-center text-zinc-500 py-10">Campaign data unavailable. Please try again later.</p>
+                  <p className="text-center text-zinc-500 py-10">{t("pricingOld.campaignUnavailable")}</p>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                   {tiers.map((tier, i) => {
@@ -848,7 +829,7 @@ function ResultsModal({
                       >
                         {isPopular && (
                           <span className="absolute -top-2 sm:-top-2.5 left-1/2 -translate-x-1/2 px-2 sm:px-3 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-white whitespace-nowrap" style={{ background: accent.gradient }}>
-                            Popular
+                            {t("pricingOld.popular")}
                           </span>
                         )}
                         <span className="block text-[16px] sm:text-[20px] lg:text-[24px] font-semibold text-white tracking-tight">{tier.label}</span>
@@ -858,16 +839,16 @@ function ResultsModal({
                         {/* Projection: You'll reach X followers */}
                         {projectedTotal != null && (
                           <div className="mt-1.5 sm:mt-2 px-1 sm:px-1.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                            <div className="text-[7px] sm:text-[8px] text-zinc-600 mb-0.5">You'll reach</div>
+                            <div className="text-[7px] sm:text-[8px] text-zinc-600 mb-0.5">{t("pricingOld.youllReach")}</div>
                             <div className="flex items-center justify-center gap-0.5">
                               <TrendingUp className="w-2 h-2 sm:w-2.5 sm:h-2.5" style={{ color: accent.primary }} />
-                              <span className="text-[10px] sm:text-[12px] font-bold text-white truncate">{formatProjection(projectedTotal)} followers</span>
+                              <span className="text-[10px] sm:text-[12px] font-bold text-white truncate">{formatProjection(projectedTotal)} {t("pricingOld.followers")}</span>
                             </div>
                           </div>
                         )}
 
                         <span className="mt-1 sm:mt-1.5 inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-medium" style={{ color: accent.primary }}>
-                          Select <ArrowRight className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                          {t("pricingOld.select")} <ArrowRight className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                         </span>
                       </motion.button>
                     );
@@ -879,14 +860,14 @@ function ResultsModal({
               {/* Trust bar - sticky bottom */}
               <div className="flex-shrink-0 px-4 py-3 sm:px-8 sm:py-4 bg-zinc-950 border-t border-white/[0.06]">
                 <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-[9px] sm:text-[10px] text-zinc-600">
-                  <span className="flex items-center gap-0.5"><Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> Stripe secured</span>
+                  <span className="flex items-center gap-0.5"><Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> {t("pricingOld.stripeSecured")}</span>
                   <Image src="/badges_paiement.png" alt="Accepted payment methods" width={160} height={20} className="h-4 sm:h-5 w-auto object-contain opacity-60" />
                 </div>
                 
                 {/* Compliance text for TikTok */}
                 {platform === "tiktok" && (
                   <div className="mt-2 text-center text-[8px] sm:text-[9px] text-zinc-500">
-                    Compliant with TikTok's Terms of Service. All followers are real users.
+                    {t("pricingOld.complianceTT")}
                   </div>
                 )}
               </div>
