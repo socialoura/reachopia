@@ -449,10 +449,16 @@ export default function PricingSocialsPage() {
     return () => { cancelled = true; };
   }, [profile?.username, isIG]);
 
-  /* Scroll to bundle content on step change + track */
+  /* Scroll on step change + track */
+  const firstBundleRef = useRef(true);
   useEffect(() => {
     if (step !== "search" && step !== "scanning") {
-      document.getElementById("bundle-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (step === "bundle" && firstBundleRef.current) {
+        firstBundleRef.current = false;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        document.getElementById("bundle-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
     posthog?.capture("step_changed", { step, platform, variant: "pricing-socials" });
   }, [step]);

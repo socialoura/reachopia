@@ -38,6 +38,7 @@ interface PricingData {
   instagramLikes?: Tier[];
   instagramViews?: Tier[];
   downsell?: DownsellConfig;
+  popularIndex?: Record<string, number>;
 }
 
 const DEFAULT_DOWNSELL: DownsellConfig = {
@@ -280,6 +281,33 @@ export default function AdminPricingPage() {
               {cur.symbol} {cur.code}
             </button>
           ))}
+        </div>
+
+        {/* Popular badge selector */}
+        <div className="flex items-center gap-3 mb-4">
+          <label className="text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">⭐ Popular badge</label>
+          <select
+            value={pricing?.popularIndex?.[platform] ?? -1}
+            onChange={(e) => {
+              if (!pricing) return;
+              const val = parseInt(e.target.value);
+              setPricing({
+                ...pricing,
+                popularIndex: {
+                  ...(pricing.popularIndex ?? {}),
+                  [platform]: val,
+                },
+              });
+            }}
+            className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:border-indigo-500 focus:outline-none"
+          >
+            <option value={-1} className="bg-zinc-900">Auto (middle)</option>
+            {tiers.map((tier, i) => (
+              <option key={i} value={i} className="bg-zinc-900">
+                {tier.followers} {quantityLabel}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="space-y-3">

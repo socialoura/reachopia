@@ -189,7 +189,7 @@ export default function BundleConfigurator() {
   const gradient = isIG ? IG_GRADIENT : TT_GRADIENT;
 
   const { t } = useTranslation();
-  const { resolved, getTierPrice: getPrice, getOriginalPrice, loading } = usePricingTiers(currency);
+  const { resolved, getTierPrice: getPrice, getOriginalPrice, popularIndex, loading } = usePricingTiers(currency);
 
   const followersTiers = isIG ? resolved.instagram : resolved.tiktok;
   const likesTiers = isIG ? resolved.instagramLikes : resolved.tiktokLikes;
@@ -393,7 +393,9 @@ export default function BundleConfigurator() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {followersTiers.map((tier, idx) => {
             const isSelected = followersQty === tier.quantity;
-            const isPopular = idx === Math.floor(followersTiers.length / 2);
+            const rawPop = popularIndex[followersPricingKey];
+            const popIdx = rawPop != null && rawPop >= 0 ? rawPop : Math.floor(followersTiers.length / 2);
+            const isPopular = idx === popIdx;
             return (
               <div key={tier.quantity} className="relative">
                 {isPopular && (

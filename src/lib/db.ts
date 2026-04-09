@@ -464,6 +464,14 @@ export interface PricingData {
   instagramLikes?: PricingTier[];
   instagramViews?: PricingTier[];
   downsell?: DownsellConfig;
+  popularIndex?: {
+    instagram?: number;
+    tiktok?: number;
+    tiktokLikes?: number;
+    tiktokViews?: number;
+    instagramLikes?: number;
+    instagramViews?: number;
+  };
 }
 
 const DEFAULT_DOWNSELL: DownsellConfig = {

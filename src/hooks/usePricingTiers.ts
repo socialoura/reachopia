@@ -19,7 +19,7 @@ export interface ResolvedTier {
 export type PlatformKey = "tiktok" | "tiktokLikes" | "tiktokViews" | "instagram" | "instagramLikes" | "instagramViews";
 
 /** Module-level cache so every component shares the same fetch */
-let cachedPricing: Record<string, ApiTier[]> | null = null;
+let cachedPricing: Record<string, unknown> | null = null;
 let fetchPromise: Promise<void> | null = null;
 
 /**
@@ -49,7 +49,7 @@ function resolveTiers(apiTiers: ApiTier[] | undefined, currency: string): Resolv
 }
 
 export function usePricingTiers(currency: string) {
-  const [apiData, setApiData] = useState<Record<string, ApiTier[]> | null>(cachedPricing);
+  const [apiData, setApiData] = useState<Record<string, unknown> | null>(cachedPricing);
 
   useEffect(() => {
     if (cachedPricing) {
@@ -98,5 +98,10 @@ export function usePricingTiers(currency: string) {
     [resolved],
   );
 
-  return { resolved, getTierPrice, getOriginalPrice, loading: !apiData };
+  const popularIndex = useMemo(() => {
+    const pi = apiData?.popularIndex as Record<string, number> | undefined;
+    return pi ?? {};
+  }, [apiData]);
+
+  return { resolved, getTierPrice, getOriginalPrice, popularIndex, loading: !apiData };
 }

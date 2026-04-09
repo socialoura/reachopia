@@ -77,6 +77,17 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
         return;
       }
     } catch {}
+
+    // Auto-detect from browser language (e.g. "fr-FR" → "fr")
+    const browserLangs = navigator.languages ?? [navigator.language];
+    for (const bl of browserLangs) {
+      const prefix = bl.split("-")[0].toLowerCase();
+      if (isLocale(prefix)) {
+        setLocaleState(prefix);
+        try { localStorage.setItem(LS_KEY, prefix); } catch {}
+        return;
+      }
+    }
   }, [searchParams]);
 
   // Auto-switch currency to EUR for fr/de/es locales
