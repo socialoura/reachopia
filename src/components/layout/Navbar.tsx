@@ -14,7 +14,7 @@ export default function Navbar() {
   const { t } = useTranslation();
 
   const navLinks = [
-    { label: t("nav.pricing"), href: "/pricing-socials" },
+    { label: t("nav.pricing"), href: "/pricing-2" },
     { label: t("nav.tracking"), href: "/dashboard" },
     { label: t("nav.about"), href: "/about" },
     { label: t("nav.contact"), href: "/contact" },
