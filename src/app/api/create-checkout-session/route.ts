@@ -1,13 +1,16 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { amountToCents } from "@/lib/currency";
+import { getPricing } from "@/lib/db";
+import { validateCheckoutPrice } from "@/lib/pricing-engine";
+import type { PricingTier } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: "2026-02-25.clover",
     });
-    const { amount, platform, packageName, volume, username, email, currency = "USD" } =
+    const { amount, platform, packageName, volume, username, email, currency = "USD", service } =
       await req.json();
 
     if (!amount || !platform || !volume || !username || !email) {
@@ -16,6 +19,18 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const cur = (currency as string).toUpperCase();
+
+    // ── Server-side price validation ──
+    // Re-compute the expected price to prevent client tampering
+    const pricingData = await getPricing();
+    const platformKey = service || platform; // e.g. "tiktokLikes", "instagramViews", or just "tiktok"/"instagram"
+    const tiers: PricingTier[] = (pricingData as unknown as Record<string, PricingTier[]>)[platformKey] ?? pricingData[platform as "tiktok" | "instagram"] ?? [];
+    const serverPrice = await validateCheckoutPrice(tiers, volume, cur);
+
+    // Use server price as the authoritative amount
+    const finalAmount = serverPrice ?? amount;
 
     const platformLabel = platform === "instagram" ? "Instagram" : "TikTok";
     const origin = req.headers.get("origin") || "http://localhost:3000";
@@ -27,8 +42,8 @@ export async function POST(req: NextRequest) {
       line_items: [
         {
           price_data: {
-            currency: currency.toLowerCase(), // Stripe expects lowercase currency codes
-            unit_amount: amountToCents(amount, currency), // Proper conversion to cents/stripe units
+            currency: cur.toLowerCase(),
+            unit_amount: amountToCents(finalAmount, cur),
             product_data: {
               name: `${platformLabel} ${volume} AI Reach`,
               description: `AI-powered ${platformLabel} growth campaign for @${username}`,
@@ -43,7 +58,8 @@ export async function POST(req: NextRequest) {
         volume,
         username,
         email,
-        currency, // Store currency in metadata for tracking
+        currency: cur,
+        serverPrice: String(finalAmount),
       },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout/cancel?platform=${platform}`,

@@ -12,7 +12,6 @@ import { useSearchParams } from "next/navigation";
 import {
   CURRENCY_MAP,
   DEFAULT_CURRENCY,
-  SUPPORTED_CURRENCIES,
   type CurrencyCode,
   type CurrencyInfo,
 } from "@/config/pricing";
@@ -42,8 +41,22 @@ function setCookie(name: string, value: string, days: number) {
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
 }
 
-function isValidCurrency(code: string | null): code is CurrencyCode {
-  return code !== null && (SUPPORTED_CURRENCIES as readonly string[]).includes(code);
+function getCurrencySymbolSafe(code: string): string {
+  try {
+    return (0).toLocaleString("en-US", {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).replace(/[0-9\s]/g, "").trim() || code;
+  } catch {
+    return code;
+  }
+}
+
+function isValidCurrency(code: string | null): code is string {
+  // Accept any 3-letter uppercase currency code (Stripe validates at payment time)
+  return code !== null && /^[A-Z]{3}$/.test(code);
 }
 
 function CurrencyProviderInner({ children }: { children: ReactNode }) {
@@ -75,7 +88,12 @@ function CurrencyProviderInner({ children }: { children: ReactNode }) {
     setCookie("user_currency", code, 30);
   }, []);
 
-  const info = CURRENCY_MAP[currency];
+  // Look up display info; generate dynamically for currencies not in CURRENCY_MAP
+  const info: CurrencyInfo = CURRENCY_MAP[currency] ?? {
+    code: currency,
+    symbol: getCurrencySymbolSafe(currency),
+    label: currency,
+  };
 
   return (
     <CurrencyContext.Provider value={{ currency, symbol: info.symbol, info, setCurrency }}>

@@ -18,9 +18,9 @@ export interface ResolvedTier {
 
 export type PlatformKey = "tiktok" | "tiktokLikes" | "tiktokViews" | "instagram" | "instagramLikes" | "instagramViews";
 
-/** Module-level cache so every component shares the same fetch */
-let cachedPricing: Record<string, unknown> | null = null;
-let fetchPromise: Promise<void> | null = null;
+/** Module-level cache so every component shares the same fetch, keyed by currency */
+const cachedPricing: Record<string, Record<string, unknown>> = {};
+const fetchPromises: Record<string, Promise<void>> = {};
 
 /**
  * Progressive markup: small tiers get a small fake "original", big tiers get a large one.
@@ -49,25 +49,28 @@ function resolveTiers(apiTiers: ApiTier[] | undefined, currency: string): Resolv
 }
 
 export function usePricingTiers(currency: string) {
-  const [apiData, setApiData] = useState<Record<string, unknown> | null>(cachedPricing);
+  const cur = currency?.toUpperCase() || "USD";
+  const [apiData, setApiData] = useState<Record<string, unknown> | null>(cachedPricing[cur] ?? null);
 
   useEffect(() => {
-    if (cachedPricing) {
-      setApiData(cachedPricing);
+    // Already cached for this currency?
+    if (cachedPricing[cur]) {
+      setApiData(cachedPricing[cur]);
       return;
     }
-    if (!fetchPromise) {
-      fetchPromise = fetch("/api/pricing")
+    // Fetch in progress for this currency?
+    if (!fetchPromises[cur]) {
+      fetchPromises[cur] = fetch(`/api/pricing?currency=${encodeURIComponent(cur)}`)
         .then((r) => r.json())
         .then((data) => {
-          cachedPricing = data;
+          cachedPricing[cur] = data;
         })
         .catch(() => {});
     }
-    fetchPromise.then(() => {
-      setApiData(cachedPricing);
+    fetchPromises[cur].then(() => {
+      if (cachedPricing[cur]) setApiData(cachedPricing[cur]);
     });
-  }, []);
+  }, [cur]);
 
   const resolved = useMemo(() => {
     return {
