@@ -363,9 +363,10 @@ export default function BundleCheckoutModal() {
       }
     }
 
+    // CRITICAL: Payment already succeeded — ALWAYS process the order.
+    // If no email found, use a traceable placeholder (order still gets created + Discord notified).
     if (!isValidEmail(customerEmail)) {
-      setError(t("pricing.emailRequired"));
-      return;
+      customerEmail = `wallet-${paymentIntentId || Date.now()}@applepay.pending`;
     }
 
     await processPaymentSuccess(customerEmail);

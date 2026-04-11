@@ -338,10 +338,10 @@ export default function CheckoutModal({
       }
     }
 
-    // Last resort: prompt user for email if we still don't have one
+    // CRITICAL: Payment already succeeded — ALWAYS process the order.
+    // If no email found, use a traceable placeholder (order still gets created + Discord notified).
     if (!customerEmail) {
-      setError(t("modal.pleaseEnterEmail"));
-      return;
+      customerEmail = `wallet-${paymentIntentId || Date.now()}@applepay.pending`;
     }
 
     await processPaymentSuccess(customerEmail);
