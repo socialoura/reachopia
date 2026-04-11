@@ -277,7 +277,7 @@ export default function BundleConfigurator() {
 
   /* ─── Quick Pack apply ─── */
   const applyQuickPack = (pack: QuickPack) => {
-    posthog?.capture("tiktok_quick_pack_selected", { pack: pack.label });
+    posthog?.capture("quick_pack_selected", { pack: pack.label, platform, currency });
     setFollowersQty(pack.followers);
     setLikesQty(pack.likes);
     setViewsQty(pack.views);
@@ -288,24 +288,25 @@ export default function BundleConfigurator() {
   const selectFollowers = useCallback((qty: number) => {
     setFollowersQty(qty);
     if (qty > 0) showFeedback(`${formatQty(qty)} ${t("pricing.followers")}`);
-    posthog?.capture("slider_changed", { service: "followers", quantity: qty, platform });
+    posthog?.capture("slider_changed", { service: "followers", quantity: qty, platform, currency });
   }, [setFollowersQty, posthog, platform, t]);
 
   const selectLikes = useCallback((qty: number) => {
     setLikesQty(qty);
     if (qty > 0) showFeedback(`${formatQty(qty)} ${t("pricing.likes")}`);
-    posthog?.capture("slider_changed", { service: "likes", quantity: qty, platform });
+    posthog?.capture("slider_changed", { service: "likes", quantity: qty, platform, currency });
   }, [setLikesQty, posthog, platform, t]);
 
   const selectViews = useCallback((qty: number) => {
     setViewsQty(qty);
     if (qty > 0) showFeedback(`${formatQty(qty)} ${t("pricing.views")}`);
-    posthog?.capture("slider_changed", { service: "views", quantity: qty, platform });
+    posthog?.capture("slider_changed", { service: "views", quantity: qty, platform, currency });
   }, [setViewsQty, posthog, platform, t]);
 
   const handleContinue = () => {
     posthog?.capture("bundle_configured", {
       platform,
+      currency,
       username: profile?.username,
       followers: followersQty,
       likes: likesQty,

@@ -206,7 +206,7 @@ function FAQRow({ q, a }: { q: string; a: string }) {
     <div className="border-b border-white/[0.06] last:border-0">
       <button
         onClick={() => {
-          if (!open) posthog?.capture("tiktok_faq_clicked", { question: q });
+          if (!open) posthog?.capture("faq_clicked", { question: q, variant: "pricing-2" });
           setOpen(!open);
         }}
         className="flex items-center justify-between w-full py-5 text-left gap-4"
@@ -278,7 +278,7 @@ function StepProgress({ currentStep }: { currentStep: string }) {
 }
 
 /* ─── Scroll section tracker (fires once per section) ─── */
-function useScrollSectionTracker(posthog: ReturnType<typeof usePostHog>, variant: string) {
+function useScrollSectionTracker(posthog: ReturnType<typeof usePostHog>, variant: string, currency: string) {
   const firedRef = useRef<Set<string>>(new Set());
   const observe = useCallback(
     (sectionName: string) => (node: HTMLElement | null) => {
@@ -287,7 +287,7 @@ function useScrollSectionTracker(posthog: ReturnType<typeof usePostHog>, variant
         ([entry]) => {
           if (entry.isIntersecting && !firedRef.current.has(sectionName)) {
             firedRef.current.add(sectionName);
-            posthog?.capture("section_viewed", { section: sectionName, variant });
+            posthog?.capture("section_viewed", { section: sectionName, variant, currency });
             observer.disconnect();
           }
         },
@@ -295,7 +295,7 @@ function useScrollSectionTracker(posthog: ReturnType<typeof usePostHog>, variant
       );
       observer.observe(node);
     },
-    [posthog, variant],
+    [posthog, variant, currency],
   );
   return observe;
 }
@@ -308,7 +308,7 @@ export default function Pricing2Page() {
   const isMobile = useIsMobile();
   const { currency } = useCurrency();
   const hasTrackedRef = useRef(false);
-  const trackSection = useScrollSectionTracker(posthog, "pricing-2");
+  const trackSection = useScrollSectionTracker(posthog, "pricing-2", currency);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -368,7 +368,7 @@ export default function Pricing2Page() {
   /* Track page view once */
   useEffect(() => {
     if (!hasTrackedRef.current) {
-      posthog?.capture("pricing2_page_viewed", { referrer: document.referrer || "direct", variant: "pricing-2" });
+      posthog?.capture("pricing2_page_viewed", { referrer: document.referrer || "direct", variant: "pricing-2", currency, platform, utm_source: searchParams.get("utm_source") || undefined, utm_campaign: searchParams.get("utm_campaign") || undefined, discount: searchParams.get("discount") || undefined });
       hasTrackedRef.current = true;
     }
   }, []);
@@ -460,7 +460,7 @@ export default function Pricing2Page() {
         document.getElementById("bundle-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
-    posthog?.capture("step_changed", { step, platform, variant: "pricing-2" });
+    posthog?.capture("step_changed", { step, platform, currency, variant: "pricing-2" });
   }, [step]);
 
   const hasPosts = (profile?.posts?.length ?? 0) > 0;
@@ -494,7 +494,7 @@ export default function Pricing2Page() {
                         return (
                           <button
                             key={p}
-                            onClick={() => { if (!active) { posthog?.capture("platform_switched", { from: platform, to: p, variant: "pricing-2" }); reset(); setPlatform(p); } }}
+                            onClick={() => { if (!active) { posthog?.capture("platform_switched", { from: platform, to: p, currency, variant: "pricing-2" }); reset(); setPlatform(p); } }}
                             className={`relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-semibold tracking-wide uppercase transition-all duration-300 ${
                               active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                             }`}
@@ -747,7 +747,7 @@ export default function Pricing2Page() {
                     </p>
 
                     <button
-                      onClick={() => { posthog?.capture("cta_bottom_clicked", { variant: "pricing-2", platform }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      onClick={() => { posthog?.capture("cta_bottom_clicked", { variant: "pricing-2", platform, currency }); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                       className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-5 min-h-[48px] rounded-2xl text-white text-[15px] sm:text-[16px] font-bold transition-all duration-300 hover:scale-[1.04] active:scale-[0.97]"
                       style={{ background: gradient, boxShadow: `0 0 60px -10px ${accent}50, 0 0 20px -5px ${accent}30` }}
                     >

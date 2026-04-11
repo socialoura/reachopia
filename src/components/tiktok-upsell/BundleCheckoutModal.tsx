@@ -235,7 +235,7 @@ export default function BundleCheckoutModal() {
   useEffect(() => {
     if (checkoutOpen) {
       document.body.style.overflow = "hidden";
-      posthog?.capture("checkout_modal_opened", { platform, total_price: totalPrice, package: packageDesc, username: username.trim() });
+      posthog?.capture("checkout_modal_opened", { platform, total_price: totalPrice, currency, package: packageDesc, username: username.trim() });
     } else {
       document.body.style.overflow = "";
     }
@@ -272,7 +272,7 @@ export default function BundleCheckoutModal() {
   }, [checkoutOpen, totalPrice, packageDesc, username, currency, clientSecret]);
 
   const resetAndClose = useCallback(() => {
-    posthog?.capture("checkout_modal_closed", { platform, total_price: totalPrice });
+    posthog?.capture("checkout_modal_closed", { platform, total_price: totalPrice, currency });
     setStep(1);
     setEmail("");
     setError(null);
@@ -290,6 +290,7 @@ export default function BundleCheckoutModal() {
       likes: likesQty,
       views: viewsQty,
       total_price: totalPrice,
+      currency,
       email: customerEmail,
       username: username.trim(),
     });
@@ -467,6 +468,7 @@ export default function BundleCheckoutModal() {
                         if (email.trim()) {
                           posthog?.capture("checkout_email_entered", {
                             network: platform,
+                            currency,
                             package: packageDesc,
                           });
                         }
@@ -513,6 +515,7 @@ export default function BundleCheckoutModal() {
                         onPaymentAttempted={(method) => {
                           posthog?.capture("checkout_payment_attempted", {
                             price: totalPrice,
+                            currency,
                             network: platform,
                             payment_method: method,
                             email: email.trim(),

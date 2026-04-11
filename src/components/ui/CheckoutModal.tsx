@@ -209,6 +209,7 @@ export default function CheckoutModal({
       posthog?.capture("checkout_modal_opened", {
         volume: tier.volume,
         price: tier.price,
+        currency,
         network: platform,
         username: prefillUsername.trim(),
         is_exit_intent: isExitIntent,
@@ -270,6 +271,7 @@ export default function CheckoutModal({
     posthog?.capture("payment_success", {
       volume: tier.volume,
       price: tier.price,
+      currency,
       network: platform,
       email: customerEmail,
       username: username.trim(),
@@ -433,6 +435,7 @@ export default function CheckoutModal({
                           posthog?.capture("checkout_email_entered", {
                             network: platform,
                             volume: tier.volume,
+                            currency,
                           });
                         }
                       }}
@@ -498,6 +501,7 @@ export default function CheckoutModal({
                           posthog?.capture("checkout_payment_attempted", {
                             volume: tier.volume,
                             price: tier.price,
+                            currency,
                             network: platform,
                             payment_method: method,
                             email: email.trim(),

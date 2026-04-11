@@ -69,6 +69,7 @@ export default function OrderRecap({ onBack }: { onBack: () => void }) {
   const handleCheckout = () => {
     posthog?.capture("bundle_checkout_started", {
       platform,
+      currency,
       username: profile?.username,
       followers: followersQty,
       likes: likesQty,

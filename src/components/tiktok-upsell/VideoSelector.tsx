@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { ArrowRight, ArrowLeft, Check, Heart, Eye } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useTranslation } from "@/context/TranslationContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useTiktokUpsellStore } from "@/store/useTiktokUpsellStore";
 import { formatQty } from "@/config/tiktok-services";
 import type { VideoAssignment } from "@/types/tiktok";
@@ -21,7 +22,8 @@ interface VideoSelectorProps {
 export default function VideoSelector({ mode, totalQty, onBack, onContinue }: VideoSelectorProps) {
   const posthog = usePostHog();
   const { t } = useTranslation();
-  const { profile, setLikesAssignments, setViewsAssignments } = useTiktokUpsellStore();
+  const { currency } = useCurrency();
+  const { profile, platform, setLikesAssignments, setViewsAssignments } = useTiktokUpsellStore();
   const posts = profile?.posts ?? [];
 
   const label = mode === "likes" ? t("pricing.likes") : t("pricing.views");
@@ -79,8 +81,10 @@ export default function VideoSelector({ mode, totalQty, onBack, onContinue }: Vi
       quantity: pv + (i < rem ? 1 : 0),
     }));
 
-    posthog?.capture(`tiktok_${mode}_assigned`, {
+    posthog?.capture(`${mode}_assigned`, {
       username: profile?.username,
+      platform,
+      currency,
       total: totalQty,
       videos_count: videoAssignments.length,
     });
@@ -153,8 +157,10 @@ export default function VideoSelector({ mode, totalQty, onBack, onContinue }: Vi
               caption: p.caption,
               quantity: pv + (i < rem ? 1 : 0),
             }));
-            posthog?.capture(`tiktok_${mode}_auto_distributed`, {
+            posthog?.capture(`${mode}_auto_distributed`, {
               username: profile?.username,
+              platform,
+              currency,
               total: totalQty,
               videos_count: assignments.length,
             });

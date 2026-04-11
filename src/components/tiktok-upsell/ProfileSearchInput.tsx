@@ -70,7 +70,7 @@ export default function ProfileSearchInput() {
     // Blur input to reset iOS Safari auto-zoom
     inputRef.current?.blur();
 
-    posthog?.capture("username_submitted", { username: clean, platform });
+    posthog?.capture("username_submitted", { username: clean, platform, currency });
     setUsername(clean);
     setProfileLoading(true);
     setProfileError(null);
@@ -102,7 +102,7 @@ export default function ProfileSearchInput() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({ error: t("pricing.profileNotFound") }));
-        posthog?.capture("profile_not_found", { username: clean, platform, has_suggestion: !!data.suggestion });
+        posthog?.capture("profile_not_found", { username: clean, platform, currency, has_suggestion: !!data.suggestion });
         if (data.suggestion) {
           setSuggestion(data.suggestion);
           setProfileError(data.error || t("pricing.profileNotFound"));
@@ -119,6 +119,7 @@ export default function ProfileSearchInput() {
       posthog?.capture("profile_found", {
         username: clean,
         platform,
+        currency,
         followers: profile.followersCount,
         posts: profile.posts.length,
       });
@@ -179,7 +180,7 @@ export default function ProfileSearchInput() {
             type="text"
             value={localUsername}
             onChange={(e) => setLocalUsername(e.target.value)}
-            onFocus={() => posthog?.capture("input_focused", { platform })}
+            onFocus={() => posthog?.capture("input_focused", { platform, currency })}
             onKeyDown={handleKeyDown}
             placeholder={isIG ? t("pricing.enterInstagramUsername") : t("pricing.enterTikTokUsername")}
             className="w-full pl-9 pr-4 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] text-white text-[16px] sm:text-[15px] placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.2] focus:bg-white/[0.08] transition-all duration-300"
@@ -214,7 +215,7 @@ export default function ProfileSearchInput() {
       {suggestion && (
         <button
           onClick={() => {
-            posthog?.capture("suggestion_clicked", { suggested_username: suggestion.username, platform });
+            posthog?.capture("suggestion_clicked", { suggested_username: suggestion.username, platform, currency });
             setLocalUsername(suggestion.username);
             setSuggestion(null);
             handleSearch(suggestion.username);
