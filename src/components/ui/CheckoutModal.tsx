@@ -53,7 +53,7 @@ function PaymentForm({
   onEmailError,
 }: {
   onCardSuccess: () => void;
-  onExpressSuccess: () => void;
+  onExpressSuccess: (paymentIntentId?: string) => void;
   onPaymentAttempted: (method: "card" | "express") => void;
   accentGradient: string;
   accentColor: string;
@@ -101,13 +101,13 @@ function PaymentForm({
     }
   };
 
-  // Express Checkout (Apple Pay / Google Pay) confirm - email optional (Apple/Google provides it)
+  // Express Checkout (Apple Pay / Google Pay) confirm - email retrieved from Stripe post-payment
   const handleExpressConfirm = async () => {
     if (!stripe || !elements) return;
 
     onPaymentAttempted("express");
 
-    const { error: confirmError } = await stripe.confirmPayment({
+    const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: window.location.href,
@@ -118,7 +118,7 @@ function PaymentForm({
     if (confirmError) {
       setError(confirmError.message || t("checkoutModal.paymentFailed"));
     } else {
-      onExpressSuccess();
+      onExpressSuccess(paymentIntent?.id);
     }
   };
 
@@ -319,11 +319,31 @@ export default function CheckoutModal({
     await processPaymentSuccess(email.trim());
   };
 
-  // Express checkout success (Apple Pay / Google Pay) - email provided by wallet
-  const handleExpressPaymentSuccess = async () => {
-    // For express checkout, use form email if provided, otherwise use placeholder
-    // Apple Pay / Google Pay provide their own receipt email to Stripe
-    const customerEmail = email.trim() || `express-${Date.now()}@wallet.pay`;
+  // Express checkout success (Apple Pay / Google Pay) - retrieve email from Stripe
+  const handleExpressPaymentSuccess = async (paymentIntentId?: string) => {
+    let customerEmail = email.trim();
+
+    // If user didn't type email, retrieve it from Stripe (Apple Pay / Google Pay provides it)
+    if (!customerEmail && paymentIntentId) {
+      try {
+        const res = await fetch("/api/retrieve-payment-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentIntentId }),
+        });
+        const data = await res.json();
+        if (data.email) customerEmail = data.email;
+      } catch (err) {
+        console.error("Failed to retrieve wallet email:", err);
+      }
+    }
+
+    // Last resort: prompt user for email if we still don't have one
+    if (!customerEmail) {
+      setError(t("modal.pleaseEnterEmail"));
+      return;
+    }
+
     await processPaymentSuccess(customerEmail);
   };
 

@@ -89,7 +89,7 @@ function PaymentForm({
   onEmailError,
 }: {
   onCardSuccess: () => void;
-  onExpressSuccess: () => void;
+  onExpressSuccess: (paymentIntentId?: string) => void;
   onPaymentAttempted: (method: "card" | "express") => void;
   price: number;
   currency?: string;
@@ -133,7 +133,7 @@ function PaymentForm({
 
     onPaymentAttempted("express");
 
-    const { error: confirmError } = await stripe.confirmPayment({
+    const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: window.location.href },
       redirect: "if_required",
@@ -141,7 +141,7 @@ function PaymentForm({
     if (confirmError) {
       setError(confirmError.message || t("checkoutModal.paymentFailed"));
     } else {
-      onExpressSuccess();
+      onExpressSuccess(paymentIntent?.id);
     }
   };
 
@@ -345,12 +345,30 @@ export default function BundleCheckoutModal() {
     await processPaymentSuccess(email.trim());
   };
 
-  const handleExpressSuccess = async () => {
-    if (!isValidEmail(email.trim())) {
+  const handleExpressSuccess = async (paymentIntentId?: string) => {
+    let customerEmail = email.trim();
+
+    // If user didn't type email, retrieve it from Stripe (Apple Pay / Google Pay provides it)
+    if (!isValidEmail(customerEmail) && paymentIntentId) {
+      try {
+        const res = await fetch("/api/retrieve-payment-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentIntentId }),
+        });
+        const data = await res.json();
+        if (data.email) customerEmail = data.email;
+      } catch (err) {
+        console.error("Failed to retrieve wallet email:", err);
+      }
+    }
+
+    if (!isValidEmail(customerEmail)) {
       setError(t("pricing.emailRequired"));
       return;
     }
-    await processPaymentSuccess(email.trim());
+
+    await processPaymentSuccess(customerEmail);
   };
 
   return (
